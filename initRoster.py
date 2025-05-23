@@ -5,16 +5,6 @@ from firebaseSetup import db
 year = 2024
 allPlayers = nfl.import_seasonal_rosters([year])
 
-emptyStats = {
-    "points": 0,
-    "passYards": 0,
-    "rushYards": 0,
-    "recYards": 0,
-    "passTds": 0,
-    "rushTds": 0,
-    "recTds": 0
-}
-
 for _, row in allPlayers.iterrows():
     position = row['position']
 

@@ -7,6 +7,7 @@ def scoreYardage(playerRows, week, year):
         passYds = row['passing_yards']
         rushYds = row['rushing_yards']
         recYds = row['receiving_yards']
+        numTwoPoints = row['passing_2pt_conversions'] + row['rushing_2pt_conversions'] + row['receiving_2pt_conversions']
 
         # passing yards
         if 200 <= passYds <= 299:
@@ -50,6 +51,9 @@ def scoreYardage(playerRows, week, year):
         if rushYds >= 20 and recYds >= 20 and (rushYds + recYds) >= 150:
             score += 6
 
+        # 2 point conversions
+        score += (numTwoPoints * 2)
+
         playerData = {
             "points": score,
             "passYards": passYds,
@@ -57,8 +61,9 @@ def scoreYardage(playerRows, week, year):
             "recYards": recYds,
             "passTds": 0,
             "rushTds": 0,
-            "recTds": 0
+            "recTds": 0,
+            "fgm": 0,
+            "epm": 0,
+            "2pConvs": numTwoPoints
         }
         db.collection("players").document(playerId).collection("years").document(str(year)).collection("weeks").document(f"week{week}").set(playerData)
-
-    print("added yardage scoring and data for week", week, ",", year)

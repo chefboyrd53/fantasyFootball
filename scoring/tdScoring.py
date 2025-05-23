@@ -13,17 +13,17 @@ def score(touchdownRows, week, year):
             yards = row['yards_gained']
 
             if yards <= 9:
-                carrierScore += 6
-                passerScore += 6
+                carrierScore = 6
+                passerScore = 6
             elif 10 <= yards <= 39:
-                carrierScore += 9
-                passerScore += 9
+                carrierScore = 9
+                passerScore = 9
             elif 40 <= yards <= 69:
-                carrierScore += 12
-                passerScore += 12
+                carrierScore = 12
+                passerScore = 12
             elif 70 <= yards:
-                carrierScore += 15
-                passerScore += 15
+                carrierScore = 15
+                passerScore = 15
             
             passerPosition = db.collection("players").document(passerId).get().to_dict().get("position")
             receiverPosition = db.collection("players").document(receiverId).get().to_dict().get("position")
@@ -48,13 +48,13 @@ def score(touchdownRows, week, year):
             yards = row['yards_gained']
 
             if yards <= 9:
-                carrierScore += 6
+                carrierScore = 6
             elif 10 <= yards <= 39:
-                carrierScore += 9
+                carrierScore = 9
             elif 40 <= yards <= 69:
-                carrierScore += 12
+                carrierScore = 12
             elif 70 <= yards:
-                carrierScore += 15
+                carrierScore = 15
 
             position = db.collection("players").document(rusherId).get().to_dict().get("position")
             if position != 'RB':
