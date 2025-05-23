@@ -1,5 +1,4 @@
-from firebaseSetup import db
-from firebase_admin import firestore
+from localStorage import storePlayerData, getPlayerData
 
 def scoreFg(fgRows, week, year):
     for _, row in fgRows.iterrows():
@@ -20,48 +19,22 @@ def scoreFg(fgRows, week, year):
             elif 66 <= yards:
                 score = 20
 
-            kickerEntry = db.collection("players").document(playerId).collection("years").document(str(year)).collection("weeks").document(f"week{week}")
-
-            if kickerEntry.get().exists:
-                kickerEntry.update({
-                    "points": firestore.Increment(score),
-                    "fgm": firestore.Increment(1)
-                })
-            else:
-                kickerEntry.set({
-                    "points": score,
-                    "passYards": 0,
-                    "rushYards": 0,
-                    "recYards": 0,
-                    "passTds": 0,
-                    "rushTds": 0,
-                    "recTds": 0,
-                    "fgm": 1,
-                    "epm": 0,
-                    "2pConvs": 0
-                })
+            # Update kicker data
+            kicker_data = getPlayerData(playerId, year, week)
+            kicker_data.update({
+                "points": kicker_data.get("points", 0) + score,
+                "fgm": kicker_data.get("fgm", 0) + 1
+            })
+            storePlayerData(playerId, year, week, kicker_data)
             
         elif row['extra_point_result'] == 'good':
             playerId = row['kicker_player_id']
             score = 1
 
-            kickerEntry = db.collection("players").document(playerId).collection("years").document(str(year)).collection("weeks").document(f"week{week}")
-
-            if kickerEntry.get().exists:
-                kickerEntry.update({
-                    "points": firestore.Increment(score),
-                    "epm": firestore.Increment(1)
-                })
-            else:
-                kickerEntry.set({
-                    "points": score,
-                    "passYards": 0,
-                    "rushYards": 0,
-                    "recYards": 0,
-                    "passTds": 0,
-                    "rushTds": 0,
-                    "recTds": 0,
-                    "fgm": 0,
-                    "epm": 1,
-                    "2pConvs": 0
-                })
+            # Update kicker data
+            kicker_data = getPlayerData(playerId, year, week)
+            kicker_data.update({
+                "points": kicker_data.get("points", 0) + score,
+                "epm": kicker_data.get("epm", 0) + 1
+            })
+            storePlayerData(playerId, year, week, kicker_data)

@@ -1,8 +1,6 @@
-from firebaseSetup import db
-from firebase_admin import firestore
+from localStorage import storePlayerData, getPlayerData, getPlayerRoster
 
 def score(touchdownRows, week, year):
-
     for _, row in touchdownRows.iterrows():
         passerScore = 0
         carrierScore = 0
@@ -25,23 +23,29 @@ def score(touchdownRows, week, year):
                 carrierScore = 15
                 passerScore = 15
             
-            passerPosition = db.collection("players").document(passerId).get().to_dict().get("position")
-            receiverPosition = db.collection("players").document(receiverId).get().to_dict().get("position")
+            passerPosition = getPlayerRoster(passerId).get("position")
+            receiverPosition = getPlayerRoster(receiverId).get("position")
 
             if passerPosition != 'QB':
                 passerScore *= 2
             if receiverPosition != 'WR' and receiverPosition != 'TE':
                 carrierScore *= 2
 
-            db.collection("players").document(passerId).collection("years").document(str(year)).collection("weeks").document(f"week{week}").update({
-                "points": firestore.Increment(passerScore),
-                "passTds": firestore.Increment(1)
+            # Update passer data
+            passer_data = getPlayerData(passerId, year, week)
+            passer_data.update({
+                "points": passer_data.get("points", 0) + passerScore,
+                "passTds": passer_data.get("passTds", 0) + 1
             })
-            db.collection("players").document(receiverId).collection("years").document(str(year)).collection("weeks").document(f"week{week}").update({
-                "points": firestore.Increment(carrierScore),
-                "recTds": firestore.Increment(1)
+            storePlayerData(passerId, year, week, passer_data)
+
+            # Update receiver data
+            receiver_data = getPlayerData(receiverId, year, week)
+            receiver_data.update({
+                "points": receiver_data.get("points", 0) + carrierScore,
+                "recTds": receiver_data.get("recTds", 0) + 1
             })
-            
+            storePlayerData(receiverId, year, week, receiver_data)
 
         elif row['rush_touchdown']:
             rusherId = row['td_player_id']
@@ -56,11 +60,14 @@ def score(touchdownRows, week, year):
             elif 70 <= yards:
                 carrierScore = 15
 
-            position = db.collection("players").document(rusherId).get().to_dict().get("position")
+            position = getPlayerRoster(rusherId).get("position")
             if position != 'RB':
                 carrierScore *= 2
 
-            db.collection("players").document(rusherId).collection("years").document(str(year)).collection("weeks").document(f"week{week}").update({
-                "points": firestore.Increment(carrierScore),
-                "rushTds": firestore.Increment(1)
+            # Update rusher data
+            rusher_data = getPlayerData(rusherId, year, week)
+            rusher_data.update({
+                "points": rusher_data.get("points", 0) + carrierScore,
+                "rushTds": rusher_data.get("rushTds", 0) + 1
             })
+            storePlayerData(rusherId, year, week, rusher_data)

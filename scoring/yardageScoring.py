@@ -1,4 +1,4 @@
-from firebaseSetup import db
+from localStorage import storePlayerData
 
 def scoreYardage(playerRows, week, year):
     for _, row in playerRows.iterrows():
@@ -66,4 +66,4 @@ def scoreYardage(playerRows, week, year):
             "epm": 0,
             "2pConvs": numTwoPoints
         }
-        db.collection("players").document(playerId).collection("years").document(str(year)).collection("weeks").document(f"week{week}").set(playerData)
+        storePlayerData(playerId, year, week, playerData)

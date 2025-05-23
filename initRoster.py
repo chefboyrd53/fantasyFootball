@@ -1,5 +1,5 @@
 import nfl_data_py as nfl
-from firebaseSetup import db
+from localStorage import storePlayerRoster, saveToFiles
 
 # get roster
 year = 2024
@@ -20,6 +20,7 @@ for _, row in allPlayers.iterrows():
             "team": team
         }
 
-        db.collection("players").document(playerId).set(playerInfo)
+        storePlayerRoster(playerId, playerInfo)
 
-print("initialized", year, "rosters into database")
+print("initialized", year, "rosters into local storage")
+saveToFiles()

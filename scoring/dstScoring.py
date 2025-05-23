@@ -1,150 +1,95 @@
-from firebaseSetup import db
-from firebase_admin import firestore
+from localStorage import storeDefenseData, getDefenseData
 
 def scoreDST(playByPlaydf, week, year):
-    score = 0
-
     # defensive touchdown
     touchdownRows = playByPlaydf[(playByPlaydf['td_team'] == playByPlaydf['defteam']) & (playByPlaydf['week'] == week)]
     for _, row in touchdownRows.iterrows():
         defTeam = row['defteam']
         score = 10
 
-        defEntry = db.collection("defenses").document(defTeam).collection("years").document(str(year)).collection("weeks").document(f"week{week}")
-        if defEntry.get().exists:
-            defEntry.update({
-                "points": firestore.Increment(score),
-                "touchdowns": firestore.Increment(1),
-            })
-        else:
-            defEntry.set({
-                "points": score,
-                "touchdowns": 1,
-                "turnovers": 0,
-                "sacks": 0,
-                "safeties": 0,
-                "returned2pts": 0,
-                "returnYards": 0,
-                "pointsAllowed": 0
-            })
+        defData = getDefenseData(defTeam, year, week)
+        defData.update({
+            "points": defData.get("points", 0) + score,
+            "touchdowns": defData.get("touchdowns", 0) + 1
+        })
+        storeDefenseData(defTeam, year, week, defData)
+
+    # return touchdown
+    touchdownRows = playByPlaydf[(playByPlaydf['return_touchdown'] == 1) & ((playByPlaydf['punt_attempt'] == 1) | (playByPlaydf['kickoff_attempt'] == 1)) & (playByPlaydf['week'] == week)]
+    for _, row in touchdownRows.iterrows():
+        returnTeam = row['return_team']
+        score = 10
+
+        defData = getDefenseData(returnTeam, year, week)
+        defData.update({
+            "points": defData.get("points", 0) + score,
+            "touchdowns": defData.get("touchdowns", 0) + 1
+        })
+        storeDefenseData(defTeam, year, week, defData)
 
     # turnovers
-    turnoverRows = playByPlaydf[((playByPlaydf['interception']) | (playByPlaydf['fumble_lost'])) & (playByPlaydf['week'] == week)]
+    turnoverRows = playByPlaydf[((playByPlaydf['interception'] == 1) | (playByPlaydf['fumble_lost'] == 1)) & (playByPlaydf['week'] == week) & (playByPlaydf['series_result'] == "Turnover")]
     for _, row in turnoverRows.iterrows():
         defTeam = row['defteam']
         score = 2
 
-        defEntry = db.collection("defenses").document(defTeam).collection("years").document(str(year)).collection("weeks").document(f"week{week}")
-        if defEntry.get().exists:
-            defEntry.update({
-                "points": firestore.Increment(score),
-                "turnovers": firestore.Increment(1),
-            })
-        else:
-            defEntry.set({
-                "points": score,
-                "touchdowns": 0,
-                "turnovers": 1,
-                "sacks": 0,
-                "safeties": 0,
-                "returned2pts": 0,
-                "returnYards": 0,
-                "pointsAllowed": 0
-            })
+        defData = getDefenseData(defTeam, year, week)
+        defData.update({
+            "points": defData.get("points", 0) + score,
+            "turnovers": defData.get("turnovers", 0) + 1
+        })
+        storeDefenseData(defTeam, year, week, defData)
 
     # sacks
-    sackRows = playByPlaydf[(playByPlaydf['sack']) & (playByPlaydf['week'] == week)]
+    sackRows = playByPlaydf[(playByPlaydf['sack'] == 1) & (playByPlaydf['week'] == week)]
     for _, row in sackRows.iterrows():
         defTeam = row['defteam']
         score = 1
 
-        defEntry = db.collection("defenses").document(defTeam).collection("years").document(str(year)).collection("weeks").document(f"week{week}")
-        if defEntry.get().exists:
-            defEntry.update({
-                "points": firestore.Increment(score),
-                "sacks": firestore.Increment(1),
-            })
-        else:
-            defEntry.set({
-                "points": score,
-                "touchdowns": 0,
-                "turnovers": 0,
-                "sacks": 1,
-                "safeties": 0,
-                "returned2pts": 0,
-                "returnYards": 0,
-                "pointsAllowed": 0
-            })
+        defData = getDefenseData(defTeam, year, week)
+        defData.update({
+            "points": defData.get("points", 0) + score,
+            "sacks": defData.get("sacks", 0) + 1
+        })
+        storeDefenseData(defTeam, year, week, defData)
 
     # safety
-    safetyRows = playByPlaydf[(playByPlaydf['safety']) & (playByPlaydf['week'] == week)]
+    safetyRows = playByPlaydf[(playByPlaydf['safety'] == 1) & (playByPlaydf['week'] == week)]
     for _, row in safetyRows.iterrows():
         defTeam = row['defteam']
         score = 12
 
-        defEntry = db.collection("defenses").document(defTeam).collection("years").document(str(year)).collection("weeks").document(f"week{week}")
-        if defEntry.get().exists:
-            defEntry.update({
-                "points": firestore.Increment(score),
-                "safeties": firestore.Increment(1),
-            })
-        else:
-            defEntry.set({
-                "points": score,
-                "touchdowns": 0,
-                "turnovers": 0,
-                "sacks": 0,
-                "safeties": 1,
-                "returned2pts": 0,
-                "returnYards": 0,
-                "pointsAllowed": 0
-            })
+        defData = getDefenseData(defTeam, year, week)
+        defData.update({
+            "points": defData.get("points", 0) + score,
+            "safeties": defData.get("safeties", 0) + 1
+        })
+        storeDefenseData(defTeam, year, week, defData)
 
     # defense blocks PAT and returns it for PAT, defense intercepts or recovers fumble of 2 pt conversion and returns it
-    specialRows = playByPlaydf[(playByPlaydf['defensive_extra_point_conv']) & (playByPlaydf['week'] == week)]
+    specialRows = playByPlaydf[(playByPlaydf['defensive_extra_point_conv'] == 1) & (playByPlaydf['week'] == week)]
     for _, row in specialRows.iterrows():
         defTeam = row['defteam']
         score = 12
 
-        defEntry = db.collection("defenses").document(defTeam).collection("years").document(str(year)).collection("weeks").document(f"week{week}")
-        if defEntry.get().exists:
-            defEntry.update({
-                "points": firestore.Increment(score),
-                "returned2pts": firestore.Increment(1),
-            })
-        else:
-            defEntry.set({
-                "points": score,
-                "touchdowns": 0,
-                "turnovers": 0,
-                "sacks": 0,
-                "safeties": 0,
-                "returned2pts": 1,
-                "returnYards": 0,
-                "pointsAllowed": 0
-            })
+        defData = getDefenseData(defTeam, year, week)
+        defData.update({
+            "points": defData.get("points", 0) + score,
+            "returned2pts": defData.get("returned2pts", 0) + 1
+        })
+        storeDefenseData(defTeam, year, week, defData)
 
     # combined punt + kickoff return yards (no point updates)
-    returnRows = playByPlaydf[((playByPlaydf['punt_attempt']) | (playByPlaydf['kickoff_attempt'])) & (playByPlaydf['week'] == week)]
+    returnRows = playByPlaydf[((playByPlaydf['punt_attempt'] == 1) | (playByPlaydf['kickoff_attempt'] == 1)) & (playByPlaydf['week'] == week)]
     for _, row in returnRows.iterrows():
         defTeam = row['return_team']
         yards = row['return_yards']
 
-
-        defEntry = db.collection("defenses").document(defTeam).collection("years").document(str(year)).collection("weeks").document(f"week{week}")
-        if defEntry.get().exists:
-            defEntry.update({"returnYards": firestore.Increment(yards)})
-        else:
-            defEntry.set({
-                "points": 0,
-                "touchdowns": 0,
-                "turnovers": 0,
-                "sacks": 0,
-                "safeties": 0,
-                "returned2pts": 0,
-                "returnYards": yards,
-                "pointsAllowed": 0
-            })
+        defData = getDefenseData(defTeam, year, week)
+        defData.update({
+            "returnYards": defData.get("returnYards", 0) + yards
+        })
+        storeDefenseData(defTeam, year, week, defData)
 
     # end of game check for points allowed and add points for return yards
     weekGames = playByPlaydf[(playByPlaydf['week'] == week)]
@@ -175,60 +120,40 @@ def scoreDST(playByPlaydf, week, year):
         elif 7 <= awayTeamPoints <= 10:
             homeScore = 3
 
-        homeEntry = db.collection("defenses").document(homeTeam).collection("years").document(str(year)).collection("weeks").document(f"week{week}")
-        awayEntry = db.collection("defenses").document(awayTeam).collection("years").document(str(year)).collection("weeks").document(f"week{week}")
-        homeGet = homeEntry.get()
-        awayGet = awayEntry.get()
+        # Update home team data
+        homeData = getDefenseData(homeTeam, year, week)
+        homeData.update({
+            "points": homeData.get("points", 0) + homeScore,
+            "pointsAllowed": awayTeamPoints
+        })
+        storeDefenseData(homeTeam, year, week, homeData)
 
-        if homeGet.exists:
-            homeEntry.update({
-                "points": firestore.Increment(homeScore),
-                "pointsAllowed": awayTeamPoints,
-            })
-        else:
-            homeEntry.set({
-                "points": homeScore,
-                "touchdowns": 0,
-                "turnovers": 0,
-                "sacks": 0,
-                "safeties": 0,
-                "returned2pts": 0,
-                "returnYards": 0,
-                "pointsAllowed": awayTeamPoints
-            })
+        # Update away team data
+        awayData = getDefenseData(awayTeam, year, week)
+        awayData.update({
+            "points": awayData.get("points", 0) + awayScore,
+            "pointsAllowed": homeTeamPoints
+        })
+        storeDefenseData(awayTeam, year, week, awayData)
 
-        if awayGet.exists:
-            awayEntry.update({
-                "points": firestore.Increment(awayScore),
-                "pointsAllowed": homeTeamPoints,
-            })
-        else:
-            awayEntry.set({
-                "points": awayScore,
-                "touchdowns": 0,
-                "turnovers": 0,
-                "sacks": 0,
-                "safeties": 0,
-                "returned2pts": 0,
-                "returnYards": 0,
-                "pointsAllowed": homeTeamPoints
-            })
-
-        totalReturnYards = homeGet.to_dict().get("returnYards")
+        # Add points for return yards
+        totalReturnYards = homeData.get("returnYards", 0)
         if 75 <= totalReturnYards <= 99:
-            homeEntry.update({"points": firestore.Increment(3)})
+            homeData["points"] = homeData.get("points", 0) + 3
         elif 100 <= totalReturnYards <= 149:
-            homeEntry.update({"points": firestore.Increment(6)})
+            homeData["points"] = homeData.get("points", 0) + 6
         elif 150 <= totalReturnYards:
-            homeEntry.update({"points": firestore.Increment(9)})
+            homeData["points"] = homeData.get("points", 0) + 9
+        storeDefenseData(homeTeam, year, week, homeData)
 
-        totalReturnYards = awayGet.to_dict().get("returnYards")
+        totalReturnYards = awayData.get("returnYards", 0)
         if 75 <= totalReturnYards <= 99:
-            awayEntry.update({"points": firestore.Increment(3)})
+            awayData["points"] = awayData.get("points", 0) + 3
         elif 100 <= totalReturnYards <= 149:
-            awayEntry.update({"points": firestore.Increment(6)})
+            awayData["points"] = awayData.get("points", 0) + 6
         elif 150 <= totalReturnYards:
-            awayEntry.update({"points": firestore.Increment(9)})
+            awayData["points"] = awayData.get("points", 0) + 9
+        storeDefenseData(awayTeam, year, week, awayData)
     
 
     
