@@ -5,6 +5,7 @@ from firebaseSetup import db
 year = 2024
 allPlayers = nfl.import_seasonal_rosters([year])
 
+# offensive players (kickers too)
 for _, row in allPlayers.iterrows():
     position = row['position']
 

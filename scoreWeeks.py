@@ -1,5 +1,5 @@
 import nfl_data_py as nfl
-from scoring import yardageScoring, tdScoring, fgScoring, twoPointScoring
+from scoring import yardageScoring, tdScoring, fgScoring, dstScoring
 
 year = 2024
 week = 1
@@ -22,3 +22,7 @@ print("did touchdown scoring for", touchdownRows.shape[0], "rows")
 fgRows = playByPlaydf[((playByPlaydf['field_goal_result'] == 'made') | (playByPlaydf['extra_point_result'] == 'good')) & (playByPlaydf['week'] == week)]
 fgScoring.scoreFg(fgRows, week, year)
 print("did fg and extra point scoring for", fgRows.shape[0], "kicks")
+
+# defense and special teams scoring
+dstScoring.scoreDST(playByPlaydf, week, year)
+print("did defense and special teams scoring")
