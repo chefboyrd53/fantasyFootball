@@ -154,21 +154,17 @@ def getPlayerRoster(player_id: str) -> Dict[str, Any]:
         return {}
 
 def syncToFirebase(db):
-    """Sync all local data to Firebase"""
+    """Sync all local data to Firebase using an optimized structure for web queries"""
     # Sync players data (both roster and scoring)
     for player_id, player_data in players_data.items():
-        # Sync roster data
-        if "roster" in player_data:
-            db.collection('roster').document(player_id).set(player_data["roster"])
-        
-        # Sync scoring data
-        if "scoring" in player_data:
-            for year, year_data in player_data["scoring"].items():
-                for week, week_data in year_data.items():
-                    db.collection('players').document(f"{year}_{week}_{player_id}").set(week_data)
+        # Create a single document for each player containing both roster and scoring data
+        player_doc = {
+            "roster": player_data.get("roster", {}),
+            "scoring": player_data.get("scoring", {})
+        }
+        db.collection('players').document(player_id).set(player_doc)
     
     # Sync defense data
     for team, team_data in defense_data.items():
-        for year, year_data in team_data.items():
-            for week, week_data in year_data.items():
-                db.collection('defense').document(f"{year}_{week}_{team}").set(week_data) 
+        # Create a single document for each team containing all years and weeks
+        db.collection('defense').document(team).set(team_data) 

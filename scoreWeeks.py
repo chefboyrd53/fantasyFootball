@@ -30,11 +30,6 @@ def scoreWeek(playByPlaydf, weeklydf, year, week):
     # Save all data to files
     saveToFiles()
 
-def syncData():
-    """Sync all local data to Firebase"""
-    syncToFirebase(db)
-    print("Synced all data to Firebase")
-
 if __name__ == "__main__":
     year = int(sys.argv[1])
 
@@ -44,5 +39,3 @@ if __name__ == "__main__":
     for i in range(2, len(sys.argv)):
         scoreWeek(playByPlaydf, weeklydf, year, int(sys.argv[i]))
     
-    # Uncomment the following line when you want to sync to Firebase
-    # syncData()
