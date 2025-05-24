@@ -1,8 +1,8 @@
 import nfl_data_py as nfl
 from localStorage import storePlayerRoster, saveToFiles
-
+import sys
 # get roster
-year = 2024
+year = int(sys.argv[1])
 allPlayers = nfl.import_seasonal_rosters([year])
 
 # offensive players (kickers too)

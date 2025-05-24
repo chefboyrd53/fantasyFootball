@@ -20,21 +20,21 @@ def scoreFg(fgRows, week, year):
                 score = 20
 
             # Update kicker data
-            kicker_data = getPlayerData(playerId, year, week)
-            kicker_data.update({
-                "points": kicker_data.get("points", 0) + score,
-                "fgm": kicker_data.get("fgm", 0) + 1
+            kickerData = getPlayerData(playerId, year, week)
+            kickerData.update({
+                "points": kickerData.get("points", 0) + score,
+                "fgm": kickerData.get("fgm", 0) + 1
             })
-            storePlayerData(playerId, year, week, kicker_data)
+            storePlayerData(playerId, year, week, kickerData)
             
         elif row['extra_point_result'] == 'good':
             playerId = row['kicker_player_id']
             score = 1
 
             # Update kicker data
-            kicker_data = getPlayerData(playerId, year, week)
-            kicker_data.update({
-                "points": kicker_data.get("points", 0) + score,
-                "epm": kicker_data.get("epm", 0) + 1
+            kickerData = getPlayerData(playerId, year, week)
+            kickerData.update({
+                "points": kickerData.get("points", 0) + score,
+                "epm": kickerData.get("epm", 0) + 1
             })
-            storePlayerData(playerId, year, week, kicker_data)
+            storePlayerData(playerId, year, week, kickerData)

@@ -1,10 +1,26 @@
 from localStorage import storeDefenseData, getDefenseData
+import re
+
+def getLateralReturnYards(description):
+    # Normalize case
+    desc = description.lower()
+    if 'lateral' not in desc:
+        return None  # No lateral, skip
+
+    # Find all "to [Team Abbrev] [Yard Line] for X yards" patterns
+    yard_chunks = re.findall(r'for (\d+) yards?', desc)
+    
+    # Convert to integers and sum
+    if yard_chunks:
+        return sum(int(y) for y in yard_chunks)
+    
+    return None
 
 def scoreDST(playByPlaydf, week, year):
     # defensive touchdown
-    touchdownRows = playByPlaydf[(playByPlaydf['td_team'] == playByPlaydf['defteam']) & (playByPlaydf['week'] == week)]
+    touchdownRows = playByPlaydf[(playByPlaydf['return_touchdown'] == 1) & (playByPlaydf['week'] == week)]
     for _, row in touchdownRows.iterrows():
-        defTeam = row['defteam']
+        defTeam = row['td_team']
         score = 10
 
         defData = getDefenseData(defTeam, year, week)
@@ -14,23 +30,30 @@ def scoreDST(playByPlaydf, week, year):
         })
         storeDefenseData(defTeam, year, week, defData)
 
-    # return touchdown
-    touchdownRows = playByPlaydf[(playByPlaydf['return_touchdown'] == 1) & ((playByPlaydf['punt_attempt'] == 1) | (playByPlaydf['kickoff_attempt'] == 1)) & (playByPlaydf['week'] == week)]
-    for _, row in touchdownRows.iterrows():
-        returnTeam = row['return_team']
-        score = 10
-
-        defData = getDefenseData(returnTeam, year, week)
-        defData.update({
-            "points": defData.get("points", 0) + score,
-            "touchdowns": defData.get("touchdowns", 0) + 1
-        })
-        storeDefenseData(defTeam, year, week, defData)
 
     # turnovers
-    turnoverRows = playByPlaydf[((playByPlaydf['interception'] == 1) | (playByPlaydf['fumble_lost'] == 1)) & (playByPlaydf['week'] == week) & (playByPlaydf['series_result'] == "Turnover")]
+    turnoverRows = playByPlaydf[
+        (playByPlaydf['week'] == week) & (
+            (playByPlaydf['interception'] == 1) |
+            (
+                (playByPlaydf['fumble_lost'] == 1) & (
+                    (playByPlaydf['fumble_recovery_1_team'] == playByPlaydf['defteam']) |
+                    (
+                        # Special teams muff recovery:
+                        (playByPlaydf['kickoff_attempt'] == 1) |
+                        (playByPlaydf['punt_attempt'] == 1)
+                    ) &
+                    (playByPlaydf['fumble_recovery_1_team'] == playByPlaydf['posteam'])  # posteam = kicking team on kicks
+                )
+            )
+        )
+    ]
     for _, row in turnoverRows.iterrows():
-        defTeam = row['defteam']
+        # Use fumble recovery team as the defense if it's on special teams
+        if row['fumble_lost'] == 1 and row['fumble_recovery_1_team'] != row['defteam']:
+            defTeam = row['fumble_recovery_1_team']
+        else:
+            defTeam = row['defteam']
         score = 2
 
         defData = getDefenseData(defTeam, year, week)
@@ -82,14 +105,21 @@ def scoreDST(playByPlaydf, week, year):
     # combined punt + kickoff return yards (no point updates)
     returnRows = playByPlaydf[((playByPlaydf['punt_attempt'] == 1) | (playByPlaydf['kickoff_attempt'] == 1)) & (playByPlaydf['week'] == week)]
     for _, row in returnRows.iterrows():
-        defTeam = row['return_team']
-        yards = row['return_yards']
+        if row['return_team'] is not None:
+            returnTeam = row['return_team']
+            yards = row['return_yards']
+            
+            if row['lateral_return'] == 1:   
+                description = row['desc']
+                lateralYards = getLateralReturnYards(description)
+                if lateralYards is not None:
+                    yards = lateralYards
 
-        defData = getDefenseData(defTeam, year, week)
-        defData.update({
-            "returnYards": defData.get("returnYards", 0) + yards
-        })
-        storeDefenseData(defTeam, year, week, defData)
+            defData = getDefenseData(returnTeam, year, week)
+            defData.update({
+                "returnYards": defData.get("returnYards", 0) + yards
+            })
+            storeDefenseData(returnTeam, year, week, defData)
 
     # end of game check for points allowed and add points for return yards
     weekGames = playByPlaydf[(playByPlaydf['week'] == week)]

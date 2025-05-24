@@ -2,13 +2,11 @@ import nfl_data_py as nfl
 from scoring import yardageScoring, tdScoring, fgScoring, dstScoring
 from localStorage import syncToFirebase, saveToFiles, loadFromFiles
 from firebaseSetup import db
+import sys
 
-def scoreWeek(year, week):
+def scoreWeek(playByPlaydf, weeklydf, year, week):
     # Load existing data if available
     loadFromFiles()
-    
-    playByPlaydf = nfl.import_pbp_data([year], downcast=False, cache=False, alt_path=None)
-    weeklydf = nfl.import_weekly_data([year], downcast=False)
 
     # yardage scoring and 2 point conversions
     playerRows = weeklydf[(weeklydf['week'] == week)]
@@ -38,11 +36,13 @@ def syncData():
     print("Synced all data to Firebase")
 
 if __name__ == "__main__":
-    year = 2024
-    week = 1
-    
-    # Score the week
-    scoreWeek(year, week)
+    year = int(sys.argv[1])
+
+    playByPlaydf = nfl.import_pbp_data([year], downcast=False, cache=False, alt_path=None)
+    weeklydf = nfl.import_weekly_data([year], downcast=False)
+
+    for i in range(2, len(sys.argv)):
+        scoreWeek(playByPlaydf, weeklydf, year, int(sys.argv[i]))
     
     # Uncomment the following line when you want to sync to Firebase
     # syncData()

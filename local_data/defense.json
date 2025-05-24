@@ -1,0 +1,4610 @@
+{
+  "ARI": {
+    "2024": {
+      "1": {
+        "points": 20,
+        "touchdowns": 1,
+        "turnovers": 1,
+        "sacks": 2,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 129,
+        "pointsAllowed": 34
+      },
+      "2": {
+        "points": 10,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 5,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 30,
+        "pointsAllowed": 10
+      },
+      "3": {
+        "points": 4,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 2,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 0,
+        "pointsAllowed": 20
+      },
+      "4": {
+        "points": 8,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 0,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 134,
+        "pointsAllowed": 42
+      },
+      "5": {
+        "points": 8,
+        "touchdowns": 0,
+        "turnovers": 3,
+        "sacks": 2,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 67,
+        "pointsAllowed": 23
+      },
+      "6": {
+        "points": 11,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 0,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 156,
+        "pointsAllowed": 34
+      },
+      "7": {
+        "points": 7,
+        "touchdowns": 0,
+        "turnovers": 2,
+        "sacks": 3,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 54,
+        "pointsAllowed": 15
+      },
+      "8": {
+        "points": 13,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 1,
+        "safeties": 1,
+        "returned2pts": 0,
+        "returnYards": 21,
+        "pointsAllowed": 27
+      },
+      "9": {
+        "points": 21,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 6,
+        "safeties": 1,
+        "returned2pts": 0,
+        "returnYards": 65,
+        "pointsAllowed": 9
+      },
+      "10": {
+        "points": 11,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 3,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 0,
+        "pointsAllowed": 6
+      },
+      "12": {
+        "points": 10,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 5,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 79,
+        "pointsAllowed": 16
+      },
+      "13": {
+        "points": 7,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 5,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 36,
+        "pointsAllowed": 23
+      },
+      "14": {
+        "points": 0,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 0,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 21,
+        "pointsAllowed": 30
+      },
+      "15": {
+        "points": 4,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 2,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 13,
+        "pointsAllowed": 17
+      }
+    }
+  },
+  "DAL": {
+    "2024": {
+      "1": {
+        "points": 26,
+        "touchdowns": 1,
+        "turnovers": 2,
+        "sacks": 6,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 130,
+        "pointsAllowed": 17
+      },
+      "2": {
+        "points": 9,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 1,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 121,
+        "pointsAllowed": 44
+      },
+      "3": {
+        "points": 0,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 0,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 58,
+        "pointsAllowed": 28
+      },
+      "4": {
+        "points": 3,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 1,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 0,
+        "pointsAllowed": 15
+      },
+      "5": {
+        "points": 5,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 3,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 38,
+        "pointsAllowed": 17
+      },
+      "6": {
+        "points": 12,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 3,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 194,
+        "pointsAllowed": 47
+      },
+      "8": {
+        "points": 8,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 2,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 128,
+        "pointsAllowed": 30
+      },
+      "9": {
+        "points": 4,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 2,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 65,
+        "pointsAllowed": 27
+      },
+      "10": {
+        "points": 12,
+        "touchdowns": 0,
+        "turnovers": 2,
+        "sacks": 5,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 83,
+        "pointsAllowed": 34
+      },
+      "11": {
+        "points": 3,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 1,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 56,
+        "pointsAllowed": 34
+      },
+      "12": {
+        "points": 39,
+        "touchdowns": 2,
+        "turnovers": 3,
+        "sacks": 4,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 220,
+        "pointsAllowed": 26
+      },
+      "13": {
+        "points": 20,
+        "touchdowns": 1,
+        "turnovers": 2,
+        "sacks": 6,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": -3,
+        "pointsAllowed": 20
+      },
+      "14": {
+        "points": 4,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 2,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 20,
+        "pointsAllowed": 27
+      },
+      "15": {
+        "points": 14,
+        "touchdowns": 0,
+        "turnovers": 4,
+        "sacks": 6,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 69,
+        "pointsAllowed": 14
+      }
+    }
+  },
+  "MIN": {
+    "2024": {
+      "1": {
+        "points": 25,
+        "touchdowns": 1,
+        "turnovers": 2,
+        "sacks": 5,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 0,
+        "pointsAllowed": 6
+      },
+      "2": {
+        "points": 10,
+        "touchdowns": 0,
+        "turnovers": 2,
+        "sacks": 6,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 10,
+        "pointsAllowed": 17
+      },
+      "3": {
+        "points": 12,
+        "touchdowns": 0,
+        "turnovers": 2,
+        "sacks": 5,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 29,
+        "pointsAllowed": 7
+      },
+      "4": {
+        "points": 9,
+        "touchdowns": 0,
+        "turnovers": 4,
+        "sacks": 1,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 51,
+        "pointsAllowed": 29
+      },
+      "5": {
+        "points": 19,
+        "touchdowns": 1,
+        "turnovers": 3,
+        "sacks": 3,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 6,
+        "pointsAllowed": 17
+      },
+      "7": {
+        "points": 16,
+        "touchdowns": 1,
+        "turnovers": 1,
+        "sacks": 4,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 67,
+        "pointsAllowed": 31
+      },
+      "8": {
+        "points": 2,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 0,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 6,
+        "pointsAllowed": 30
+      },
+      "9": {
+        "points": 7,
+        "touchdowns": 0,
+        "turnovers": 2,
+        "sacks": 3,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 15,
+        "pointsAllowed": 13
+      },
+      "10": {
+        "points": 12,
+        "touchdowns": 0,
+        "turnovers": 3,
+        "sacks": 3,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 9,
+        "pointsAllowed": 7
+      },
+      "11": {
+        "points": 7,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 5,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 52,
+        "pointsAllowed": 13
+      },
+      "12": {
+        "points": 8,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 3,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 93,
+        "pointsAllowed": 27
+      },
+      "13": {
+        "points": 5,
+        "touchdowns": 0,
+        "turnovers": 2,
+        "sacks": 1,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 0,
+        "pointsAllowed": 22
+      },
+      "14": {
+        "points": 7,
+        "touchdowns": 0,
+        "turnovers": 3,
+        "sacks": 1,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 46,
+        "pointsAllowed": 21
+      },
+      "15": {
+        "points": 4,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 2,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 41,
+        "pointsAllowed": 12
+      }
+    }
+  },
+  "CHI": {
+    "2024": {
+      "1": {
+        "points": 25,
+        "touchdowns": 1,
+        "turnovers": 3,
+        "sacks": 3,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 131,
+        "pointsAllowed": 17
+      },
+      "2": {
+        "points": 5,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 3,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 51,
+        "pointsAllowed": 19
+      },
+      "3": {
+        "points": 5,
+        "touchdowns": 0,
+        "turnovers": 2,
+        "sacks": 1,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 30,
+        "pointsAllowed": 21
+      },
+      "4": {
+        "points": 7,
+        "touchdowns": 0,
+        "turnovers": 2,
+        "sacks": 3,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 43,
+        "pointsAllowed": 18
+      },
+      "5": {
+        "points": 16,
+        "touchdowns": 0,
+        "turnovers": 3,
+        "sacks": 4,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 86,
+        "pointsAllowed": 10
+      },
+      "6": {
+        "points": 8,
+        "touchdowns": 0,
+        "turnovers": 2,
+        "sacks": 4,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 0,
+        "pointsAllowed": 16
+      },
+      "8": {
+        "points": 5,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 2,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 96,
+        "pointsAllowed": 18
+      },
+      "9": {
+        "points": 7,
+        "touchdowns": 0,
+        "turnovers": 2,
+        "sacks": 3,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 13,
+        "pointsAllowed": 29
+      },
+      "10": {
+        "points": 3,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 1,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 73,
+        "pointsAllowed": 19
+      },
+      "11": {
+        "points": 3,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 1,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 55,
+        "pointsAllowed": 20
+      },
+      "12": {
+        "points": 5,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 3,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 60,
+        "pointsAllowed": 30
+      },
+      "13": {
+        "points": 4,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 2,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 24,
+        "pointsAllowed": 23
+      },
+      "14": {
+        "points": 3,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 1,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 39,
+        "pointsAllowed": 38
+      },
+      "15": {
+        "points": 4,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 2,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 37,
+        "pointsAllowed": 30
+      }
+    }
+  },
+  "BUF": {
+    "2024": {
+      "1": {
+        "points": 6,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 4,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 60,
+        "pointsAllowed": 28
+      },
+      "2": {
+        "points": 21,
+        "touchdowns": 1,
+        "turnovers": 3,
+        "sacks": 2,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 25,
+        "pointsAllowed": 10
+      },
+      "3": {
+        "points": 12,
+        "touchdowns": 0,
+        "turnovers": 2,
+        "sacks": 5,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 73,
+        "pointsAllowed": 10
+      },
+      "4": {
+        "points": 3,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 1,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 6,
+        "pointsAllowed": 35
+      },
+      "5": {
+        "points": 5,
+        "touchdowns": 0,
+        "turnovers": 2,
+        "sacks": 1,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 31,
+        "pointsAllowed": 23
+      },
+      "6": {
+        "points": 5,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 3,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 24,
+        "pointsAllowed": 20
+      },
+      "7": {
+        "points": 13,
+        "touchdowns": 0,
+        "turnovers": 2,
+        "sacks": 3,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 83,
+        "pointsAllowed": 10
+      },
+      "8": {
+        "points": 11,
+        "touchdowns": 0,
+        "turnovers": 2,
+        "sacks": 1,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 76,
+        "pointsAllowed": 10
+      },
+      "9": {
+        "points": 3,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 1,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 29,
+        "pointsAllowed": 27
+      },
+      "10": {
+        "points": 22,
+        "touchdowns": 1,
+        "turnovers": 4,
+        "sacks": 4,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 57,
+        "pointsAllowed": 20
+      },
+      "11": {
+        "points": 9,
+        "touchdowns": 0,
+        "turnovers": 2,
+        "sacks": 2,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 79,
+        "pointsAllowed": 21
+      },
+      "13": {
+        "points": 11,
+        "touchdowns": 0,
+        "turnovers": 3,
+        "sacks": 2,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 61,
+        "pointsAllowed": 10
+      },
+      "14": {
+        "points": 0,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 0,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 34,
+        "pointsAllowed": 44
+      },
+      "15": {
+        "points": 5,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 3,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 58,
+        "pointsAllowed": 42
+      }
+    }
+  },
+  "KC": {
+    "2024": {
+      "1": {
+        "points": 3,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 1,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 57,
+        "pointsAllowed": 20
+      },
+      "2": {
+        "points": 15,
+        "touchdowns": 1,
+        "turnovers": 1,
+        "sacks": 3,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 13,
+        "pointsAllowed": 25
+      },
+      "3": {
+        "points": 4,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 2,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 63,
+        "pointsAllowed": 17
+      },
+      "4": {
+        "points": 5,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 2,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 15,
+        "pointsAllowed": 10
+      },
+      "5": {
+        "points": 9,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 1,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 101,
+        "pointsAllowed": 13
+      },
+      "7": {
+        "points": 13,
+        "touchdowns": 0,
+        "turnovers": 3,
+        "sacks": 1,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 114,
+        "pointsAllowed": 18
+      },
+      "8": {
+        "points": 7,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 5,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 20,
+        "pointsAllowed": 20
+      },
+      "9": {
+        "points": 2,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 2,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 30,
+        "pointsAllowed": 24
+      },
+      "10": {
+        "points": 2,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 2,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 53,
+        "pointsAllowed": 14
+      },
+      "11": {
+        "points": 2,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 0,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 8,
+        "pointsAllowed": 30
+      },
+      "12": {
+        "points": 8,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 2,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 128,
+        "pointsAllowed": 27
+      },
+      "13": {
+        "points": 5,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 3,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 58,
+        "pointsAllowed": 17
+      },
+      "14": {
+        "points": 9,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 3,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 119,
+        "pointsAllowed": 17
+      },
+      "15": {
+        "points": 20,
+        "touchdowns": 0,
+        "turnovers": 6,
+        "sacks": 5,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 23,
+        "pointsAllowed": 7
+      }
+    }
+  },
+  "BAL": {
+    "2024": {
+      "1": {
+        "points": 4,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 2,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 3,
+        "pointsAllowed": 27
+      },
+      "2": {
+        "points": 7,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 5,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 61,
+        "pointsAllowed": 26
+      },
+      "3": {
+        "points": 8,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 3,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 80,
+        "pointsAllowed": 25
+      },
+      "4": {
+        "points": 8,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 3,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 34,
+        "pointsAllowed": 10
+      },
+      "5": {
+        "points": 5,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 3,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 33,
+        "pointsAllowed": 38
+      },
+      "6": {
+        "points": 9,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 3,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 108,
+        "pointsAllowed": 23
+      },
+      "7": {
+        "points": 7,
+        "touchdowns": 0,
+        "turnovers": 2,
+        "sacks": 3,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 72,
+        "pointsAllowed": 31
+      },
+      "8": {
+        "points": 10,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 2,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 144,
+        "pointsAllowed": 29
+      },
+      "9": {
+        "points": 9,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 4,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 51,
+        "pointsAllowed": 10
+      },
+      "10": {
+        "points": 5,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 3,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 30,
+        "pointsAllowed": 34
+      },
+      "11": {
+        "points": 12,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 4,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 118,
+        "pointsAllowed": 18
+      },
+      "12": {
+        "points": 4,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 4,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 0,
+        "pointsAllowed": 23
+      },
+      "13": {
+        "points": 5,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 2,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 78,
+        "pointsAllowed": 24
+      },
+      "15": {
+        "points": 11,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 3,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 103,
+        "pointsAllowed": 14
+      }
+    }
+  },
+  "NO": {
+    "2024": {
+      "1": {
+        "points": 19,
+        "touchdowns": 0,
+        "turnovers": 3,
+        "sacks": 4,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 125,
+        "pointsAllowed": 10
+      },
+      "2": {
+        "points": 7,
+        "touchdowns": 0,
+        "turnovers": 2,
+        "sacks": 3,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 0,
+        "pointsAllowed": 19
+      },
+      "3": {
+        "points": 8,
+        "touchdowns": 0,
+        "turnovers": 2,
+        "sacks": 4,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 0,
+        "pointsAllowed": 15
+      },
+      "4": {
+        "points": 12,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 1,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 150,
+        "pointsAllowed": 26
+      },
+      "5": {
+        "points": 7,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 2,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 95,
+        "pointsAllowed": 26
+      },
+      "6": {
+        "points": 20,
+        "touchdowns": 1,
+        "turnovers": 3,
+        "sacks": 1,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 81,
+        "pointsAllowed": 51
+      },
+      "7": {
+        "points": 8,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 0,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 134,
+        "pointsAllowed": 33
+      },
+      "8": {
+        "points": 18,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 3,
+        "safeties": 1,
+        "returned2pts": 0,
+        "returnYards": 93,
+        "pointsAllowed": 26
+      },
+      "9": {
+        "points": 3,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 1,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 66,
+        "pointsAllowed": 23
+      },
+      "10": {
+        "points": 5,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 3,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 69,
+        "pointsAllowed": 17
+      },
+      "11": {
+        "points": 6,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 3,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 96,
+        "pointsAllowed": 14
+      },
+      "13": {
+        "points": 2,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 2,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 0,
+        "pointsAllowed": 21
+      },
+      "14": {
+        "points": 4,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 2,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 47,
+        "pointsAllowed": 11
+      },
+      "15": {
+        "points": 14,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 8,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 146,
+        "pointsAllowed": 20
+      }
+    }
+  },
+  "CAR": {
+    "2024": {
+      "1": {
+        "points": 12,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 1,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 232,
+        "pointsAllowed": 47
+      },
+      "2": {
+        "points": 8,
+        "touchdowns": 0,
+        "turnovers": 2,
+        "sacks": 1,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 94,
+        "pointsAllowed": 26
+      },
+      "3": {
+        "points": 8,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 3,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 88,
+        "pointsAllowed": 22
+      },
+      "4": {
+        "points": 2,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 0,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 16,
+        "pointsAllowed": 34
+      },
+      "5": {
+        "points": 7,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 1,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 121,
+        "pointsAllowed": 36
+      },
+      "6": {
+        "points": 8,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 0,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 101,
+        "pointsAllowed": 38
+      },
+      "7": {
+        "points": 7,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 1,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 133,
+        "pointsAllowed": 40
+      },
+      "8": {
+        "points": 6,
+        "touchdowns": 0,
+        "turnovers": 2,
+        "sacks": 2,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 0,
+        "pointsAllowed": 28
+      },
+      "9": {
+        "points": 4,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 1,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 77,
+        "pointsAllowed": 22
+      },
+      "10": {
+        "points": 8,
+        "touchdowns": 0,
+        "turnovers": 3,
+        "sacks": 2,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 70,
+        "pointsAllowed": 17
+      },
+      "12": {
+        "points": 5,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 5,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 10,
+        "pointsAllowed": 30
+      },
+      "13": {
+        "points": 8,
+        "touchdowns": 0,
+        "turnovers": 2,
+        "sacks": 4,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 10,
+        "pointsAllowed": 26
+      },
+      "14": {
+        "points": 7,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 4,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 88,
+        "pointsAllowed": 22
+      },
+      "15": {
+        "points": 6,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 1,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 88,
+        "pointsAllowed": 30
+      }
+    }
+  },
+  "DEN": {
+    "2024": {
+      "1": {
+        "points": 36,
+        "touchdowns": 0,
+        "turnovers": 2,
+        "sacks": 2,
+        "safeties": 2,
+        "returned2pts": 0,
+        "returnYards": 116,
+        "pointsAllowed": 26
+      },
+      "2": {
+        "points": 2,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 2,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 20,
+        "pointsAllowed": 13
+      },
+      "3": {
+        "points": 14,
+        "touchdowns": 0,
+        "turnovers": 2,
+        "sacks": 7,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 27,
+        "pointsAllowed": 7
+      },
+      "4": {
+        "points": 10,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 5,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 5,
+        "pointsAllowed": 9
+      },
+      "5": {
+        "points": 25,
+        "touchdowns": 1,
+        "turnovers": 3,
+        "sacks": 3,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 115,
+        "pointsAllowed": 18
+      },
+      "6": {
+        "points": 3,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 3,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 41,
+        "pointsAllowed": 23
+      },
+      "7": {
+        "points": 23,
+        "touchdowns": 1,
+        "turnovers": 2,
+        "sacks": 6,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 73,
+        "pointsAllowed": 10
+      },
+      "8": {
+        "points": 6,
+        "touchdowns": 0,
+        "turnovers": 2,
+        "sacks": 2,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 0,
+        "pointsAllowed": 14
+      },
+      "9": {
+        "points": 7,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 1,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 134,
+        "pointsAllowed": 41
+      },
+      "10": {
+        "points": 4,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 4,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 28,
+        "pointsAllowed": 16
+      },
+      "11": {
+        "points": 12,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 4,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 57,
+        "pointsAllowed": 6
+      },
+      "12": {
+        "points": 9,
+        "touchdowns": 0,
+        "turnovers": 2,
+        "sacks": 5,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 22,
+        "pointsAllowed": 19
+      },
+      "13": {
+        "points": 29,
+        "touchdowns": 2,
+        "turnovers": 3,
+        "sacks": 3,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 10,
+        "pointsAllowed": 32
+      },
+      "15": {
+        "points": 23,
+        "touchdowns": 1,
+        "turnovers": 4,
+        "sacks": 2,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 97,
+        "pointsAllowed": 13
+      }
+    }
+  },
+  "SEA": {
+    "2024": {
+      "1": {
+        "points": 8,
+        "touchdowns": 0,
+        "turnovers": 3,
+        "sacks": 2,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 74,
+        "pointsAllowed": 20
+      },
+      "2": {
+        "points": 3,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 3,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 64,
+        "pointsAllowed": 20
+      },
+      "3": {
+        "points": 18,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 6,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 77,
+        "pointsAllowed": 3
+      },
+      "4": {
+        "points": 15,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 3,
+        "safeties": 1,
+        "returned2pts": 0,
+        "returnYards": 55,
+        "pointsAllowed": 42
+      },
+      "5": {
+        "points": 18,
+        "touchdowns": 1,
+        "turnovers": 1,
+        "sacks": 3,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 92,
+        "pointsAllowed": 29
+      },
+      "6": {
+        "points": 19,
+        "touchdowns": 1,
+        "turnovers": 0,
+        "sacks": 0,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 266,
+        "pointsAllowed": 36
+      },
+      "7": {
+        "points": 22,
+        "touchdowns": 1,
+        "turnovers": 3,
+        "sacks": 3,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 75,
+        "pointsAllowed": 14
+      },
+      "8": {
+        "points": 3,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 1,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 25,
+        "pointsAllowed": 31
+      },
+      "9": {
+        "points": 2,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 0,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 45,
+        "pointsAllowed": 26
+      },
+      "11": {
+        "points": 4,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 2,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 15,
+        "pointsAllowed": 17
+      },
+      "12": {
+        "points": 23,
+        "touchdowns": 1,
+        "turnovers": 1,
+        "sacks": 5,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 29,
+        "pointsAllowed": 6
+      },
+      "13": {
+        "points": 16,
+        "touchdowns": 1,
+        "turnovers": 2,
+        "sacks": 2,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 42,
+        "pointsAllowed": 21
+      },
+      "14": {
+        "points": 6,
+        "touchdowns": 0,
+        "turnovers": 2,
+        "sacks": 2,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 41,
+        "pointsAllowed": 18
+      },
+      "15": {
+        "points": 11,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 0,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 184,
+        "pointsAllowed": 30
+      }
+    }
+  },
+  "GB": {
+    "2024": {
+      "1": {
+        "points": 8,
+        "touchdowns": 0,
+        "turnovers": 3,
+        "sacks": 2,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 24,
+        "pointsAllowed": 34
+      },
+      "2": {
+        "points": 10,
+        "touchdowns": 0,
+        "turnovers": 3,
+        "sacks": 1,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 0,
+        "pointsAllowed": 10
+      },
+      "3": {
+        "points": 24,
+        "touchdowns": 1,
+        "turnovers": 3,
+        "sacks": 8,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 15,
+        "pointsAllowed": 14
+      },
+      "4": {
+        "points": 8,
+        "touchdowns": 0,
+        "turnovers": 3,
+        "sacks": 2,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 1,
+        "pointsAllowed": 31
+      },
+      "5": {
+        "points": 7,
+        "touchdowns": 0,
+        "turnovers": 2,
+        "sacks": 3,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 0,
+        "pointsAllowed": 19
+      },
+      "6": {
+        "points": 12,
+        "touchdowns": 0,
+        "turnovers": 3,
+        "sacks": 0,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 107,
+        "pointsAllowed": 13
+      },
+      "7": {
+        "points": 4,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 4,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 71,
+        "pointsAllowed": 22
+      },
+      "8": {
+        "points": 5,
+        "touchdowns": 0,
+        "turnovers": 2,
+        "sacks": 1,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 13,
+        "pointsAllowed": 27
+      },
+      "9": {
+        "points": 1,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 1,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 60,
+        "pointsAllowed": 24
+      },
+      "11": {
+        "points": 3,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 3,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 67,
+        "pointsAllowed": 19
+      },
+      "12": {
+        "points": 11,
+        "touchdowns": 0,
+        "turnovers": 3,
+        "sacks": 2,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 41,
+        "pointsAllowed": 10
+      },
+      "13": {
+        "points": 7,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 5,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 73,
+        "pointsAllowed": 17
+      },
+      "14": {
+        "points": 3,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 1,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 0,
+        "pointsAllowed": 34
+      },
+      "15": {
+        "points": 17,
+        "touchdowns": 0,
+        "turnovers": 2,
+        "sacks": 7,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 108,
+        "pointsAllowed": 13
+      }
+    }
+  },
+  "PHI": {
+    "2024": {
+      "1": {
+        "points": 4,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 2,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 38,
+        "pointsAllowed": 29
+      },
+      "2": {
+        "points": 1,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 1,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 36,
+        "pointsAllowed": 22
+      },
+      "3": {
+        "points": 6,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 1,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 83,
+        "pointsAllowed": 12
+      },
+      "4": {
+        "points": 2,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 2,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 23,
+        "pointsAllowed": 33
+      },
+      "6": {
+        "points": 11,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 5,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 126,
+        "pointsAllowed": 16
+      },
+      "7": {
+        "points": 17,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 8,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 45,
+        "pointsAllowed": 3
+      },
+      "8": {
+        "points": 5,
+        "touchdowns": 0,
+        "turnovers": 2,
+        "sacks": 1,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 59,
+        "pointsAllowed": 17
+      },
+      "9": {
+        "points": 8,
+        "touchdowns": 0,
+        "turnovers": 3,
+        "sacks": 2,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 34,
+        "pointsAllowed": 23
+      },
+      "10": {
+        "points": 25,
+        "touchdowns": 0,
+        "turnovers": 5,
+        "sacks": 3,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 130,
+        "pointsAllowed": 6
+      },
+      "11": {
+        "points": 5,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 3,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 71,
+        "pointsAllowed": 18
+      },
+      "12": {
+        "points": 7,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 5,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 8,
+        "pointsAllowed": 20
+      },
+      "13": {
+        "points": 3,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 3,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 52,
+        "pointsAllowed": 19
+      },
+      "14": {
+        "points": 3,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 1,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 29,
+        "pointsAllowed": 16
+      },
+      "15": {
+        "points": 7,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 2,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 92,
+        "pointsAllowed": 13
+      }
+    }
+  },
+  "HOU": {
+    "2024": {
+      "1": {
+        "points": 4,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 2,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 0,
+        "pointsAllowed": 27
+      },
+      "2": {
+        "points": 17,
+        "touchdowns": 0,
+        "turnovers": 2,
+        "sacks": 7,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 109,
+        "pointsAllowed": 13
+      },
+      "3": {
+        "points": 4,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 4,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 32,
+        "pointsAllowed": 34
+      },
+      "4": {
+        "points": 1,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 1,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 19,
+        "pointsAllowed": 20
+      },
+      "5": {
+        "points": 4,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 1,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 97,
+        "pointsAllowed": 20
+      },
+      "6": {
+        "points": 12,
+        "touchdowns": 0,
+        "turnovers": 4,
+        "sacks": 4,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 55,
+        "pointsAllowed": 21
+      },
+      "7": {
+        "points": 9,
+        "touchdowns": 0,
+        "turnovers": 3,
+        "sacks": 3,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 68,
+        "pointsAllowed": 24
+      },
+      "8": {
+        "points": 15,
+        "touchdowns": 0,
+        "turnovers": 2,
+        "sacks": 5,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 101,
+        "pointsAllowed": 20
+      },
+      "9": {
+        "points": 8,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 2,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 106,
+        "pointsAllowed": 21
+      },
+      "10": {
+        "points": 10,
+        "touchdowns": 0,
+        "turnovers": 5,
+        "sacks": 0,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 43,
+        "pointsAllowed": 26
+      },
+      "11": {
+        "points": 20,
+        "touchdowns": 1,
+        "turnovers": 1,
+        "sacks": 5,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 26,
+        "pointsAllowed": 10
+      },
+      "12": {
+        "points": 33,
+        "touchdowns": 1,
+        "turnovers": 3,
+        "sacks": 8,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 171,
+        "pointsAllowed": 32
+      },
+      "13": {
+        "points": 2,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 0,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 27,
+        "pointsAllowed": 20
+      },
+      "15": {
+        "points": 11,
+        "touchdowns": 0,
+        "turnovers": 4,
+        "sacks": 3,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 45,
+        "pointsAllowed": 12
+      }
+    }
+  },
+  "MIA": {
+    "2024": {
+      "1": {
+        "points": 5,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 3,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 13,
+        "pointsAllowed": 17
+      },
+      "2": {
+        "points": 0,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 0,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 0,
+        "pointsAllowed": 31
+      },
+      "3": {
+        "points": 13,
+        "touchdowns": 0,
+        "turnovers": 2,
+        "sacks": 3,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 135,
+        "pointsAllowed": 24
+      },
+      "4": {
+        "points": 3,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 1,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 27,
+        "pointsAllowed": 31
+      },
+      "5": {
+        "points": 5,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 2,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 31,
+        "pointsAllowed": 10
+      },
+      "7": {
+        "points": 2,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 0,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 44,
+        "pointsAllowed": 16
+      },
+      "8": {
+        "points": 0,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 0,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 60,
+        "pointsAllowed": 28
+      },
+      "9": {
+        "points": 3,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 1,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 54,
+        "pointsAllowed": 30
+      },
+      "10": {
+        "points": 8,
+        "touchdowns": 0,
+        "turnovers": 2,
+        "sacks": 4,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 21,
+        "pointsAllowed": 15
+      },
+      "11": {
+        "points": 5,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 3,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 52,
+        "pointsAllowed": 19
+      },
+      "12": {
+        "points": 8,
+        "touchdowns": 0,
+        "turnovers": 2,
+        "sacks": 4,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 15,
+        "pointsAllowed": 15
+      },
+      "13": {
+        "points": 6,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 0,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 113,
+        "pointsAllowed": 30
+      },
+      "14": {
+        "points": 9,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 3,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 133,
+        "pointsAllowed": 26
+      },
+      "15": {
+        "points": 9,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 4,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 97,
+        "pointsAllowed": 20
+      }
+    }
+  },
+  "DET": {
+    "2024": {
+      "1": {
+        "points": 4,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 2,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 18,
+        "pointsAllowed": 20
+      },
+      "2": {
+        "points": 13,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 5,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 113,
+        "pointsAllowed": 20
+      },
+      "3": {
+        "points": 3,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 1,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 40,
+        "pointsAllowed": 13
+      },
+      "4": {
+        "points": 7,
+        "touchdowns": 0,
+        "turnovers": 2,
+        "sacks": 3,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 32,
+        "pointsAllowed": 29
+      },
+      "6": {
+        "points": 17,
+        "touchdowns": 0,
+        "turnovers": 5,
+        "sacks": 4,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 40,
+        "pointsAllowed": 9
+      },
+      "7": {
+        "points": 6,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 4,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 23,
+        "pointsAllowed": 29
+      },
+      "8": {
+        "points": 28,
+        "touchdowns": 1,
+        "turnovers": 4,
+        "sacks": 1,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 262,
+        "pointsAllowed": 14
+      },
+      "9": {
+        "points": 12,
+        "touchdowns": 1,
+        "turnovers": 1,
+        "sacks": 0,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 66,
+        "pointsAllowed": 14
+      },
+      "10": {
+        "points": 8,
+        "touchdowns": 0,
+        "turnovers": 2,
+        "sacks": 4,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 15,
+        "pointsAllowed": 23
+      },
+      "11": {
+        "points": 9,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 1,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 30,
+        "pointsAllowed": 6
+      },
+      "12": {
+        "points": 6,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 0,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 45,
+        "pointsAllowed": 6
+      },
+      "13": {
+        "points": 5,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 5,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 65,
+        "pointsAllowed": 20
+      },
+      "14": {
+        "points": 3,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 1,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 0,
+        "pointsAllowed": 31
+      },
+      "15": {
+        "points": 0,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 0,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 0,
+        "pointsAllowed": 48
+      }
+    }
+  },
+  "LA": {
+    "2024": {
+      "1": {
+        "points": 4,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 2,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 20,
+        "pointsAllowed": 26
+      },
+      "2": {
+        "points": 3,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 1,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 53,
+        "pointsAllowed": 41
+      },
+      "3": {
+        "points": 3,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 1,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 38,
+        "pointsAllowed": 24
+      },
+      "4": {
+        "points": 3,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 3,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 17,
+        "pointsAllowed": 24
+      },
+      "5": {
+        "points": 14,
+        "touchdowns": 1,
+        "turnovers": 1,
+        "sacks": 2,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 74,
+        "pointsAllowed": 24
+      },
+      "7": {
+        "points": 20,
+        "touchdowns": 1,
+        "turnovers": 4,
+        "sacks": 2,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 8,
+        "pointsAllowed": 15
+      },
+      "8": {
+        "points": 15,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 3,
+        "safeties": 1,
+        "returned2pts": 0,
+        "returnYards": 4,
+        "pointsAllowed": 20
+      },
+      "9": {
+        "points": 26,
+        "touchdowns": 1,
+        "turnovers": 3,
+        "sacks": 7,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 86,
+        "pointsAllowed": 20
+      },
+      "10": {
+        "points": 7,
+        "touchdowns": 0,
+        "turnovers": 2,
+        "sacks": 3,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 40,
+        "pointsAllowed": 23
+      },
+      "11": {
+        "points": 10,
+        "touchdowns": 0,
+        "turnovers": 2,
+        "sacks": 3,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 82,
+        "pointsAllowed": 22
+      },
+      "12": {
+        "points": 1,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 1,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 73,
+        "pointsAllowed": 37
+      },
+      "13": {
+        "points": 6,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 0,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 100,
+        "pointsAllowed": 14
+      },
+      "14": {
+        "points": 3,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 0,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 90,
+        "pointsAllowed": 42
+      },
+      "15": {
+        "points": 11,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 3,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 61,
+        "pointsAllowed": 6
+      }
+    }
+  },
+  "LAC": {
+    "2024": {
+      "1": {
+        "points": 13,
+        "touchdowns": 0,
+        "turnovers": 3,
+        "sacks": 4,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 44,
+        "pointsAllowed": 10
+      },
+      "2": {
+        "points": 13,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 2,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 28,
+        "pointsAllowed": 3
+      },
+      "3": {
+        "points": 4,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 2,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 42,
+        "pointsAllowed": 20
+      },
+      "4": {
+        "points": 7,
+        "touchdowns": 0,
+        "turnovers": 2,
+        "sacks": 3,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 0,
+        "pointsAllowed": 17
+      },
+      "6": {
+        "points": 6,
+        "touchdowns": 0,
+        "turnovers": 2,
+        "sacks": 2,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 26,
+        "pointsAllowed": 16
+      },
+      "7": {
+        "points": 0,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 0,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 0,
+        "pointsAllowed": 17
+      },
+      "8": {
+        "points": 11,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 5,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 85,
+        "pointsAllowed": 8
+      },
+      "9": {
+        "points": 15,
+        "touchdowns": 0,
+        "turnovers": 3,
+        "sacks": 6,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 64,
+        "pointsAllowed": 10
+      },
+      "10": {
+        "points": 7,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 7,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 70,
+        "pointsAllowed": 17
+      },
+      "11": {
+        "points": 3,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 3,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 70,
+        "pointsAllowed": 27
+      },
+      "12": {
+        "points": 1,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 1,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 65,
+        "pointsAllowed": 30
+      },
+      "13": {
+        "points": 19,
+        "touchdowns": 1,
+        "turnovers": 4,
+        "sacks": 1,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 0,
+        "pointsAllowed": 13
+      },
+      "14": {
+        "points": 9,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 3,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 106,
+        "pointsAllowed": 19
+      },
+      "15": {
+        "points": 14,
+        "touchdowns": 0,
+        "turnovers": 2,
+        "sacks": 1,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 182,
+        "pointsAllowed": 40
+      }
+    }
+  },
+  "NYG": {
+    "2024": {
+      "1": {
+        "points": 5,
+        "touchdowns": 0,
+        "turnovers": 2,
+        "sacks": 1,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 22,
+        "pointsAllowed": 28
+      },
+      "2": {
+        "points": 14,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 5,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 156,
+        "pointsAllowed": 21
+      },
+      "3": {
+        "points": 12,
+        "touchdowns": 0,
+        "turnovers": 2,
+        "sacks": 8,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 71,
+        "pointsAllowed": 15
+      },
+      "4": {
+        "points": 7,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 1,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 109,
+        "pointsAllowed": 20
+      },
+      "5": {
+        "points": 9,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 7,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 74,
+        "pointsAllowed": 20
+      },
+      "6": {
+        "points": 6,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 4,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 1,
+        "pointsAllowed": 17
+      },
+      "7": {
+        "points": 5,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 5,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 35,
+        "pointsAllowed": 28
+      },
+      "8": {
+        "points": 12,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 4,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 102,
+        "pointsAllowed": 26
+      },
+      "9": {
+        "points": 6,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 0,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 137,
+        "pointsAllowed": 27
+      },
+      "10": {
+        "points": 6,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 1,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 94,
+        "pointsAllowed": 20
+      },
+      "12": {
+        "points": 2,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 0,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 41,
+        "pointsAllowed": 30
+      },
+      "13": {
+        "points": 0,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 0,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 65,
+        "pointsAllowed": 27
+      },
+      "14": {
+        "points": 7,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 2,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 95,
+        "pointsAllowed": 14
+      },
+      "15": {
+        "points": 8,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 3,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 77,
+        "pointsAllowed": 35
+      }
+    }
+  },
+  "NE": {
+    "2024": {
+      "1": {
+        "points": 10,
+        "touchdowns": 0,
+        "turnovers": 2,
+        "sacks": 3,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 37,
+        "pointsAllowed": 10
+      },
+      "2": {
+        "points": 3,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 3,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 24,
+        "pointsAllowed": 23
+      },
+      "3": {
+        "points": 2,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 2,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 30,
+        "pointsAllowed": 24
+      },
+      "4": {
+        "points": 5,
+        "touchdowns": 0,
+        "turnovers": 2,
+        "sacks": 1,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 69,
+        "pointsAllowed": 30
+      },
+      "5": {
+        "points": 7,
+        "touchdowns": 0,
+        "turnovers": 2,
+        "sacks": 3,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 39,
+        "pointsAllowed": 15
+      },
+      "6": {
+        "points": 13,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 2,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 155,
+        "pointsAllowed": 41
+      },
+      "7": {
+        "points": 0,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 0,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 37,
+        "pointsAllowed": 32
+      },
+      "8": {
+        "points": 4,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 1,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 90,
+        "pointsAllowed": 22
+      },
+      "9": {
+        "points": 3,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 1,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 69,
+        "pointsAllowed": 20
+      },
+      "10": {
+        "points": 18,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 9,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 45,
+        "pointsAllowed": 3
+      },
+      "11": {
+        "points": 0,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 0,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 62,
+        "pointsAllowed": 28
+      },
+      "12": {
+        "points": 14,
+        "touchdowns": 1,
+        "turnovers": 1,
+        "sacks": 2,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 38,
+        "pointsAllowed": 34
+      },
+      "13": {
+        "points": 10,
+        "touchdowns": 0,
+        "turnovers": 2,
+        "sacks": 0,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 111,
+        "pointsAllowed": 25
+      },
+      "15": {
+        "points": 0,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 0,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 58,
+        "pointsAllowed": 30
+      }
+    }
+  },
+  "SF": {
+    "2024": {
+      "1": {
+        "points": 5,
+        "touchdowns": 0,
+        "turnovers": 2,
+        "sacks": 1,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 15,
+        "pointsAllowed": 19
+      },
+      "2": {
+        "points": 8,
+        "touchdowns": 0,
+        "turnovers": 2,
+        "sacks": 4,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 21,
+        "pointsAllowed": 23
+      },
+      "3": {
+        "points": 3,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 3,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 9,
+        "pointsAllowed": 27
+      },
+      "4": {
+        "points": 22,
+        "touchdowns": 1,
+        "turnovers": 3,
+        "sacks": 6,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 39,
+        "pointsAllowed": 13
+      },
+      "5": {
+        "points": 3,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 1,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 32,
+        "pointsAllowed": 24
+      },
+      "6": {
+        "points": 13,
+        "touchdowns": 0,
+        "turnovers": 3,
+        "sacks": 1,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 108,
+        "pointsAllowed": 24
+      },
+      "7": {
+        "points": 6,
+        "touchdowns": 0,
+        "turnovers": 2,
+        "sacks": 2,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 46,
+        "pointsAllowed": 28
+      },
+      "8": {
+        "points": 9,
+        "touchdowns": 0,
+        "turnovers": 2,
+        "sacks": 2,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 81,
+        "pointsAllowed": 24
+      },
+      "10": {
+        "points": 2,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 2,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 59,
+        "pointsAllowed": 20
+      },
+      "11": {
+        "points": 6,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 4,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 63,
+        "pointsAllowed": 20
+      },
+      "12": {
+        "points": 8,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 2,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 144,
+        "pointsAllowed": 38
+      },
+      "13": {
+        "points": 9,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 0,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 233,
+        "pointsAllowed": 35
+      },
+      "14": {
+        "points": 9,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 7,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 22,
+        "pointsAllowed": 13
+      },
+      "15": {
+        "points": 6,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 0,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 123,
+        "pointsAllowed": 12
+      }
+    }
+  },
+  "PIT": {
+    "2024": {
+      "1": {
+        "points": 11,
+        "touchdowns": 0,
+        "turnovers": 3,
+        "sacks": 2,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 47,
+        "pointsAllowed": 10
+      },
+      "2": {
+        "points": 12,
+        "touchdowns": 0,
+        "turnovers": 2,
+        "sacks": 2,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 40,
+        "pointsAllowed": 6
+      },
+      "3": {
+        "points": 8,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 5,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 20,
+        "pointsAllowed": 10
+      },
+      "4": {
+        "points": 2,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 2,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 30,
+        "pointsAllowed": 27
+      },
+      "5": {
+        "points": 14,
+        "touchdowns": 0,
+        "turnovers": 3,
+        "sacks": 2,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 101,
+        "pointsAllowed": 20
+      },
+      "6": {
+        "points": 7,
+        "touchdowns": 0,
+        "turnovers": 3,
+        "sacks": 1,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 33,
+        "pointsAllowed": 13
+      },
+      "7": {
+        "points": 5,
+        "touchdowns": 0,
+        "turnovers": 2,
+        "sacks": 1,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 9,
+        "pointsAllowed": 15
+      },
+      "8": {
+        "points": 18,
+        "touchdowns": 1,
+        "turnovers": 2,
+        "sacks": 4,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 73,
+        "pointsAllowed": 18
+      },
+      "10": {
+        "points": 11,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 3,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 137,
+        "pointsAllowed": 27
+      },
+      "11": {
+        "points": 8,
+        "touchdowns": 0,
+        "turnovers": 3,
+        "sacks": 2,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 13,
+        "pointsAllowed": 16
+      },
+      "12": {
+        "points": 7,
+        "touchdowns": 0,
+        "turnovers": 3,
+        "sacks": 1,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 60,
+        "pointsAllowed": 24
+      },
+      "13": {
+        "points": 20,
+        "touchdowns": 1,
+        "turnovers": 3,
+        "sacks": 4,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 36,
+        "pointsAllowed": 38
+      },
+      "14": {
+        "points": 9,
+        "touchdowns": 0,
+        "turnovers": 3,
+        "sacks": 3,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 20,
+        "pointsAllowed": 14
+      },
+      "15": {
+        "points": 7,
+        "touchdowns": 0,
+        "turnovers": 2,
+        "sacks": 3,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 65,
+        "pointsAllowed": 27
+      }
+    }
+  },
+  "TEN": {
+    "2024": {
+      "1": {
+        "points": 13,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 2,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 157,
+        "pointsAllowed": 24
+      },
+      "2": {
+        "points": 5,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 2,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 89,
+        "pointsAllowed": 24
+      },
+      "3": {
+        "points": 9,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 3,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 108,
+        "pointsAllowed": 30
+      },
+      "4": {
+        "points": 16,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 2,
+        "safeties": 1,
+        "returned2pts": 0,
+        "returnYards": 61,
+        "pointsAllowed": 12
+      },
+      "6": {
+        "points": 2,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 0,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 9,
+        "pointsAllowed": 20
+      },
+      "7": {
+        "points": 1,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 1,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 63,
+        "pointsAllowed": 34
+      },
+      "8": {
+        "points": 4,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 4,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 53,
+        "pointsAllowed": 52
+      },
+      "9": {
+        "points": 10,
+        "touchdowns": 0,
+        "turnovers": 3,
+        "sacks": 4,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 54,
+        "pointsAllowed": 17
+      },
+      "10": {
+        "points": 3,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 0,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 87,
+        "pointsAllowed": 27
+      },
+      "11": {
+        "points": 4,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 2,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 49,
+        "pointsAllowed": 23
+      },
+      "12": {
+        "points": 23,
+        "touchdowns": 0,
+        "turnovers": 2,
+        "sacks": 4,
+        "safeties": 1,
+        "returned2pts": 0,
+        "returnYards": 93,
+        "pointsAllowed": 27
+      },
+      "13": {
+        "points": 10,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 2,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 146,
+        "pointsAllowed": 42
+      },
+      "14": {
+        "points": 8,
+        "touchdowns": 0,
+        "turnovers": 2,
+        "sacks": 1,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 64,
+        "pointsAllowed": 10
+      },
+      "15": {
+        "points": 7,
+        "touchdowns": 0,
+        "turnovers": 3,
+        "sacks": 1,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 20,
+        "pointsAllowed": 37
+      }
+    }
+  },
+  "CLE": {
+    "2024": {
+      "1": {
+        "points": 12,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 3,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 169,
+        "pointsAllowed": 33
+      },
+      "2": {
+        "points": 16,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 4,
+        "safeties": 1,
+        "returned2pts": 0,
+        "returnYards": 50,
+        "pointsAllowed": 13
+      },
+      "3": {
+        "points": 6,
+        "touchdowns": 0,
+        "turnovers": 2,
+        "sacks": 2,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 38,
+        "pointsAllowed": 21
+      },
+      "4": {
+        "points": 20,
+        "touchdowns": 1,
+        "turnovers": 1,
+        "sacks": 2,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 122,
+        "pointsAllowed": 20
+      },
+      "5": {
+        "points": 16,
+        "touchdowns": 0,
+        "turnovers": 2,
+        "sacks": 3,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 179,
+        "pointsAllowed": 34
+      },
+      "6": {
+        "points": 1,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 1,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 26,
+        "pointsAllowed": 20
+      },
+      "7": {
+        "points": 3,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 3,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 74,
+        "pointsAllowed": 21
+      },
+      "8": {
+        "points": 6,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 3,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 95,
+        "pointsAllowed": 24
+      },
+      "9": {
+        "points": 9,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 6,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 96,
+        "pointsAllowed": 27
+      },
+      "11": {
+        "points": 5,
+        "touchdowns": 0,
+        "turnovers": 2,
+        "sacks": 1,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 37,
+        "pointsAllowed": 35
+      },
+      "12": {
+        "points": 6,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 4,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 72,
+        "pointsAllowed": 19
+      },
+      "13": {
+        "points": 4,
+        "touchdowns": 0,
+        "turnovers": 2,
+        "sacks": 0,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 29,
+        "pointsAllowed": 41
+      },
+      "14": {
+        "points": 9,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 1,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 100,
+        "pointsAllowed": 27
+      },
+      "15": {
+        "points": 6,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 0,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 131,
+        "pointsAllowed": 21
+      }
+    }
+  },
+  "IND": {
+    "2024": {
+      "1": {
+        "points": 10,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 4,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 109,
+        "pointsAllowed": 29
+      },
+      "2": {
+        "points": 2,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 0,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 0,
+        "pointsAllowed": 16
+      },
+      "3": {
+        "points": 10,
+        "touchdowns": 0,
+        "turnovers": 3,
+        "sacks": 4,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 49,
+        "pointsAllowed": 16
+      },
+      "4": {
+        "points": 8,
+        "touchdowns": 0,
+        "turnovers": 2,
+        "sacks": 4,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 5,
+        "pointsAllowed": 24
+      },
+      "5": {
+        "points": 4,
+        "touchdowns": 0,
+        "turnovers": 2,
+        "sacks": 0,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 40,
+        "pointsAllowed": 37
+      },
+      "6": {
+        "points": 5,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 0,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 94,
+        "pointsAllowed": 17
+      },
+      "7": {
+        "points": 9,
+        "touchdowns": 0,
+        "turnovers": 2,
+        "sacks": 2,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 33,
+        "pointsAllowed": 10
+      },
+      "8": {
+        "points": 10,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 2,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 103,
+        "pointsAllowed": 23
+      },
+      "9": {
+        "points": 20,
+        "touchdowns": 1,
+        "turnovers": 3,
+        "sacks": 4,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 12,
+        "pointsAllowed": 21
+      },
+      "10": {
+        "points": 6,
+        "touchdowns": 0,
+        "turnovers": 2,
+        "sacks": 2,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 0,
+        "pointsAllowed": 30
+      },
+      "11": {
+        "points": 12,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 3,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 151,
+        "pointsAllowed": 27
+      },
+      "12": {
+        "points": 3,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 3,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 29,
+        "pointsAllowed": 24
+      },
+      "13": {
+        "points": 9,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 4,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 75,
+        "pointsAllowed": 24
+      },
+      "15": {
+        "points": 7,
+        "touchdowns": 0,
+        "turnovers": 3,
+        "sacks": 1,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 36,
+        "pointsAllowed": 31
+      }
+    }
+  },
+  "JAX": {
+    "2024": {
+      "1": {
+        "points": 3,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 3,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 47,
+        "pointsAllowed": 20
+      },
+      "2": {
+        "points": 2,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 2,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 20,
+        "pointsAllowed": 18
+      },
+      "3": {
+        "points": 0,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 0,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 27,
+        "pointsAllowed": 47
+      },
+      "4": {
+        "points": 4,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 2,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 64,
+        "pointsAllowed": 24
+      },
+      "5": {
+        "points": 6,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 4,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 68,
+        "pointsAllowed": 34
+      },
+      "6": {
+        "points": 14,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 3,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 152,
+        "pointsAllowed": 35
+      },
+      "7": {
+        "points": 18,
+        "touchdowns": 1,
+        "turnovers": 0,
+        "sacks": 2,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 123,
+        "pointsAllowed": 16
+      },
+      "8": {
+        "points": 3,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 1,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 68,
+        "pointsAllowed": 30
+      },
+      "9": {
+        "points": 18,
+        "touchdowns": 1,
+        "turnovers": 1,
+        "sacks": 3,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 80,
+        "pointsAllowed": 28
+      },
+      "10": {
+        "points": 7,
+        "touchdowns": 0,
+        "turnovers": 3,
+        "sacks": 1,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 24,
+        "pointsAllowed": 12
+      },
+      "11": {
+        "points": 0,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 0,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 58,
+        "pointsAllowed": 52
+      },
+      "13": {
+        "points": 5,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 2,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 93,
+        "pointsAllowed": 23
+      },
+      "14": {
+        "points": 8,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 2,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 42,
+        "pointsAllowed": 6
+      },
+      "15": {
+        "points": 4,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 1,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 75,
+        "pointsAllowed": 32
+      }
+    }
+  },
+  "LV": {
+    "2024": {
+      "1": {
+        "points": 1,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 1,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 56,
+        "pointsAllowed": 22
+      },
+      "2": {
+        "points": 7,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 2,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 76,
+        "pointsAllowed": 23
+      },
+      "3": {
+        "points": 2,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 2,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 53,
+        "pointsAllowed": 36
+      },
+      "4": {
+        "points": 5,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 3,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 73,
+        "pointsAllowed": 16
+      },
+      "5": {
+        "points": 3,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 3,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 23,
+        "pointsAllowed": 34
+      },
+      "6": {
+        "points": 3,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 3,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 30,
+        "pointsAllowed": 32
+      },
+      "7": {
+        "points": 3,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 1,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 7,
+        "pointsAllowed": 20
+      },
+      "8": {
+        "points": 3,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 1,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 17,
+        "pointsAllowed": 27
+      },
+      "9": {
+        "points": 13,
+        "touchdowns": 1,
+        "turnovers": 1,
+        "sacks": 1,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 30,
+        "pointsAllowed": 41
+      },
+      "11": {
+        "points": 2,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 2,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 31,
+        "pointsAllowed": 34
+      },
+      "12": {
+        "points": 1,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 1,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 73,
+        "pointsAllowed": 29
+      },
+      "13": {
+        "points": 14,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 5,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 192,
+        "pointsAllowed": 19
+      },
+      "14": {
+        "points": 13,
+        "touchdowns": 0,
+        "turnovers": 3,
+        "sacks": 4,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 89,
+        "pointsAllowed": 28
+      },
+      "15": {
+        "points": 5,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 3,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 24,
+        "pointsAllowed": 15
+      }
+    }
+  },
+  "CIN": {
+    "2024": {
+      "1": {
+        "points": 1,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 1,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 22,
+        "pointsAllowed": 16
+      },
+      "2": {
+        "points": 8,
+        "touchdowns": 0,
+        "turnovers": 3,
+        "sacks": 2,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 57,
+        "pointsAllowed": 26
+      },
+      "3": {
+        "points": 8,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 2,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 129,
+        "pointsAllowed": 38
+      },
+      "4": {
+        "points": 8,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 0,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 109,
+        "pointsAllowed": 24
+      },
+      "5": {
+        "points": 15,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 1,
+        "safeties": 1,
+        "returned2pts": 0,
+        "returnYards": 40,
+        "pointsAllowed": 41
+      },
+      "6": {
+        "points": 7,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 2,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 44,
+        "pointsAllowed": 7
+      },
+      "7": {
+        "points": 24,
+        "touchdowns": 1,
+        "turnovers": 2,
+        "sacks": 4,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 139,
+        "pointsAllowed": 14
+      },
+      "8": {
+        "points": 0,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 0,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 42,
+        "pointsAllowed": 37
+      },
+      "9": {
+        "points": 9,
+        "touchdowns": 0,
+        "turnovers": 2,
+        "sacks": 5,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 69,
+        "pointsAllowed": 24
+      },
+      "10": {
+        "points": 0,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 0,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 13,
+        "pointsAllowed": 35
+      },
+      "11": {
+        "points": 7,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 2,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 99,
+        "pointsAllowed": 34
+      },
+      "13": {
+        "points": 20,
+        "touchdowns": 1,
+        "turnovers": 1,
+        "sacks": 2,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 146,
+        "pointsAllowed": 44
+      },
+      "14": {
+        "points": 10,
+        "touchdowns": 0,
+        "turnovers": 2,
+        "sacks": 3,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 92,
+        "pointsAllowed": 20
+      },
+      "15": {
+        "points": 23,
+        "touchdowns": 1,
+        "turnovers": 6,
+        "sacks": 1,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 47,
+        "pointsAllowed": 27
+      }
+    }
+  },
+  "NYJ": {
+    "2024": {
+      "1": {
+        "points": 6,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 3,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 81,
+        "pointsAllowed": 32
+      },
+      "2": {
+        "points": 11,
+        "touchdowns": 0,
+        "turnovers": 2,
+        "sacks": 4,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 92,
+        "pointsAllowed": 17
+      },
+      "3": {
+        "points": 18,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 7,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 54,
+        "pointsAllowed": 3
+      },
+      "4": {
+        "points": 8,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 0,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 81,
+        "pointsAllowed": 10
+      },
+      "5": {
+        "points": 11,
+        "touchdowns": 0,
+        "turnovers": 2,
+        "sacks": 4,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 81,
+        "pointsAllowed": 23
+      },
+      "6": {
+        "points": 2,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 2,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 41,
+        "pointsAllowed": 23
+      },
+      "7": {
+        "points": 7,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 1,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 124,
+        "pointsAllowed": 37
+      },
+      "8": {
+        "points": 2,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 2,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 71,
+        "pointsAllowed": 25
+      },
+      "9": {
+        "points": 10,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 8,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 0,
+        "pointsAllowed": 13
+      },
+      "10": {
+        "points": 1,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 1,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 0,
+        "pointsAllowed": 31
+      },
+      "11": {
+        "points": 4,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 2,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 43,
+        "pointsAllowed": 28
+      },
+      "13": {
+        "points": 26,
+        "touchdowns": 1,
+        "turnovers": 2,
+        "sacks": 3,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 238,
+        "pointsAllowed": 26
+      },
+      "14": {
+        "points": 0,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 0,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 29,
+        "pointsAllowed": 32
+      },
+      "15": {
+        "points": 6,
+        "touchdowns": 0,
+        "turnovers": 2,
+        "sacks": 2,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 0,
+        "pointsAllowed": 25
+      }
+    }
+  },
+  "ATL": {
+    "2024": {
+      "1": {
+        "points": 5,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 2,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 84,
+        "pointsAllowed": 18
+      },
+      "2": {
+        "points": 3,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 1,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 33,
+        "pointsAllowed": 21
+      },
+      "3": {
+        "points": 2,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 0,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 68,
+        "pointsAllowed": 22
+      },
+      "4": {
+        "points": 25,
+        "touchdowns": 2,
+        "turnovers": 2,
+        "sacks": 1,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 39,
+        "pointsAllowed": 24
+      },
+      "5": {
+        "points": 3,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 1,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 0,
+        "pointsAllowed": 30
+      },
+      "6": {
+        "points": 4,
+        "touchdowns": 0,
+        "turnovers": 2,
+        "sacks": 0,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 54,
+        "pointsAllowed": 20
+      },
+      "7": {
+        "points": 1,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 1,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 43,
+        "pointsAllowed": 34
+      },
+      "8": {
+        "points": 9,
+        "touchdowns": 0,
+        "turnovers": 3,
+        "sacks": 0,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 75,
+        "pointsAllowed": 26
+      },
+      "9": {
+        "points": 9,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 3,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 100,
+        "pointsAllowed": 21
+      },
+      "10": {
+        "points": 9,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 0,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 151,
+        "pointsAllowed": 20
+      },
+      "11": {
+        "points": 1,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 1,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 22,
+        "pointsAllowed": 38
+      },
+      "13": {
+        "points": 7,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 5,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 10,
+        "pointsAllowed": 17
+      },
+      "14": {
+        "points": 4,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 4,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 42,
+        "pointsAllowed": 42
+      },
+      "15": {
+        "points": 28,
+        "touchdowns": 0,
+        "turnovers": 3,
+        "sacks": 4,
+        "safeties": 1,
+        "returned2pts": 0,
+        "returnYards": 78,
+        "pointsAllowed": 9
+      }
+    }
+  },
+  "TB": {
+    "2024": {
+      "1": {
+        "points": 2,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 2,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 37,
+        "pointsAllowed": 20
+      },
+      "2": {
+        "points": 4,
+        "touchdowns": 0,
+        "turnovers": 2,
+        "sacks": 0,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 0,
+        "pointsAllowed": 16
+      },
+      "3": {
+        "points": 2,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 0,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 54,
+        "pointsAllowed": 26
+      },
+      "4": {
+        "points": 10,
+        "touchdowns": 0,
+        "turnovers": 2,
+        "sacks": 6,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 30,
+        "pointsAllowed": 16
+      },
+      "5": {
+        "points": 12,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 4,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 146,
+        "pointsAllowed": 36
+      },
+      "6": {
+        "points": 30,
+        "touchdowns": 1,
+        "turnovers": 3,
+        "sacks": 5,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 165,
+        "pointsAllowed": 27
+      },
+      "7": {
+        "points": 4,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 2,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 7,
+        "pointsAllowed": 41
+      },
+      "8": {
+        "points": 14,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 2,
+        "safeties": 1,
+        "returned2pts": 0,
+        "returnYards": 51,
+        "pointsAllowed": 31
+      },
+      "9": {
+        "points": 6,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 4,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 64,
+        "pointsAllowed": 30
+      },
+      "10": {
+        "points": 5,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 3,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 0,
+        "pointsAllowed": 23
+      },
+      "12": {
+        "points": 9,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 4,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 21,
+        "pointsAllowed": 7
+      },
+      "13": {
+        "points": 6,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 1,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 98,
+        "pointsAllowed": 23
+      },
+      "14": {
+        "points": 6,
+        "touchdowns": 0,
+        "turnovers": 2,
+        "sacks": 2,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 51,
+        "pointsAllowed": 13
+      },
+      "15": {
+        "points": 7,
+        "touchdowns": 0,
+        "turnovers": 2,
+        "sacks": 3,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 47,
+        "pointsAllowed": 17
+      }
+    }
+  },
+  "WAS": {
+    "2024": {
+      "1": {
+        "points": 1,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 1,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 48,
+        "pointsAllowed": 37
+      },
+      "2": {
+        "points": 3,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 1,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 59,
+        "pointsAllowed": 18
+      },
+      "3": {
+        "points": 5,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 2,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 87,
+        "pointsAllowed": 33
+      },
+      "4": {
+        "points": 6,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 4,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 16,
+        "pointsAllowed": 14
+      },
+      "5": {
+        "points": 12,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 7,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 79,
+        "pointsAllowed": 13
+      },
+      "6": {
+        "points": 4,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 2,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 42,
+        "pointsAllowed": 30
+      },
+      "7": {
+        "points": 19,
+        "touchdowns": 1,
+        "turnovers": 2,
+        "sacks": 2,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 49,
+        "pointsAllowed": 7
+      },
+      "8": {
+        "points": 8,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 3,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 76,
+        "pointsAllowed": 15
+      },
+      "9": {
+        "points": 4,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 2,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 43,
+        "pointsAllowed": 22
+      },
+      "10": {
+        "points": 13,
+        "touchdowns": 0,
+        "turnovers": 2,
+        "sacks": 3,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 118,
+        "pointsAllowed": 28
+      },
+      "11": {
+        "points": 2,
+        "touchdowns": 0,
+        "turnovers": 0,
+        "sacks": 2,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 66,
+        "pointsAllowed": 26
+      },
+      "12": {
+        "points": 9,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 1,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 120,
+        "pointsAllowed": 34
+      },
+      "13": {
+        "points": 12,
+        "touchdowns": 0,
+        "turnovers": 2,
+        "sacks": 2,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 108,
+        "pointsAllowed": 19
+      },
+      "15": {
+        "points": 11,
+        "touchdowns": 0,
+        "turnovers": 1,
+        "sacks": 3,
+        "safeties": 0,
+        "returned2pts": 0,
+        "returnYards": 127,
+        "pointsAllowed": 19
+      }
+    }
+  }
+}

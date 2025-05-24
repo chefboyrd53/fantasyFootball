@@ -1,101 +1,173 @@
-from collections import defaultdict
 import json
 import os
+from typing import Dict, Any, Union
 
-# Local storage for player data and roster
-# Structure: {playerId: {"roster": {...}, "data": {year: {week: {...}}}}}
-playerStore = defaultdict(lambda: {"roster": {}, "data": defaultdict(lambda: defaultdict(dict))})
+# Create local_data directory if it doesn't exist
+LOCAL_DATA_DIR = "local_data"
+if not os.path.exists(LOCAL_DATA_DIR):
+    os.makedirs(LOCAL_DATA_DIR)
 
-# Local storage for defense data
-defenseData = defaultdict(lambda: defaultdict(lambda: defaultdict(dict)))
+# File paths for local storage
+PLAYERS_FILE = os.path.join(LOCAL_DATA_DIR, "players.json")
+DEFENSE_FILE = os.path.join(LOCAL_DATA_DIR, "defense.json")
 
-def storePlayerData(playerId, year, week, data):
-    """Store player data locally"""
-    playerStore[playerId]["data"][year][week].update(data)
+# Initialize data structures
+players_data = {}  # Will contain both roster and scoring data
+defense_data = {}  # Will be organized by team -> year -> week -> stats
 
-def getPlayerData(playerId, year, week):
-    """Get player data from local storage"""
-    return playerStore[playerId]["data"][year][week]
+def convert_to_int(value: Union[int, float, str, Any]) -> Union[int, str, Any]:
+    """Convert numeric values to integers, leave other types unchanged"""
+    if isinstance(value, (int, float)):
+        return int(value)
+    return value
 
-def storePlayerRoster(playerId, playerInfo):
-    """Store player roster information locally"""
-    playerStore[playerId]["roster"] = playerInfo
-
-def getPlayerRoster(playerId):
-    """Get player roster information from local storage"""
-    return playerStore[playerId]["roster"] if playerId in playerStore else None
-
-def storeDefenseData(team, year, week, data):
-    """Store defense data locally"""
-    defenseData[team][year][week].update(data)
-
-def getDefenseData(team, year, week):
-    """Get defense data from local storage"""
-    return defenseData[team][year][week]
-
-def saveToFiles():
-    """Save all local data to JSON files"""
-    os.makedirs('local_data', exist_ok=True)
-    # Save player store (roster + data)
-    # Convert defaultdicts to dicts for JSON serialization
-    def convert(obj):
-        if isinstance(obj, defaultdict):
-            return {k: convert(v) for k, v in obj.items()}
-        return obj
-    with open('local_data/player_store.json', 'w') as f:
-        json.dump(convert(playerStore), f, indent=2)
-    # Save defense data
-    with open('local_data/defense_data.json', 'w') as f:
-        json.dump(convert(defenseData), f, indent=2)
-    print("Saved all data to local_data directory")
+def convert_dict_values(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Convert all numeric values in a dictionary to integers"""
+    return {key: convert_to_int(value) for key, value in data.items()}
 
 def loadFromFiles():
-    """Load all local data from JSON files"""
+    """Load all data from local JSON files"""
+    global players_data, defense_data
+    
+    # Load players data (combined roster and scoring)
+    if os.path.exists(PLAYERS_FILE):
+        with open(PLAYERS_FILE, 'r') as f:
+            players_data = json.load(f)
+    
+    # Load defense data
+    if os.path.exists(DEFENSE_FILE):
+        with open(DEFENSE_FILE, 'r') as f:
+            defense_data = json.load(f)
+
+def saveToFiles():
+    """Save all data to local JSON files"""
+    # Save players data (combined roster and scoring)
+    with open(PLAYERS_FILE, 'w') as f:
+        json.dump(players_data, f, indent=2)
+    
+    # Save defense data
+    with open(DEFENSE_FILE, 'w') as f:
+        json.dump(defense_data, f, indent=2)
+
+def storePlayerData(player_id: str, year: int, week: int, data: Dict[str, Any]):
+    """Store player scoring data"""
+    if player_id not in players_data:
+        players_data[player_id] = {"roster": {}}
+    
+    if "scoring" not in players_data[player_id]:
+        players_data[player_id]["scoring"] = {}
+    
+    if str(year) not in players_data[player_id]["scoring"]:
+        players_data[player_id]["scoring"][str(year)] = {}
+    
+    if str(week) not in players_data[player_id]["scoring"][str(year)]:
+        players_data[player_id]["scoring"][str(year)][str(week)] = {}
+    
+    # Convert numeric values to integers
+    converted_data = convert_dict_values(data)
+    
+    # If player already has data for this week, update it
+    if str(week) in players_data[player_id]["scoring"][str(year)]:
+        current_data = players_data[player_id]["scoring"][str(year)][str(week)]
+        
+        # For all stats, use the new values directly since they represent the total for the week
+        for key, value in converted_data.items():
+            current_data[key] = value
+                    
+        players_data[player_id]["scoring"][str(year)][str(week)] = current_data
+    else:
+        players_data[player_id]["scoring"][str(year)][str(week)] = converted_data
+
+def getPlayerData(player_id: str, year: int, week: int) -> Dict[str, Any]:
+    """Get player data for a specific player, year, and week"""
     try:
-        def to_defaultdict(d, depth=2):
-            if depth == 0:
-                return d
-            return defaultdict(lambda: defaultdict(dict) if depth == 2 else dict, {k: to_defaultdict(v, depth-1) for k, v in d.items()})
-        # Load player store
-        with open('local_data/player_store.json', 'r') as f:
-            raw = json.load(f)
-            for playerId, pdata in raw.items():
-                playerStore[playerId]["roster"] = pdata.get("roster", {})
-                playerStore[playerId]["data"] = to_defaultdict(pdata.get("data", {}), 2)
-        # Load defense data
-        with open('local_data/defense_data.json', 'r') as f:
-            defenseData.clear()
-            d = json.load(f)
-            for team, years in d.items():
-                defenseData[team] = to_defaultdict(years, 2)
-        print("Loaded all data from local_data directory")
-    except FileNotFoundError:
-        print("No existing data files found")
+        return players_data[player_id]["scoring"][str(year)][str(week)].copy()
+    except KeyError:
+        return {
+            "points": 0,
+            "passYards": 0,
+            "rushYards": 0,
+            "recYards": 0,
+            "passTds": 0,
+            "rushTds": 0,
+            "recTds": 0,
+            "fgm": 0,
+            "epm": 0,
+            "2pConvs": 0
+        }
+
+def storeDefenseData(team: str, year: int, week: int, data: Dict[str, Any]):
+    """Store defense scoring data"""
+    if team not in defense_data:
+        defense_data[team] = {}
+    
+    if str(year) not in defense_data[team]:
+        defense_data[team][str(year)] = {}
+    
+    if str(week) not in defense_data[team][str(year)]:
+        defense_data[team][str(year)][str(week)] = {}
+    
+    # Convert numeric values to integers
+    converted_data = convert_dict_values(data)
+    
+    # If team already has data for this week, update it
+    if str(week) in defense_data[team][str(year)]:
+        current_data = defense_data[team][str(year)][str(week)]
+        
+        # For all stats, use the new values directly since they represent the total for the week
+        for key, value in converted_data.items():
+            current_data[key] = value
+                    
+        defense_data[team][str(year)][str(week)] = current_data
+    else:
+        defense_data[team][str(year)][str(week)] = converted_data
+
+def getDefenseData(team: str, year: int, week: int) -> Dict[str, Any]:
+    """Get defense data for a specific team, year, and week"""
+    try:
+        return defense_data[team][str(year)][str(week)].copy()
+    except KeyError:
+        return {
+            "points": 0,
+            "touchdowns": 0,
+            "turnovers": 0,
+            "sacks": 0,
+            "safeties": 0,
+            "returned2pts": 0,
+            "returnYards": 0,
+            "pointsAllowed": 0
+        }
+
+def storePlayerRoster(player_id: str, player_info: Dict[str, Any]):
+    """Store player roster information"""
+    if player_id not in players_data:
+        players_data[player_id] = {"roster": {}, "scoring": {}}
+    # Convert any numeric values in roster info to integers
+    players_data[player_id]["roster"] = convert_dict_values(player_info)
+
+def getPlayerRoster(player_id: str) -> Dict[str, Any]:
+    """Get player roster information"""
+    try:
+        return players_data[player_id]["roster"]
+    except KeyError:
+        return {}
 
 def syncToFirebase(db):
     """Sync all local data to Firebase"""
-    from firebase_admin import firestore
-    # Sync player data and roster
-    for playerId, pdata in playerStore.items():
-        # Sync roster
-        db.collection("players").document(playerId).set(pdata["roster"])
-        # Sync data
-        for year, weeks in pdata["data"].items():
-            for week, data in weeks.items():
-                doc_ref = db.collection("players").document(playerId).collection("years").document(str(year)).collection("weeks").document(f"week{week}")
-                if doc_ref.get().exists:
-                    doc_ref.update(data)
-                else:
-                    doc_ref.set(data)
+    # Sync players data (both roster and scoring)
+    for player_id, player_data in players_data.items():
+        # Sync roster data
+        if "roster" in player_data:
+            db.collection('roster').document(player_id).set(player_data["roster"])
+        
+        # Sync scoring data
+        if "scoring" in player_data:
+            for year, year_data in player_data["scoring"].items():
+                for week, week_data in year_data.items():
+                    db.collection('players').document(f"{year}_{week}_{player_id}").set(week_data)
+    
     # Sync defense data
-    for team, years in defenseData.items():
-        for year, weeks in years.items():
-            for week, data in weeks.items():
-                doc_ref = db.collection("defenses").document(team).collection("years").document(str(year)).collection("weeks").document(f"week{week}")
-                if doc_ref.get().exists:
-                    doc_ref.update(data)
-                else:
-                    doc_ref.set(data)
-    # Clear local storage after successful sync
-    playerStore.clear()
-    defenseData.clear() 
+    for team, team_data in defense_data.items():
+        for year, year_data in team_data.items():
+            for week, week_data in year_data.items():
+                db.collection('defense').document(f"{year}_{week}_{team}").set(week_data) 
