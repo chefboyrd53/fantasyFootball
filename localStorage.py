@@ -51,8 +51,9 @@ def saveToFiles():
 
 def storePlayerData(player_id: str, year: int, week: int, data: Dict[str, Any]):
     """Store player scoring data"""
-    if player_id not in players_data:
-        players_data[player_id] = {"roster": {}}
+    # Only store data for players who have roster information
+    if player_id not in players_data or "roster" not in players_data[player_id] or not players_data[player_id]["roster"]:
+        return
     
     if "scoring" not in players_data[player_id]:
         players_data[player_id]["scoring"] = {}
