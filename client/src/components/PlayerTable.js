@@ -127,58 +127,62 @@ function PlayerTable() {
 
 
   return (
-    <div className="p-4 min-h-screen bg-gray-900 text-gray-100">
-      <h1 className="text-3xl font-bold mb-6 text-blue-400">Player Stats</h1>
-      <div className="flex flex-wrap gap-4 mb-6">
-        <label className="flex items-center gap-2">
-          Filter by Position:{' '}
+    <div className="p-4 min-h-screen bg-primary text-primary flex flex-col items-center">
+      <h1 className="text-3xl font-bold mb-6 text-accent">Player Stats</h1>
+      <div className="flex flex-wrap justify-center gap-6 mb-6 w-full text-sm">
+        <label className="flex flex-col sm:flex-row items-start sm:items-center gap-1 sm:gap-2 text-secondary">
+          <span className="whitespace-nowrap font-semibold">Position:</span>
           <select 
             value={positionFilter} 
             onChange={(e) => setPositionFilter(e.target.value)}
-            className="bg-gray-800 text-gray-100 border border-blue-500 rounded px-3 py-1 focus:outline-none focus:ring-2 focus:ring-blue-400"
+            className="bg-secondary text-primary border border-primary rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary transition"
           >
             {positions.map(pos => <option key={pos} value={pos}>{pos}</option>)}
           </select>
         </label>
-        <label className="flex items-center gap-2">
-          Year:{' '}
+
+        <label className="flex flex-col sm:flex-row items-start sm:items-center gap-1 sm:gap-2 text-secondary">
+          <span className="whitespace-nowrap font-semibold">Year:</span>
           <select 
             value={selectedYear} 
             onChange={(e) => setSelectedYear(e.target.value)}
-            className="bg-gray-800 text-gray-100 border border-blue-500 rounded px-3 py-1 focus:outline-none focus:ring-2 focus:ring-blue-400"
+            className="bg-secondary text-primary border border-primary rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary transition"
           >
             <option value="2024">2024</option>
           </select>
         </label>
-        <label className="flex items-center gap-2">
-          Week:{' '}
+
+        <label className="flex flex-col sm:flex-row items-start sm:items-center gap-1 sm:gap-2 text-secondary">
+          <span className="whitespace-nowrap font-semibold">Week:</span>
           <select 
             value={selectedWeek} 
             onChange={(e) => setSelectedWeek(e.target.value)}
-            className="bg-gray-800 text-gray-100 border border-blue-500 rounded px-3 py-1 focus:outline-none focus:ring-2 focus:ring-blue-400"
+            className="bg-secondary text-primary border border-primary rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary transition"
           >
             {weekOptions.map(w => <option key={w} value={w}>{w === 'All' ? 'All Weeks' : `Week ${w}`}</option>)}
           </select>
         </label>
-        <label className="flex items-center gap-2">
-          Owner:{' '}
+
+        <label className="flex flex-col sm:flex-row items-start sm:items-center gap-1 sm:gap-2 text-secondary">
+          <span className="whitespace-nowrap font-semibold">Owner:</span>
           <select 
             value={ownerFilter} 
             onChange={(e) => setOwnerFilter(e.target.value)}
-            className="bg-gray-800 text-gray-100 border border-blue-500 rounded px-3 py-1 focus:outline-none focus:ring-2 focus:ring-blue-400"
+            className="bg-secondary text-primary border border-primary rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary transition"
           >
             {ownerOptions.map((owner) => (
               <option key={owner} value={owner}>{owner}</option>
             ))}
           </select>
         </label>
+
         {selectedWeek === 'All' && (
-          <label className="flex items-center gap-2">
-            Sort by:{' '}
+          <label className="flex flex-col sm:flex-row items-start sm:items-center gap-1 sm:gap-2 text-secondary">
+            <span className="whitespace-nowrap font-semibold">Sort by:</span>
             <select 
               value={sortBy} 
               onChange={(e) => setSortBy(e.target.value)}
-              className="bg-gray-800 text-gray-100 border border-blue-500 rounded px-3 py-1 focus:outline-none focus:ring-2 focus:ring-blue-400"
+              className="bg-secondary text-primary border border-primary rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary transition"
             >
               <option value="totalPoints">Total Points</option>
               <option value="averagePoints">Average Points</option>
@@ -187,39 +191,39 @@ function PlayerTable() {
         )}
       </div>
 
-      <div className="overflow-x-auto">
-        <table className="w-full border-collapse">
-          <thead>
-            <tr className="bg-gray-800">
-              <th className="border border-blue-600 px-4 py-3 text-left"></th>
-              <th className="border border-blue-600 px-4 py-3 text-left">Name</th>
-              <th className="border border-blue-600 px-4 py-3 text-left">Position</th>
-              <th className="border border-blue-600 px-4 py-3 text-left">Team</th>
-              <th className="border border-blue-600 px-4 py-3 text-left">
-                {selectedWeek === 'All' ? 'Total Points' : 'Points'}
-              </th>
-              {selectedWeek === 'All' && (
-                <th className="border border-blue-600 px-4 py-3 text-left">Avg Points</th>
-              )}
-              <th className="border border-blue-600 px-4 py-3 text-left">Owner</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredPlayers.map((player, index) => (
-              <tr key={player.id} className="hover:bg-gray-800 transition-colors">
-                <td className="border border-blue-600 px-4 py-2 text-amber-400">{index + 1}.</td>
-                <td className="border border-blue-600 px-4 py-2">{player.name}</td>
-                <td className="border border-blue-600 px-4 py-2">{player.position}</td>
-                <td className="border border-blue-600 px-4 py-2">{player.team}</td>
-                <td className="border border-blue-600 px-4 py-2 text-amber-400">{player.totalPoints}</td>
-                {selectedWeek === 'All' && (
-                  <td className="border border-blue-600 px-4 py-2 text-amber-400">{player.averagePoints}</td>
-                )}
-                <td className="border border-blue-600 px-4 py-2">{ownerMap[player.id] || "Free Agent"}</td>
+      <div className="flex justify-center p-4">
+        <div className="inline-block rounded-xl shadow-lg bg-secondary overflow-x-auto">
+          <table className="text-left divide-y divide-border w-full">
+            <thead className="bg-muted text-xs uppercase tracking-wide text-muted">
+              <tr>
+                <th className="px-3 py-2 text-center w-1 whitespace-nowrap"></th>
+                <th className="px-3 py-2 text-left whitespace-nowrap">Player</th>
+                <th className="px-3 py-2 text-center w-1 whitespace-nowrap">Points</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="text-sm">
+              {filteredPlayers.map((player, index) => (
+                <tr key={player.id} className="hover:bg-[var(--color-bg-tertiary)] even:bg-[var(--color-bg-muted)] transition-colors duration-150">
+                  <td className="px-3 py-3 text-right text-xs">{index + 1}.</td>
+
+                  <td className="px-3 py-3 text-left">
+                    <div className="text-base font-semibold">{player.name}</div>
+                    <div className="text-xs text-muted mt-1">
+                      <span className={`position-${player.position}`}>{player.position}</span> · {player.team} · {ownerMap[player.id] || "Free Agent"}
+                    </div>
+                  </td>
+
+                  <td className="px-3 py-3 text-center">
+                    <div className="text-base font-semibold">{player.totalPoints}</div>
+                    {selectedWeek === 'All' && (
+                      <div className="text-xs text-muted mt-1">{player.averagePoints}</div>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );
