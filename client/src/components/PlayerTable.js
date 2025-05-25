@@ -132,6 +132,7 @@ function PlayerTable() {
       <table className="table-auto border-collapse border border-gray-300 w-full">
         <thead>
           <tr className="bg-gray-200">
+            <th></th>
             <th className="border border-gray-300 px-4 py-2">Name</th>
             <th className="border border-gray-300 px-4 py-2">Position</th>
             <th className="border border-gray-300 px-4 py-2">Team</th>
@@ -144,8 +145,9 @@ function PlayerTable() {
           </tr>
         </thead>
         <tbody>
-          {filteredPlayers.map((player) => (
+          {filteredPlayers.map((player, index) => (
             <tr key={player.id}>
+              <td className="border border-gray-300 px-4 py-2">{index + 1}</td>
               <td className="border border-gray-300 px-4 py-2">{player.name}</td>
               <td className="border border-gray-300 px-4 py-2">{player.position}</td>
               <td className="border border-gray-300 px-4 py-2">{player.team}</td>
