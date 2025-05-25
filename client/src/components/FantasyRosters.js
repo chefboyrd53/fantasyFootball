@@ -1,14 +1,19 @@
 import React, { useEffect, useState } from 'react';
 import { db } from '../firebase';
 import { collection, doc, getDoc, getDocs } from 'firebase/firestore';
+import { getCache, setCache } from '../utils/cache';
 
 function FantasyRosters() {
   const [teams, setTeams] = useState([]);
-  const [players, setPlayers] = useState({});
-  const [defenses, setDefenses] = useState({});
 
   useEffect(() => {
     const fetchData = async () => {
+      const cached = getCache('fantasy_roster_details');
+      if (cached) {
+        setTeams(cached);
+        return;
+      }
+
       const teamsSnapshot = await getDocs(collection(db, 'fantasyTeams'));
       const loadedTeams = [];
 
@@ -18,7 +23,6 @@ function FantasyRosters() {
 
         for (let playerId of teamData.roster || []) {
           if (playerId.length <= 3) {
-            // Defense
             const defenseDoc = await getDoc(doc(db, 'defense', playerId));
             if (defenseDoc.exists()) {
               rosterDetails.push({
@@ -28,7 +32,6 @@ function FantasyRosters() {
               });
             }
           } else {
-            // Player
             const playerDoc = await getDoc(doc(db, 'players', playerId));
             if (playerDoc.exists()) {
               const p = playerDoc.data();
@@ -48,6 +51,7 @@ function FantasyRosters() {
         });
       }
 
+      setCache('fantasy_roster_details', loadedTeams);
       setTeams(loadedTeams);
     };
 
@@ -55,20 +59,26 @@ function FantasyRosters() {
   }, []);
 
   return (
-    <div className="p-4">
-      <h1 className="text-2xl font-bold mb-4">Fantasy Rosters</h1>
-      {teams.map((team, i) => (
-        <div key={i} className="mb-8">
-          <h2 className="text-xl font-semibold mb-2">{team.name}</h2>
-          <ul className="list-disc pl-6">
-            {team.roster.map((player, j) => (
-              <li key={j}>
-                {player.name} {player.position ? `(${player.position})` : '(DEF)'}
-              </li>
-            ))}
-          </ul>
-        </div>
-      ))}
+    <div className="p-4 min-h-screen bg-gray-900 text-gray-100">
+      <h1 className="text-3xl font-bold mb-6 text-blue-400">Fantasy Rosters</h1>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {teams.map((team, i) => (
+          <div key={i} className="bg-gray-800 rounded-lg p-6 shadow-lg border border-blue-600 hover:border-blue-400 transition-colors">
+            <h2 className="text-xl font-semibold mb-4 text-amber-400 border-b border-blue-600 pb-2">{team.name}</h2>
+            <ul className="space-y-2">
+              {team.roster.map((player, j) => (
+                <li key={j} className="flex items-center gap-2 text-gray-200 hover:text-blue-400 transition-colors">
+                  <span className="text-amber-400">•</span>
+                  {player.name} 
+                  <span className="text-gray-400">
+                    {player.position ? `(${player.position})` : '(DEF)'}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
