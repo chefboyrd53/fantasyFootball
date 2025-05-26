@@ -2,6 +2,29 @@ import React, { useEffect, useState } from 'react';
 import { db } from '../firebase';
 import { collection, getDocs } from 'firebase/firestore';
 import { getCache, setCache } from '../utils/cache';
+import {LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid} from 'recharts';
+
+const playerStatNameMap = {
+  passYards: 'Passing Yards',
+  passTds: 'Passing Touchdowns',
+  rushYards: 'Rushing Yards',
+  rushTds: 'Rushing Touchdowns',
+  recYards: 'Receiving Yards',
+  recTds: 'Receiving Touchdowns',
+  '2pConvs': '2 Point Conversions',
+  fgm: 'Field Goals Made',
+  epm: 'Extra Points Made'
+};
+
+const defenseStatNameMap = {
+  touchdowns: 'Touchdowns',
+  turnovers: 'Turnovers',
+  sacks: 'Sacks',
+  returnYards: 'Kickoff & Punt Return Yards',
+  pointsAllowed: 'Points Allowed',
+  safeties: 'Safeties',
+  returned2pts: 'Returned 2 Point Conversions',
+};
 
 function PlayerTable() {
   const [players, setPlayers] = useState([]);
@@ -12,6 +35,9 @@ function PlayerTable() {
   const [selectedWeek, setSelectedWeek] = useState('All');
   const [ownerMap, setOwnerMap] = useState({});
   const [ownerFilter, setOwnerFilter] = useState('All');
+  const [teamFilter, setTeamFilter] = useState('All');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedPlayer, setSelectedPlayer] = useState(null);
 
 
   useEffect(() => {
@@ -86,14 +112,23 @@ function PlayerTable() {
       filtered = filtered.filter(p => p.position === positionFilter);
     }
 
+    if (teamFilter !== 'All') {
+      filtered = filtered.filter(p => p.team === teamFilter);
+    }
+
     if (ownerFilter !== 'All') {
       filtered = filtered.filter(p => (ownerMap[p.id] || 'Free Agent') === ownerFilter);
+    }
+
+    if (searchQuery.trim() !== '') {
+      const query = searchQuery.trim().toLowerCase();
+      filtered = filtered.filter(p => p.name.toLowerCase().includes(query));
     }
 
     filtered.sort((a, b) => b[sortBy] - a[sortBy]);
 
     setFilteredPlayers(filtered);
-  }, [players, positionFilter, sortBy, selectedYear, selectedWeek, ownerFilter, ownerMap]);
+  }, [players, positionFilter, sortBy, selectedYear, selectedWeek, ownerFilter, ownerMap, teamFilter, searchQuery]);
 
   useEffect(() => {
     const fetchRosters = async () => {
@@ -123,107 +158,271 @@ function PlayerTable() {
   const positions = ['All', ...Array.from(new Set(players.map(p => p.position)))];
   const weekOptions = ['All', ...Array.from({ length: 18 }, (_, i) => (i + 1).toString())];
   const ownerOptions = ['All', ...Array.from(new Set([...Object.values(ownerMap), 'Free Agent']))];
-
+  const teamOptions = ["All", ...[...new Set(players.map(p => p.team))].filter(t => t !== "All").sort()];
 
 
   return (
-    <div className="p-4 min-h-screen bg-primary text-primary flex flex-col items-center">
-      <h1 className="text-3xl font-bold mb-6 text-accent">Player Stats</h1>
-      <div className="flex flex-wrap justify-center gap-6 mb-6 w-full text-sm">
-        <label className="flex flex-col sm:flex-row items-start sm:items-center gap-1 sm:gap-2 text-secondary">
-          <span className="whitespace-nowrap font-semibold">Position:</span>
-          <select 
-            value={positionFilter} 
-            onChange={(e) => setPositionFilter(e.target.value)}
-            className="bg-secondary text-primary border border-primary rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary transition"
-          >
-            {positions.map(pos => <option key={pos} value={pos}>{pos}</option>)}
-          </select>
-        </label>
+    <div className="flex h-[calc(100vh-80px)] bg-primary text-primary">
+      {/* Left side: filters, search, table */}
+      <div className="flex-1 flex flex-col p-6">
+        {/* Search and Filters Container */}
+        <div className="flex flex-wrap items-center gap-4 mb-6 w-full">
 
-        <label className="flex flex-col sm:flex-row items-start sm:items-center gap-1 sm:gap-2 text-secondary">
-          <span className="whitespace-nowrap font-semibold">Year:</span>
-          <select 
-            value={selectedYear} 
-            onChange={(e) => setSelectedYear(e.target.value)}
-            className="bg-secondary text-primary border border-primary rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary transition"
-          >
-            <option value="2024">2024</option>
-          </select>
-        </label>
+          {/* Filters */}
+          <div className="flex flex-wrap gap-4 text-sm">
+            <label className="flex items-center gap-2 text-secondary">
+              <span className="whitespace-nowrap font-semibold">Year:</span>
+              <select 
+                value={selectedYear} 
+                onChange={(e) => setSelectedYear(e.target.value)}
+                className="bg-secondary text-primary border border-primary rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary transition"
+              >
+                <option value="2024">2024</option>
+              </select>
+            </label>
 
-        <label className="flex flex-col sm:flex-row items-start sm:items-center gap-1 sm:gap-2 text-secondary">
-          <span className="whitespace-nowrap font-semibold">Week:</span>
-          <select 
-            value={selectedWeek} 
-            onChange={(e) => setSelectedWeek(e.target.value)}
-            className="bg-secondary text-primary border border-primary rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary transition"
-          >
-            {weekOptions.map(w => <option key={w} value={w}>{w === 'All' ? 'All Weeks' : `Week ${w}`}</option>)}
-          </select>
-        </label>
+            <label className="flex items-center gap-2 text-secondary">
+              <span className="whitespace-nowrap font-semibold">Week:</span>
+              <select 
+                value={selectedWeek} 
+                onChange={(e) => setSelectedWeek(e.target.value)}
+                className="bg-secondary text-primary border border-primary rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary transition"
+              >
+                {weekOptions.map(w => <option key={w} value={w}>{w === 'All' ? 'All Weeks' : `Week ${w}`}</option>)}
+              </select>
+            </label>
 
-        <label className="flex flex-col sm:flex-row items-start sm:items-center gap-1 sm:gap-2 text-secondary">
-          <span className="whitespace-nowrap font-semibold">Owner:</span>
-          <select 
-            value={ownerFilter} 
-            onChange={(e) => setOwnerFilter(e.target.value)}
-            className="bg-secondary text-primary border border-primary rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary transition"
-          >
-            {ownerOptions.map((owner) => (
-              <option key={owner} value={owner}>{owner}</option>
-            ))}
-          </select>
-        </label>
+            <label className="flex items-center gap-2 text-secondary">
+              <span className="whitespace-nowrap font-semibold">Position:</span>
+              <select 
+                value={positionFilter} 
+                onChange={(e) => setPositionFilter(e.target.value)}
+                className="bg-secondary text-primary border border-primary rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary transition"
+              >
+                {positions.map(pos => <option key={pos} value={pos}>{pos}</option>)}
+              </select>
+            </label>
 
-        {selectedWeek === 'All' && (
-          <label className="flex flex-col sm:flex-row items-start sm:items-center gap-1 sm:gap-2 text-secondary">
-            <span className="whitespace-nowrap font-semibold">Sort by:</span>
-            <select 
-              value={sortBy} 
-              onChange={(e) => setSortBy(e.target.value)}
-              className="bg-secondary text-primary border border-primary rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary transition"
-            >
-              <option value="totalPoints">Total Points</option>
-              <option value="averagePoints">Average Points</option>
-            </select>
-          </label>
-        )}
+            <label className="flex items-center gap-2 text-secondary">
+              <span className="whitespace-nowrap font-semibold">Team:</span>
+              <select 
+                value={teamFilter} 
+                onChange={(e) => setTeamFilter(e.target.value)}
+                className="bg-secondary text-primary border border-primary rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary transition"
+              >
+                {teamOptions.map(team => <option key={team} value={team}>{team}</option>)}
+              </select>
+            </label>
+
+            <label className="flex items-center gap-2 text-secondary">
+              <span className="whitespace-nowrap font-semibold">Owner:</span>
+              <select 
+                value={ownerFilter} 
+                onChange={(e) => setOwnerFilter(e.target.value)}
+                className="bg-secondary text-primary border border-primary rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary transition"
+              >
+                {ownerOptions.map((owner) => (
+                  <option key={owner} value={owner}>{owner}</option>
+                ))}
+              </select>
+            </label>
+
+            {selectedWeek === 'All' && (
+              <label className="flex items-center gap-2 text-secondary">
+                <span className="whitespace-nowrap font-semibold">Sort by:</span>
+                <select 
+                  value={sortBy} 
+                  onChange={(e) => setSortBy(e.target.value)}
+                  className="bg-secondary text-primary border border-primary rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary transition"
+                >
+                  <option value="totalPoints">Total Points</option>
+                  <option value="averagePoints">Average Points</option>
+                </select>
+              </label>
+            )}
+          </div>
+
+          {/* Search Bar */}
+          <div className="flex-1 min-w-[300px]">
+            <input
+              type="text"
+              placeholder="Search by player name..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full bg-secondary text-primary border border-primary rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+            />
+          </div>
+        </div>
+        
+
+        {/* Player Table Container */}
+        <div className="flex-1 overflow-hidden">
+          <div className="h-full overflow-y-auto pr-4 pb-4">
+            <div className="inline-block rounded-xl shadow-lg bg-secondary w-full">
+              <div className="sticky top-0 bg-secondary border-b border-border z-10">
+                <table className="w-full bg-muted">
+                  <thead className="text-xs uppercase tracking-wide text-muted">
+                    <tr>
+                      <th className="px-3 py-2 text-center w-1 whitespace-nowrap bg-muted"></th>
+                      <th className="px-3 py-2 text-left whitespace-nowrap bg-muted">Player</th>
+                      <th className="px-3 py-2 text-center w-1 whitespace-nowrap bg-muted">Points</th>
+                    </tr>
+                  </thead>
+                </table>
+              </div>
+              <table className="text-left divide-y divide-border w-full">
+                <tbody className="text-sm">
+                  {filteredPlayers.map((player, index) => (
+                    <tr key={player.id} onClick={() => setSelectedPlayer(player)} className="hover:bg-[var(--color-bg-tertiary)] even:bg-[var(--color-bg-muted)] transition-colors duration-150">
+                      <td className="px-3 py-3 text-right text-xs">{index + 1}.</td>
+                      <td className="px-3 py-3 text-left">
+                        <div className="text-base font-semibold">{player.name}</div>
+                        <div className="text-xs text-muted mt-1">
+                          <span className={`position-${player.position}`}>{player.position}</span> · {player.team} · {ownerMap[player.id] || "Free Agent"}
+                        </div>
+                      </td>
+                      <td className="px-3 py-3 text-center">
+                        <div className="text-base font-semibold">{player.totalPoints}</div>
+                        {selectedWeek === 'All' && (
+                          <div className="text-xs text-muted mt-1">{player.averagePoints}</div>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <div className="flex justify-center p-4">
-        <div className="inline-block rounded-xl shadow-lg bg-secondary overflow-x-auto">
-          <table className="text-left divide-y divide-border w-full">
-            <thead className="bg-muted text-xs uppercase tracking-wide text-muted">
-              <tr>
-                <th className="px-3 py-2 text-center w-1 whitespace-nowrap"></th>
-                <th className="px-3 py-2 text-left whitespace-nowrap">Player</th>
-                <th className="px-3 py-2 text-center w-1 whitespace-nowrap">Points</th>
-              </tr>
-            </thead>
-            <tbody className="text-sm">
-              {filteredPlayers.map((player, index) => (
-                <tr key={player.id} className="hover:bg-[var(--color-bg-tertiary)] even:bg-[var(--color-bg-muted)] transition-colors duration-150">
-                  <td className="px-3 py-3 text-right text-xs">{index + 1}.</td>
+      {/* Right Side Panel */}
+      <div className="w-2/3 h-full overflow-y-auto bg-secondary p-6">
+        {selectedPlayer ? (
+          <>
+            <div className="flex space-x-6 items-center mb-6 border-b border-border pb-3">
+              <h2 className="text-xl font-bold">{selectedPlayer.name}</h2>
+              <p className="text-sm text-muted text-left">
+                <span className={`position-${selectedPlayer.position}`}>{selectedPlayer.position}</span> · {selectedPlayer.team} · {ownerMap[selectedPlayer.id] || "Free Agent"}
+              </p>
+            </div>
 
-                  <td className="px-3 py-3 text-left">
-                    <div className="text-base font-semibold">{player.name}</div>
-                    <div className="text-xs text-muted mt-1">
-                      <span className={`position-${player.position}`}>{player.position}</span> · {player.team} · {ownerMap[player.id] || "Free Agent"}
+            <h3 className="text-sm font-semibold mb-4 text-accent">
+              Stats ({selectedWeek === 'All' ? 'Total' : `Week ${selectedWeek}`})
+            </h3>
+
+            <div className="grid grid-cols-3 gap-2 mb-6">
+              {(() => {
+                const isDefense = selectedPlayer.position === 'DST';
+                const statNameMap = isDefense ? defenseStatNameMap : playerStatNameMap;
+                const stats = selectedPlayer?.scoring[selectedYear] || {};
+                const relevantWeeks =
+                  selectedWeek === 'All'
+                    ? Object.values(stats)
+                    : stats[selectedWeek]
+                    ? [stats[selectedWeek]]
+                    : [];
+
+                const combinedStats = relevantWeeks.reduce((acc, week) => {
+                  Object.entries(week).forEach(([key, value]) => {
+                    acc[key] = (acc[key] || 0) + value;
+                  });
+                  return acc;
+                }, {});
+
+                const statOrder = isDefense
+                  ? Object.keys(defenseStatNameMap)
+                  : Object.keys(playerStatNameMap);
+
+                return statOrder.map((statKey) => {
+                  if (combinedStats[statKey] == null) return null;
+                  return (
+                    <div key={statKey} className="bg-muted rounded-lg p-3">
+                      <div className="text-xs text-muted mb-1">{statNameMap[statKey]}</div>
+                      <div className="text-lg font-semibold">{combinedStats[statKey]}</div>
                     </div>
-                  </td>
+                  );
+                });
+              })()}
+            </div>
 
-                  <td className="px-3 py-3 text-center">
-                    <div className="text-base font-semibold">{player.totalPoints}</div>
-                    {selectedWeek === 'All' && (
-                      <div className="text-xs text-muted mt-1">{player.averagePoints}</div>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+            <div className="mt-8">
+              <h3 className="text-sm font-semibold mb-4 text-accent">Weekly Points</h3>
+              <ResponsiveContainer width="100%" height={300}>
+                <LineChart
+                  data={Array.from({ length: 18 }, (_, i) => {
+                    const weekNum = (i + 1).toString();
+                    const weekData = selectedPlayer.scoring?.[selectedYear]?.[weekNum];
+                    // Only include weeks that have data
+                    if (!weekData) return null;
+                    return {
+                      week: `W${weekNum}`,
+                      points: weekData.points ?? 0,
+                      isSelected: selectedWeek === weekNum
+                    };
+                  }).filter(Boolean)} // Remove null entries
+                  margin={{ top: 5, right: 10, left: 0, bottom: 5 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" stroke="#444" />
+                  <XAxis 
+                    dataKey="week" 
+                    stroke="#999"
+                    tick={{ fontSize: 12 }}
+                  />
+                  <YAxis 
+                    stroke="#999"
+                    tick={{ fontSize: 12 }}
+                  />
+                  <Tooltip 
+                    contentStyle={{ 
+                      backgroundColor: 'var(--color-bg-secondary)',
+                      border: '1px solid var(--color-text-primary)',
+                      borderRadius: '8px',
+                      padding: '8px'
+                    }}
+                    labelStyle={{ color: 'var(--color-text-primary)', fontSize: '14px' }}
+                    itemStyle={{ color: 'var(--color-text-accent)', fontSize: '16px' }}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="points"
+                    stroke="#6666ff"
+                    strokeWidth={2}
+                    dot={(props) => {
+                      const { cx, cy, payload } = props;
+                      if (!cx || !cy) return null;
+                      return (
+                        <circle
+                          cx={cx}
+                          cy={cy}
+                          r={payload.isSelected ? 6 : 4}
+                          fill={payload.isSelected ? "#f59e0b" : "#6666ff"}
+                          stroke={payload.isSelected ? "#f59e0b" : "#6666ff"}
+                        />
+                      );
+                    }}
+                    activeDot={(props) => {
+                      const { cx, cy, payload } = props;
+                      if (!cx || !cy) return null;
+                      return (
+                        <circle
+                          cx={cx}
+                          cy={cy}
+                          r={8}
+                          fill={payload.isSelected ? "#f59e0b" : "#6666ff"}
+                          stroke={payload.isSelected ? "#f59e0b" : "#6666ff"}
+                        />
+                      );
+                    }}
+                    connectNulls={false}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </>
+        ) : (
+          <div className="text-muted text-sm italic">Click a player to see details</div>
+        )}
       </div>
     </div>
   );
