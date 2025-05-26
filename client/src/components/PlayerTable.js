@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { db } from '../firebase';
 import { collection, getDocs } from 'firebase/firestore';
 import { getCache, setCache } from '../utils/cache';
-import {LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid} from 'recharts';
+import {LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, ReferenceLine} from 'recharts';
 
 const playerStatNameMap = {
   passYards: 'Passing Yards',
@@ -39,6 +39,7 @@ function PlayerTable() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedPlayer, setSelectedPlayer] = useState(null);
   const [isMobilePanelOpen, setIsMobilePanelOpen] = useState(false);
+  const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(false);
 
   useEffect(() => {
     async function fetchData() {
@@ -167,89 +168,32 @@ function PlayerTable() {
     }
   };
 
+  const handleOverlayClick = (e) => {
+    // Only close if clicking the overlay itself, not its children
+    if (e.target === e.currentTarget) {
+      setIsFilterPanelOpen(false);
+    }
+  };
+
   return (
-    <div className="flex h-[calc(100vh-80px)] bg-primary text-primary">
+    <div className="flex h-[calc(100vh-80px)] bg-primary text-primary overflow-hidden">
       {/* Left side: filters, search, table */}
-      <div className="flex-1 flex flex-col p-6">
+      <div className="flex-1 flex flex-col p-6 relative overflow-hidden">
         {/* Search and Filters Container */}
-        <div className="flex flex-wrap items-center gap-4 mb-6 w-full">
-
-          {/* Filters */}
-          <div className="flex flex-wrap gap-4 text-sm">
-            <label className="flex items-center gap-2 text-secondary">
-              <span className="whitespace-nowrap font-semibold">Year:</span>
-              <select 
-                value={selectedYear} 
-                onChange={(e) => setSelectedYear(e.target.value)}
-                className="bg-secondary text-primary border border-primary rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary transition"
-              >
-                <option value="2024">2024</option>
-              </select>
-            </label>
-
-            <label className="flex items-center gap-2 text-secondary">
-              <span className="whitespace-nowrap font-semibold">Week:</span>
-              <select 
-                value={selectedWeek} 
-                onChange={(e) => setSelectedWeek(e.target.value)}
-                className="bg-secondary text-primary border border-primary rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary transition"
-              >
-                {weekOptions.map(w => <option key={w} value={w}>{w === 'All' ? 'All Weeks' : `Week ${w}`}</option>)}
-              </select>
-            </label>
-
-            <label className="flex items-center gap-2 text-secondary">
-              <span className="whitespace-nowrap font-semibold">Position:</span>
-              <select 
-                value={positionFilter} 
-                onChange={(e) => setPositionFilter(e.target.value)}
-                className="bg-secondary text-primary border border-primary rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary transition"
-              >
-                {positions.map(pos => <option key={pos} value={pos}>{pos}</option>)}
-              </select>
-            </label>
-
-            <label className="flex items-center gap-2 text-secondary">
-              <span className="whitespace-nowrap font-semibold">Team:</span>
-              <select 
-                value={teamFilter} 
-                onChange={(e) => setTeamFilter(e.target.value)}
-                className="bg-secondary text-primary border border-primary rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary transition"
-              >
-                {teamOptions.map(team => <option key={team} value={team}>{team}</option>)}
-              </select>
-            </label>
-
-            <label className="flex items-center gap-2 text-secondary">
-              <span className="whitespace-nowrap font-semibold">Owner:</span>
-              <select 
-                value={ownerFilter} 
-                onChange={(e) => setOwnerFilter(e.target.value)}
-                className="bg-secondary text-primary border border-primary rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary transition"
-              >
-                {ownerOptions.map((owner) => (
-                  <option key={owner} value={owner}>{owner}</option>
-                ))}
-              </select>
-            </label>
-
-            {selectedWeek === 'All' && (
-              <label className="flex items-center gap-2 text-secondary">
-                <span className="whitespace-nowrap font-semibold">Sort by:</span>
-                <select 
-                  value={sortBy} 
-                  onChange={(e) => setSortBy(e.target.value)}
-                  className="bg-secondary text-primary border border-primary rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary transition"
-                >
-                  <option value="totalPoints">Total Points</option>
-                  <option value="averagePoints">Average Points</option>
-                </select>
-              </label>
-            )}
-          </div>
+        <div className="flex items-center gap-4 mb-6 w-full">
+          {/* Filters Button */}
+          <button
+            onClick={() => setIsFilterPanelOpen(true)}
+            className="flex items-center gap-2 bg-secondary text-primary border border-primary rounded-md px-4 py-2 hover:bg-[var(--color-bg-tertiary)] transition-colors"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+            </svg>
+            Filters
+          </button>
 
           {/* Search Bar */}
-          <div className="flex-1 min-w-[300px]">
+          <div className="flex-1">
             <input
               type="text"
               placeholder="Search by player name..."
@@ -301,6 +245,114 @@ function PlayerTable() {
                   ))}
                 </tbody>
               </table>
+            </div>
+          </div>
+        </div>
+
+        {/* Filter Panel */}
+        <div 
+          className={`absolute inset-0 bg-black bg-opacity-50 z-50 transition-opacity duration-300 ${isFilterPanelOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+          onClick={handleOverlayClick}
+        >
+          <div className={`absolute bottom-0 left-5 right-5 bg-secondary transform transition-transform duration-300 rounded-t-xl ${isFilterPanelOpen ? 'translate-y-0' : 'translate-y-full'}`}>
+            <div className="p-6 max-h-[80vh] overflow-y-auto">
+              <div className="flex justify-between items-center mb-6 border-b border-border pb-3">
+                <h2 className="text-xl font-bold">Filters</h2>
+                <button 
+                  onClick={() => setIsFilterPanelOpen(false)}
+                  className="p-2 hover:bg-muted rounded-full transition-colors"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-semibold mb-2">Year</label>
+                    <select 
+                      value={selectedYear} 
+                      onChange={(e) => setSelectedYear(e.target.value)}
+                      className="w-full bg-tertiary text-primary border border-primary rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary transition"
+                    >
+                      <option value="2024">2024</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold mb-2">Week</label>
+                    <select 
+                      value={selectedWeek} 
+                      onChange={(e) => setSelectedWeek(e.target.value)}
+                      className="w-full bg-tertiary text-primary border border-primary rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary transition"
+                    >
+                      {weekOptions.map(w => <option key={w} value={w}>{w === 'All' ? 'All Weeks' : `Week ${w}`}</option>)}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold mb-2">Position</label>
+                    <select 
+                      value={positionFilter} 
+                      onChange={(e) => setPositionFilter(e.target.value)}
+                      className="w-full bg-tertiary text-primary border border-primary rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary transition"
+                    >
+                      {positions.map(pos => <option key={pos} value={pos}>{pos}</option>)}
+                    </select>
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-semibold mb-2">Team</label>
+                    <select 
+                      value={teamFilter} 
+                      onChange={(e) => setTeamFilter(e.target.value)}
+                      className="w-full bg-tertiary text-primary border border-primary rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary transition"
+                    >
+                      {teamOptions.map(team => <option key={team} value={team}>{team}</option>)}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold mb-2">Owner</label>
+                    <select 
+                      value={ownerFilter} 
+                      onChange={(e) => setOwnerFilter(e.target.value)}
+                      className="w-full bg-tertiary text-primary border border-primary rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary transition"
+                    >
+                      {ownerOptions.map((owner) => (
+                        <option key={owner} value={owner}>{owner}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {selectedWeek === 'All' && (
+                    <div>
+                      <label className="block text-sm font-semibold mb-2">Sort by</label>
+                      <select 
+                        value={sortBy} 
+                        onChange={(e) => setSortBy(e.target.value)}
+                        className="w-full bg-tertiary text-primary border border-primary rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary transition"
+                      >
+                        <option value="totalPoints">Total Points</option>
+                        <option value="averagePoints">Average Points</option>
+                      </select>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="mt-6 flex justify-end">
+                <button
+                  onClick={() => setIsFilterPanelOpen(false)}
+                  className="bg-primary text-secondary px-4 py-2 rounded-md hover:bg-[var(--color-bg-tertiary)] transition-colors"
+                >
+                  Apply Filters
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -371,7 +423,7 @@ function PlayerTable() {
                       isSelected: selectedWeek === weekNum
                     };
                   }).filter(Boolean)} // Remove null entries
-                  margin={{ top: 5, right: 10, left: 0, bottom: 5 }}
+                  margin={{ top: 20, right: 30, left: 0, bottom: 5 }}
                 >
                   <CartesianGrid strokeDasharray="3 3" stroke="#444" />
                   <XAxis 
@@ -392,6 +444,20 @@ function PlayerTable() {
                     }}
                     labelStyle={{ color: 'var(--color-text-primary)', fontSize: '14px' }}
                     itemStyle={{ color: 'var(--color-text-accent)', fontSize: '16px' }}
+                  />
+                  <ReferenceLine 
+                    y={selectedPlayer.scoring[selectedYear] ? 
+                      Object.values(selectedPlayer.scoring[selectedYear])
+                        .reduce((sum, week) => sum + (week.points || 0), 0) / 
+                      Object.values(selectedPlayer.scoring[selectedYear]).length : 0}
+                    stroke="#f59e0b"
+                    strokeDasharray="3 3"
+                    label={{ 
+                      value: 'Avg', 
+                      position: 'right',
+                      fill: '#f59e0b',
+                      fontSize: 12
+                    }}
                   />
                   <Line
                     type="monotone"
@@ -512,7 +578,7 @@ function PlayerTable() {
                           isSelected: selectedWeek === weekNum
                         };
                       }).filter(Boolean)} // Remove null entries
-                      margin={{ top: 5, right: 10, left: 0, bottom: 5 }}
+                      margin={{ top: 20, right: 30, left: 0, bottom: 5 }}
                     >
                       <CartesianGrid strokeDasharray="3 3" stroke="#444" />
                       <XAxis 
@@ -533,6 +599,20 @@ function PlayerTable() {
                         }}
                         labelStyle={{ color: 'var(--color-text-primary)', fontSize: '14px' }}
                         itemStyle={{ color: 'var(--color-text-accent)', fontSize: '16px' }}
+                      />
+                      <ReferenceLine 
+                        y={selectedPlayer.scoring[selectedYear] ? 
+                          Object.values(selectedPlayer.scoring[selectedYear])
+                            .reduce((sum, week) => sum + (week.points || 0), 0) / 
+                          Object.values(selectedPlayer.scoring[selectedYear]).length : 0}
+                        stroke="#f59e0b"
+                        strokeDasharray="3 3"
+                        label={{ 
+                          value: 'Avg', 
+                          position: 'right',
+                          fill: '#f59e0b',
+                          fontSize: 12
+                        }}
                       />
                       <Line
                         type="monotone"
