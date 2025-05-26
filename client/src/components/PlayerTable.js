@@ -6,14 +6,14 @@ import {LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGr
 
 const playerStatNameMap = {
   passYards: 'Passing Yards',
-  passTds: 'Passing Touchdowns',
   rushYards: 'Rushing Yards',
-  rushTds: 'Rushing Touchdowns',
   recYards: 'Receiving Yards',
-  recTds: 'Receiving Touchdowns',
-  '2pConvs': '2 Point Conversions',
-  fgm: 'Field Goals Made',
-  epm: 'Extra Points Made'
+  passTds: 'Passing Tds',
+  rushTds: 'Rushing Tds',
+  recTds: 'Receiving Tds',
+  fgm: 'Field Goals',
+  epm: 'Extra Points',
+  '2pConvs': '2PT Converts',
 };
 
 const defenseStatNameMap = {
@@ -176,9 +176,9 @@ function PlayerTable() {
   };
 
   return (
-    <div className="flex h-[calc(100vh-80px)] bg-primary text-primary overflow-hidden">
+    <div className="flex h-[calc(100vh-80px)] bg-primary text-primary overflow-hidden overscroll-none">
       {/* Left side: filters, search, table */}
-      <div className="flex-1 flex flex-col p-6 relative overflow-hidden">
+      <div className="flex-1 flex flex-col p-6 relative overflow-hidden overscroll-none">
         {/* Search and Filters Container */}
         <div className="flex items-center gap-4 mb-6 w-full">
           {/* Filters Button */}
@@ -204,18 +204,17 @@ function PlayerTable() {
           </div>
         </div>
         
-
         {/* Player Table Container */}
-        <div className="flex-1 overflow-hidden">
-          <div className="h-full overflow-y-auto pr-4 pb-4">
+        <div className="flex-1 overflow-hidden overscroll-none">
+          <div className="h-full overflow-y-auto pr-4 pb-4 overscroll-none">
             <div className="inline-block rounded-xl shadow-lg bg-secondary w-full">
               <div className="sticky top-0 bg-secondary border-b border-border z-10">
                 <table className="w-full bg-muted">
                   <thead className="text-xs uppercase tracking-wide text-muted">
                     <tr>
-                      <th className="px-3 py-2 text-center w-1 whitespace-nowrap bg-muted"></th>
+                      <th className="px-3 py-2 text-right w-16 whitespace-nowrap bg-muted"></th>
                       <th className="px-3 py-2 text-left whitespace-nowrap bg-muted">Player</th>
-                      <th className="px-3 py-2 text-center w-1 whitespace-nowrap bg-muted">Points</th>
+                      <th className="px-3 py-2 text-center w-24 whitespace-nowrap bg-muted">Points</th>
                     </tr>
                   </thead>
                 </table>
@@ -228,14 +227,14 @@ function PlayerTable() {
                       onClick={() => handlePlayerSelect(player)} 
                       className="hover:bg-[var(--color-bg-tertiary)] even:bg-[var(--color-bg-muted)] transition-colors duration-150 cursor-pointer"
                     >
-                      <td className="px-3 py-3 text-right text-xs">{index + 1}.</td>
+                      <td className="px-3 py-3 text-right w-16">{index + 1}.</td>
                       <td className="px-3 py-3 text-left">
                         <div className="text-base font-semibold">{player.name}</div>
                         <div className="text-xs text-muted mt-1">
                           <span className={`position-${player.position}`}>{player.position}</span> · {player.team} · {ownerMap[player.id] || "Free Agent"}
                         </div>
                       </td>
-                      <td className="px-3 py-3 text-center">
+                      <td className="px-3 py-3 text-center w-24">
                         <div className="text-base font-semibold">{player.totalPoints}</div>
                         {selectedWeek === 'All' && (
                           <div className="text-xs text-muted mt-1">{player.averagePoints}</div>
@@ -251,10 +250,10 @@ function PlayerTable() {
 
         {/* Filter Panel */}
         <div 
-          className={`absolute inset-0 bg-black bg-opacity-50 z-50 transition-opacity duration-300 ${isFilterPanelOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+          className={`fixed inset-0 bg-black bg-opacity-50 z-50 transition-opacity duration-300 ${isFilterPanelOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
           onClick={handleOverlayClick}
         >
-          <div className={`absolute bottom-0 left-5 right-5 bg-secondary transform transition-transform duration-300 rounded-t-xl ${isFilterPanelOpen ? 'translate-y-0' : 'translate-y-full'}`}>
+          <div className={`absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-secondary rounded-xl w-[90%] max-w-md ${isFilterPanelOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
             <div className="p-6 max-h-[80vh] overflow-y-auto">
               <div className="flex justify-between items-center mb-6 border-b border-border pb-3">
                 <h2 className="text-xl font-bold">Filters</h2>
@@ -345,7 +344,7 @@ function PlayerTable() {
                 </div>
               </div>
 
-              <div className="mt-6 flex justify-end">
+              <div className="mt-8 flex justify-end pb-12">
                 <button
                   onClick={() => setIsFilterPanelOpen(false)}
                   className="bg-primary text-secondary px-4 py-2 rounded-md hover:bg-[var(--color-bg-tertiary)] transition-colors"
@@ -359,7 +358,7 @@ function PlayerTable() {
       </div>
 
       {/* Right Side Panel - Desktop */}
-      <div className="hidden lg:block w-2/3 h-full overflow-y-auto bg-secondary p-6">
+      <div className="hidden lg:block w-2/3 h-full overflow-y-auto bg-secondary p-6 overscroll-none">
         {selectedPlayer ? (
           <>
             <div className="flex space-x-6 items-center mb-6 border-b border-border pb-3">
@@ -502,10 +501,10 @@ function PlayerTable() {
       </div>
 
       {/* Mobile Panel */}
-      <div className={`lg:hidden fixed inset-0 bg-black bg-opacity-50 z-50 transition-opacity duration-300 ${isMobilePanelOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
-        <div className={`absolute right-0 top-0 bottom-0 w-full max-w-md bg-secondary transform transition-transform duration-300 ${isMobilePanelOpen ? 'translate-x-0' : 'translate-x-full'}`}>
-          <div className="h-full overflow-y-auto p-6">
-            <div className="flex justify-between items-center mb-6 border-b border-border pb-3">
+      <div className={`lg:hidden fixed inset-0 bg-black bg-opacity-50 z-50 transition-opacity duration-300 overscroll-none ${isMobilePanelOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+        <div className={`absolute right-0 top-0 bottom-0 w-full max-w-md bg-secondary transform transition-transform duration-300 overscroll-none ${isMobilePanelOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+          <div className="h-full overflow-y-auto p-6 overscroll-none">
+            <div className="flex justify-between items-center mb-3 border-b border-border pb-1">
               <div>
                 <h2 className="text-xl font-bold">{selectedPlayer?.name}</h2>
                 <p className="text-sm text-muted text-left">
@@ -524,11 +523,11 @@ function PlayerTable() {
 
             {selectedPlayer && (
               <>
-                <h3 className="text-sm font-semibold mb-4 text-accent">
+                <h3 className="text-sm font-semibold mb-1 text-accent">
                   Stats ({selectedWeek === 'All' ? 'Total' : `Week ${selectedWeek}`})
                 </h3>
 
-                <div className="grid grid-cols-3 gap-2 mb-6">
+                <div className="grid grid-cols-3 gap-0.5 mb-6">
                   {(() => {
                     const isDefense = selectedPlayer.position === 'DST';
                     const statNameMap = isDefense ? defenseStatNameMap : playerStatNameMap;
@@ -554,7 +553,7 @@ function PlayerTable() {
                     return statOrder.map((statKey) => {
                       if (combinedStats[statKey] == null) return null;
                       return (
-                        <div key={statKey} className="bg-muted rounded-lg p-3">
+                        <div key={statKey} className="bg-muted rounded-lg py-1">
                           <div className="text-xs text-muted mb-1">{statNameMap[statKey]}</div>
                           <div className="text-lg font-semibold">{combinedStats[statKey]}</div>
                         </div>
@@ -563,8 +562,8 @@ function PlayerTable() {
                   })()}
                 </div>
 
-                <div className="mt-8">
-                  <h3 className="text-sm font-semibold mb-4 text-accent">Weekly Points</h3>
+                <div className="mt-2">
+                  <h3 className="text-sm font-semibold mb-1 text-accent">Weekly Points</h3>
                   <ResponsiveContainer width="100%" height={300}>
                     <LineChart
                       data={Array.from({ length: 18 }, (_, i) => {
