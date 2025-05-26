@@ -210,22 +210,21 @@ function PlayerTable() {
 
             {/* Dropdown Menu */}
             <div 
-              className={`absolute top-full left-0 mt-2 w-96 bg-secondary rounded-lg shadow-lg border border-primary transform transition-all duration-200 origin-top-right z-50 ${
+              className={`absolute top-full left-0 mt-2 w-[calc(100vw-2rem)] sm:w-96 bg-secondary rounded-lg shadow-lg border border-primary transform transition-all duration-200 origin-top-right z-50 ${
                 isFilterPanelOpen 
                   ? 'opacity-100 scale-100' 
                   : 'opacity-0 scale-95 pointer-events-none'
               }`}
             >
-
               <div className="p-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-3">
+                <div className="grid grid-cols-2 gap-2 sm:gap-4">
+                  <div className="space-y-2 sm:space-y-3">
                     <div>
                       <label className="block text-sm font-semibold mb-1">Year</label>
                       <select 
                         value={selectedYear} 
                         onChange={(e) => setSelectedYear(e.target.value)}
-                        className="w-full bg-tertiary text-primary border border-primary rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary transition"
+                        className="w-full bg-tertiary text-primary border border-primary rounded-md px-2 sm:px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary transition"
                       >
                         <option value="2024">2024</option>
                       </select>
@@ -236,7 +235,7 @@ function PlayerTable() {
                       <select 
                         value={selectedWeek} 
                         onChange={(e) => setSelectedWeek(e.target.value)}
-                        className="w-full bg-tertiary text-primary border border-primary rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary transition"
+                        className="w-full bg-tertiary text-primary border border-primary rounded-md px-2 sm:px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary transition"
                       >
                         {weekOptions.map(w => <option key={w} value={w}>{w === 'All' ? 'All Weeks' : `Week ${w}`}</option>)}
                       </select>
@@ -247,20 +246,20 @@ function PlayerTable() {
                       <select 
                         value={positionFilter} 
                         onChange={(e) => setPositionFilter(e.target.value)}
-                        className="w-full bg-tertiary text-primary border border-primary rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary transition"
+                        className="w-full bg-tertiary text-primary border border-primary rounded-md px-2 sm:px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary transition"
                       >
                         {positions.map(pos => <option key={pos} value={pos}>{pos}</option>)}
                       </select>
                     </div>
                   </div>
 
-                  <div className="space-y-3">
+                  <div className="space-y-2 sm:space-y-3">
                     <div>
                       <label className="block text-sm font-semibold mb-1">Team</label>
                       <select 
                         value={teamFilter} 
                         onChange={(e) => setTeamFilter(e.target.value)}
-                        className="w-full bg-tertiary text-primary border border-primary rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary transition"
+                        className="w-full bg-tertiary text-primary border border-primary rounded-md px-2 sm:px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary transition"
                       >
                         {teamOptions.map(team => <option key={team} value={team}>{team}</option>)}
                       </select>
@@ -271,7 +270,7 @@ function PlayerTable() {
                       <select 
                         value={ownerFilter} 
                         onChange={(e) => setOwnerFilter(e.target.value)}
-                        className="w-full bg-tertiary text-primary border border-primary rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary transition"
+                        className="w-full bg-tertiary text-primary border border-primary rounded-md px-2 sm:px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary transition"
                       >
                         {ownerOptions.map((owner) => (
                           <option key={owner} value={owner}>{owner}</option>
@@ -285,7 +284,7 @@ function PlayerTable() {
                         <select 
                           value={sortBy} 
                           onChange={(e) => setSortBy(e.target.value)}
-                          className="w-full bg-tertiary text-primary border border-primary rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary transition"
+                          className="w-full bg-tertiary text-primary border border-primary rounded-md px-2 sm:px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary transition"
                         >
                           <option value="totalPoints">Total Points</option>
                           <option value="averagePoints">Average Points</option>
@@ -298,7 +297,7 @@ function PlayerTable() {
                 <div className="mt-4 flex justify-end">
                   <button
                     onClick={() => setIsFilterPanelOpen(false)}
-                    className="bg-primary text-secondary px-4 py-1.5 rounded-md hover:bg-[var(--color-bg-tertiary)] transition-colors text-sm"
+                    className="bg-primary text-secondary px-3 sm:px-4 py-1.5 rounded-md hover:bg-[var(--color-bg-tertiary)] transition-colors text-sm"
                   >
                     Apply Filters
                   </button>
@@ -328,9 +327,9 @@ function PlayerTable() {
                 <table className="w-full bg-muted">
                   <thead className="text-xs uppercase tracking-wide text-muted">
                     <tr>
-                      <th className="px-3 py-2 text-right w-16 whitespace-nowrap bg-muted"></th>
-                      <th className="px-3 py-2 text-left whitespace-nowrap bg-muted">Player</th>
-                      <th className="px-3 py-2 text-center w-24 whitespace-nowrap bg-muted">Points</th>
+                      <th className="px-2 py-2 text-right w-12 whitespace-nowrap bg-muted"></th>
+                      <th className="px-2 py-2 text-left whitespace-nowrap bg-muted pl-3.5">Player</th>
+                      <th className="px-2 py-2 text-center w-20 whitespace-nowrap bg-muted">Points</th>
                     </tr>
                   </thead>
                 </table>
@@ -343,17 +342,17 @@ function PlayerTable() {
                       onClick={() => handlePlayerSelect(player)} 
                       className="hover:bg-[var(--color-bg-tertiary)] even:bg-[var(--color-bg-muted)] transition-colors duration-150 cursor-pointer"
                     >
-                      <td className="px-3 py-3 text-right w-16">{index + 1}.</td>
-                      <td className="px-3 py-3 text-left">
+                      <td className="px-2 py-2 text-right w-12">{index + 1}.</td>
+                      <td className="px-2 py-2 text-left pl-2">
                         <div className="text-base font-semibold">{player.name}</div>
-                        <div className="text-xs text-muted mt-1">
+                        <div className="text-xs text-muted mt-0.5">
                           <span className={`position-${player.position}`}>{player.position}</span> · {player.team} · {ownerMap[player.id] || "Free Agent"}
                         </div>
                       </td>
-                      <td className="px-3 py-3 text-center w-24">
+                      <td className="px-2 py-2 text-center w-20">
                         <div className="text-base font-semibold">{player.totalPoints}</div>
                         {selectedWeek === 'All' && (
-                          <div className="text-xs text-muted mt-1">{player.averagePoints}</div>
+                          <div className="text-xs text-muted mt-0.5">{player.averagePoints}</div>
                         )}
                       </td>
                     </tr>
