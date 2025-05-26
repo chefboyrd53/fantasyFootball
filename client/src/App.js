@@ -40,7 +40,7 @@ function Navigation() {
           }
         `}
       >
-        Fantasy Rosters
+        Rosters
       </Link>
     </nav>
   );

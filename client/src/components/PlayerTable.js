@@ -38,7 +38,7 @@ function PlayerTable() {
   const [teamFilter, setTeamFilter] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedPlayer, setSelectedPlayer] = useState(null);
-
+  const [isMobilePanelOpen, setIsMobilePanelOpen] = useState(false);
 
   useEffect(() => {
     async function fetchData() {
@@ -160,6 +160,12 @@ function PlayerTable() {
   const ownerOptions = ['All', ...Array.from(new Set([...Object.values(ownerMap), 'Free Agent']))];
   const teamOptions = ["All", ...[...new Set(players.map(p => p.team))].filter(t => t !== "All").sort()];
 
+  const handlePlayerSelect = (player) => {
+    setSelectedPlayer(player);
+    if (window.innerWidth < 1024) { // lg breakpoint
+      setIsMobilePanelOpen(true);
+    }
+  };
 
   return (
     <div className="flex h-[calc(100vh-80px)] bg-primary text-primary">
@@ -273,7 +279,11 @@ function PlayerTable() {
               <table className="text-left divide-y divide-border w-full">
                 <tbody className="text-sm">
                   {filteredPlayers.map((player, index) => (
-                    <tr key={player.id} onClick={() => setSelectedPlayer(player)} className="hover:bg-[var(--color-bg-tertiary)] even:bg-[var(--color-bg-muted)] transition-colors duration-150">
+                    <tr 
+                      key={player.id} 
+                      onClick={() => handlePlayerSelect(player)} 
+                      className="hover:bg-[var(--color-bg-tertiary)] even:bg-[var(--color-bg-muted)] transition-colors duration-150 cursor-pointer"
+                    >
                       <td className="px-3 py-3 text-right text-xs">{index + 1}.</td>
                       <td className="px-3 py-3 text-left">
                         <div className="text-base font-semibold">{player.name}</div>
@@ -296,8 +306,8 @@ function PlayerTable() {
         </div>
       </div>
 
-      {/* Right Side Panel */}
-      <div className="w-2/3 h-full overflow-y-auto bg-secondary p-6">
+      {/* Right Side Panel - Desktop */}
+      <div className="hidden lg:block w-2/3 h-full overflow-y-auto bg-secondary p-6">
         {selectedPlayer ? (
           <>
             <div className="flex space-x-6 items-center mb-6 border-b border-border pb-3">
@@ -423,6 +433,147 @@ function PlayerTable() {
         ) : (
           <div className="text-muted text-sm italic">Click a player to see details</div>
         )}
+      </div>
+
+      {/* Mobile Panel */}
+      <div className={`lg:hidden fixed inset-0 bg-black bg-opacity-50 z-50 transition-opacity duration-300 ${isMobilePanelOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+        <div className={`absolute right-0 top-0 bottom-0 w-full max-w-md bg-secondary transform transition-transform duration-300 ${isMobilePanelOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+          <div className="h-full overflow-y-auto p-6">
+            <div className="flex justify-between items-center mb-6 border-b border-border pb-3">
+              <div>
+                <h2 className="text-xl font-bold">{selectedPlayer?.name}</h2>
+                <p className="text-sm text-muted text-left">
+                  <span className={`position-${selectedPlayer?.position}`}>{selectedPlayer?.position}</span> · {selectedPlayer?.team} · {ownerMap[selectedPlayer?.id] || "Free Agent"}
+                </p>
+              </div>
+              <button 
+                onClick={() => setIsMobilePanelOpen(false)}
+                className="p-2 hover:bg-muted rounded-full transition-colors"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {selectedPlayer && (
+              <>
+                <h3 className="text-sm font-semibold mb-4 text-accent">
+                  Stats ({selectedWeek === 'All' ? 'Total' : `Week ${selectedWeek}`})
+                </h3>
+
+                <div className="grid grid-cols-3 gap-2 mb-6">
+                  {(() => {
+                    const isDefense = selectedPlayer.position === 'DST';
+                    const statNameMap = isDefense ? defenseStatNameMap : playerStatNameMap;
+                    const stats = selectedPlayer?.scoring[selectedYear] || {};
+                    const relevantWeeks =
+                      selectedWeek === 'All'
+                        ? Object.values(stats)
+                        : stats[selectedWeek]
+                        ? [stats[selectedWeek]]
+                        : [];
+
+                    const combinedStats = relevantWeeks.reduce((acc, week) => {
+                      Object.entries(week).forEach(([key, value]) => {
+                        acc[key] = (acc[key] || 0) + value;
+                      });
+                      return acc;
+                    }, {});
+
+                    const statOrder = isDefense
+                      ? Object.keys(defenseStatNameMap)
+                      : Object.keys(playerStatNameMap);
+
+                    return statOrder.map((statKey) => {
+                      if (combinedStats[statKey] == null) return null;
+                      return (
+                        <div key={statKey} className="bg-muted rounded-lg p-3">
+                          <div className="text-xs text-muted mb-1">{statNameMap[statKey]}</div>
+                          <div className="text-lg font-semibold">{combinedStats[statKey]}</div>
+                        </div>
+                      );
+                    });
+                  })()}
+                </div>
+
+                <div className="mt-8">
+                  <h3 className="text-sm font-semibold mb-4 text-accent">Weekly Points</h3>
+                  <ResponsiveContainer width="100%" height={300}>
+                    <LineChart
+                      data={Array.from({ length: 18 }, (_, i) => {
+                        const weekNum = (i + 1).toString();
+                        const weekData = selectedPlayer.scoring?.[selectedYear]?.[weekNum];
+                        // Only include weeks that have data
+                        if (!weekData) return null;
+                        return {
+                          week: `W${weekNum}`,
+                          points: weekData.points ?? 0,
+                          isSelected: selectedWeek === weekNum
+                        };
+                      }).filter(Boolean)} // Remove null entries
+                      margin={{ top: 5, right: 10, left: 0, bottom: 5 }}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" stroke="#444" />
+                      <XAxis 
+                        dataKey="week" 
+                        stroke="#999"
+                        tick={{ fontSize: 12 }}
+                      />
+                      <YAxis 
+                        stroke="#999"
+                        tick={{ fontSize: 12 }}
+                      />
+                      <Tooltip 
+                        contentStyle={{ 
+                          backgroundColor: 'var(--color-bg-secondary)',
+                          border: '1px solid var(--color-text-primary)',
+                          borderRadius: '8px',
+                          padding: '8px'
+                        }}
+                        labelStyle={{ color: 'var(--color-text-primary)', fontSize: '14px' }}
+                        itemStyle={{ color: 'var(--color-text-accent)', fontSize: '16px' }}
+                      />
+                      <Line
+                        type="monotone"
+                        dataKey="points"
+                        stroke="#6666ff"
+                        strokeWidth={2}
+                        dot={(props) => {
+                          const { cx, cy, payload } = props;
+                          if (!cx || !cy) return null;
+                          return (
+                            <circle
+                              cx={cx}
+                              cy={cy}
+                              r={payload.isSelected ? 6 : 4}
+                              fill={payload.isSelected ? "#f59e0b" : "#6666ff"}
+                              stroke={payload.isSelected ? "#f59e0b" : "#6666ff"}
+                            />
+                          );
+                        }}
+                        activeDot={(props) => {
+                          const { cx, cy, payload } = props;
+                          if (!cx || !cy) return null;
+                          return (
+                            <circle
+                              cx={cx}
+                              cy={cy}
+                              r={8}
+                              fill={payload.isSelected ? "#f59e0b" : "#6666ff"}
+                              stroke={payload.isSelected ? "#f59e0b" : "#6666ff"}
+                            />
+                          );
+                        }}
+                        connectNulls={false}
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );
