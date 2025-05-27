@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react
 import { useState } from 'react';
 import PlayerTable from './components/PlayerTable';
 import FantasyRosters from './components/FantasyRosters';
+import Matchups from './components/Matchups';
 
 // Custom hook to get current location
 function useActivePath() {
@@ -135,7 +136,7 @@ function App() {
         <Routes>
           <Route path="/" element={<PlayerTable />} />
           <Route path="/rosters" element={<FantasyRosters />} />
-          <Route path="/matchups" element={<div>Matchups Page</div>} />
+          <Route path="/matchups" element={<Matchups />} />
         </Routes>
       </div>
     </Router>
