@@ -3,6 +3,7 @@ import { collection, doc, getDoc, getDocs, updateDoc } from 'firebase/firestore'
 import { db } from '../firebase';
 import { getCache, setCache, clearCache } from '../utils/cache';
 import Select from 'react-select';
+import React from 'react';
 
 const LINEUP_SLOTS = [
   { id: 'QB', label: 'QB', count: 1 },
@@ -26,7 +27,7 @@ const Matchups = () => {
   const [availableWeeks, setAvailableWeeks] = useState([]);
 
   // Custom styles for react-select
-  const customStyles = {
+  const expandedSelectStyles = {
     control: (base, state) => ({
       ...base,
       backgroundColor: 'var(--color-bg-primary)',
@@ -44,6 +45,39 @@ const Matchups = () => {
     option: (base, state) => ({
       ...base,
       backgroundColor: state.isFocused ? 'var(--color-bg-tertiary)' : 'var(--color-bg-primary)',
+      color: 'white',
+      '&:hover': {
+        backgroundColor: 'var(--color-bg-tertiary)'
+      }
+    }),
+    singleValue: (base) => ({
+      ...base,
+      color: 'white'
+    }),
+    input: (base) => ({
+      ...base,
+      color: 'white'
+    })
+  };
+
+  const topSelectStyles = {
+    control: (base, state) => ({
+      ...base,
+      backgroundColor: 'var(--color-bg-secondary)',
+      borderColor: 'transparent',
+      boxShadow: state.isFocused ? '0 0 0 2px var(--color-primary)' : 'none',
+      '&:hover': {
+        borderColor: 'var(--color-border)'
+      }
+    }),
+    menu: (base) => ({
+      ...base,
+      backgroundColor: 'var(--color-bg-secondary)',
+      zIndex: 9999
+    }),
+    option: (base, state) => ({
+      ...base,
+      backgroundColor: state.isFocused ? 'var(--color-bg-tertiary)' : 'var(--color-bg-secondary)',
       color: 'white',
       '&:hover': {
         backgroundColor: 'var(--color-bg-tertiary)'
@@ -482,29 +516,39 @@ const Matchups = () => {
     setExpandedMatchups(new Set());
   }, [selectedYear, selectedWeek]);
 
+  const yearOptions = [
+    { value: '2024', label: '2024' },
+  ];
+
+  const weekOptions = availableWeeks.map(week => ({
+    value: week,
+    label: `Week ${week.replace('week', '')}`
+  }));
+
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
         
         {/* Year and Week Selection */}
         <div className="flex gap-4 mb-6">
-          <select
-            value={selectedYear}
-            onChange={(e) => setSelectedYear(e.target.value)}
-            className="bg-secondary text-primary px-4 py-2 rounded-lg"
-          >
-            <option value="2024">2024</option>
-          </select>
           
-          <select
-            value={selectedWeek}
-            onChange={(e) => setSelectedWeek(e.target.value)}
-            className="bg-secondary text-primary px-4 py-2 rounded-lg"
-          >
-            {availableWeeks.map(week => (
-              <option key={week} value={week}>{`Week ${week.replace('week', '')}`}</option>
-            ))}
-          </select>
+          <Select
+            value={yearOptions.find(opt => opt.value === selectedYear)}
+            onChange={(selected) => setSelectedYear(selected.value)}
+            options={yearOptions}
+            styles={topSelectStyles} // Optional: reuse your react-select styles
+            placeholder="Select year"
+            components={{ IndicatorSeparator: () => null }}
+          />
+
+          <Select
+            value={weekOptions.find(opt => opt.value === selectedWeek)}
+            onChange={(selected) => setSelectedWeek(selected.value)}
+            options={weekOptions}
+            styles={topSelectStyles}
+            placeholder="Select week"
+            components={{ IndicatorSeparator: () => null }}
+          />
 
           <button
             onClick={refreshCache}
@@ -548,134 +592,129 @@ const Matchups = () => {
                   {/* Expanded View */}
                   {expandedMatchups.has(matchup.id) && (
                     <div className="mt-4">
-                      <div className="grid grid-cols-3 gap-4">
-                        {/* Home Team */}
-                        <div className="space-y-4">
-                          <h4 className="text-lg font-semibold">{matchup.homeTeam}</h4>
+                      <table className="w-full">
+                        <thead>
+                          <tr>
+                            <th className="w-1/4 text-left">{matchup.homeTeam}</th>
+                            <th className="w-1/6 text-center">Score</th>
+                            <th className="w-1/12 border-l border-r border-primary"></th>
+                            <th className="w-1/6 text-center">Score</th>
+                            <th className="w-1/4 text-right">{matchup.awayTeam}</th>
+                          </tr>
+                        </thead>
+                        <tbody>
                           {LINEUP_SLOTS.map(slot => (
-                            <div key={slot.id} className="space-y-2">
-                              <h5 className="font-medium">{slot.label}</h5>
+                            <React.Fragment key={slot.id}>
+                              <tr>
+                                <td colSpan="5" className="py-2">
+                                  <h5 className="font-medium text-lg">{slot.label}</h5>
+                                </td>
+                              </tr>
                               {Array.from({ length: slot.count }).map((_, index) => (
-                                isCurrentWeek() ? (
-                                  <Select
-                                    key={index}
-                                    value={matchupLineups[matchup.id]?.home[slot.id]?.[index] ? {
-                                      value: matchupLineups[matchup.id].home[slot.id][index],
-                                      label: matchupPlayers[matchup.id]?.home.find(p => p.id === matchupLineups[matchup.id].home[slot.id][index])?.name || '',
-                                      team: matchupPlayers[matchup.id]?.home.find(p => p.id === matchupLineups[matchup.id].home[slot.id][index])?.team
-                                    } : null}
-                                    onChange={(option) => handleLineupChange(matchup.id, 'home', slot.id, option?.value || '', index)}
-                                    options={[
-                                      { value: '', label: 'Empty' },
-                                      ...getAvailablePlayers(
-                                        matchupPlayers[matchup.id]?.home || [],
-                                        slot.id,
-                                        matchupLineups[matchup.id]?.home || {},
-                                        matchupLineups[matchup.id]?.home[slot.id]?.[index]
-                                      )
-                                    ]}
-                                    styles={customStyles}
-                                    formatOptionLabel={formatOptionLabel}
-                                    isClearable={false}
-                                    placeholder="Empty"
-                                    className="w-full"
-                                  />
-                                ) : ( // past week
-                                  <div key={index} className="w-full bg-primary text-white px-3 py-2 rounded">
-                                    {matchupLineups[matchup.id]?.home[slot.id]?.[index] ? (
-                                      (() => {
-                                        const player = matchupPlayers[matchup.id]?.home.find(p => p.id === matchupLineups[matchup.id].home[slot.id][index]);
-                                        return player ? (
-                                          <div className="flex items-center">
-                                            <span>{player.name}</span>
-                                            {player.team && (
-                                              <span className="ml-2 text-sm text-gray-400">({player.team})</span>
-                                            )}
-                                          </div>
-                                        ) : 'Empty';
-                                      })()
-                                    ) : 'Empty'}
-                                  </div>
-                                )
+                                <tr key={index} className="h-12">
+                                  <td className="pr-4">
+                                    {isCurrentWeek() ? (
+                                      <Select
+                                        value={matchupLineups[matchup.id]?.home[slot.id]?.[index] ? {
+                                          value: matchupLineups[matchup.id].home[slot.id][index],
+                                          label: matchupPlayers[matchup.id]?.home.find(p => p.id === matchupLineups[matchup.id].home[slot.id][index])?.name || '',
+                                          team: matchupPlayers[matchup.id]?.home.find(p => p.id === matchupLineups[matchup.id].home[slot.id][index])?.team
+                                        } : null}
+                                        onChange={(option) => handleLineupChange(matchup.id, 'home', slot.id, option?.value || '', index)}
+                                        options={[
+                                          { value: '', label: 'Empty' },
+                                          ...getAvailablePlayers(
+                                            matchupPlayers[matchup.id]?.home || [],
+                                            slot.id,
+                                            matchupLineups[matchup.id]?.home || {},
+                                            matchupLineups[matchup.id]?.home[slot.id]?.[index]
+                                          )
+                                        ]}
+                                        styles={expandedSelectStyles}
+                                        formatOptionLabel={formatOptionLabel}
+                                        isClearable={false}
+                                        placeholder="Empty"
+                                        className="w-full"
+                                        components={{ IndicatorSeparator: () => null }}
+                                      />
+                                    ) : (
+                                      <div className="w-full bg-primary text-white px-3 py-2 rounded">
+                                        {matchupLineups[matchup.id]?.home[slot.id]?.[index] ? (
+                                          (() => {
+                                            const player = matchupPlayers[matchup.id]?.home.find(p => p.id === matchupLineups[matchup.id].home[slot.id][index]);
+                                            return player ? (
+                                              <div className="flex items-center">
+                                                <span>{player.name}</span>
+                                                {player.team && (
+                                                  <span className="ml-2 text-sm text-gray-400">({player.team})</span>
+                                                )}
+                                              </div>
+                                            ) : 'Empty';
+                                          })()
+                                        ) : 'Empty'}
+                                      </div>
+                                    )}
+                                  </td>
+                                  <td className="bg-primary text-white px-3 py-2 rounded text-right">
+                                    {matchupLineups[matchup.id]?.home[slot.id]?.[index] ? 
+                                      getPlayerScore(matchupLineups[matchup.id].home[slot.id][index], matchupPlayers[matchup.id]?.home || []) : 
+                                      0}
+                                  </td>
+                                  <td className="border-l border-r border-primary"></td>
+                                  <td className="bg-primary text-white px-3 py-2 rounded text-left">
+                                    {matchupLineups[matchup.id]?.away[slot.id]?.[index] ? 
+                                      getPlayerScore(matchupLineups[matchup.id].away[slot.id][index], matchupPlayers[matchup.id]?.away || []) : 
+                                      0}
+                                  </td>
+                                  <td className="pl-4">
+                                    {isCurrentWeek() ? (
+                                      <Select
+                                        value={matchupLineups[matchup.id]?.away[slot.id]?.[index] ? {
+                                          value: matchupLineups[matchup.id].away[slot.id][index],
+                                          label: matchupPlayers[matchup.id]?.away.find(p => p.id === matchupLineups[matchup.id].away[slot.id][index])?.name || '',
+                                          team: matchupPlayers[matchup.id]?.away.find(p => p.id === matchupLineups[matchup.id].away[slot.id][index])?.team
+                                        } : null}
+                                        onChange={(option) => handleLineupChange(matchup.id, 'away', slot.id, option?.value || '', index)}
+                                        options={[
+                                          { value: '', label: 'Empty' },
+                                          ...getAvailablePlayers(
+                                            matchupPlayers[matchup.id]?.away || [],
+                                            slot.id,
+                                            matchupLineups[matchup.id]?.away || {},
+                                            matchupLineups[matchup.id]?.away[slot.id]?.[index]
+                                          )
+                                        ]}
+                                        styles={expandedSelectStyles}
+                                        formatOptionLabel={formatOptionLabel}
+                                        isClearable={false}
+                                        placeholder="Empty"
+                                        className="w-full"
+                                        components={{ IndicatorSeparator: () => null }}
+                                      />
+                                    ) : (
+                                      <div className="w-full bg-primary text-white px-3 py-2 rounded">
+                                        {matchupLineups[matchup.id]?.away[slot.id]?.[index] ? (
+                                          (() => {
+                                            const player = matchupPlayers[matchup.id]?.away.find(p => p.id === matchupLineups[matchup.id].away[slot.id][index]);
+                                            return player ? (
+                                              <div className="flex items-center">
+                                                <span>{player.name}</span>
+                                                {player.team && (
+                                                  <span className="ml-2 text-sm text-gray-400">({player.team})</span>
+                                                )}
+                                              </div>
+                                            ) : 'Empty';
+                                          })()
+                                        ) : 'Empty'}
+                                      </div>
+                                    )}
+                                  </td>
+                                </tr>
                               ))}
-                            </div>
+                            </React.Fragment>
                           ))}
-                        </div>
-
-                        {/* Scores */}
-                        <div className="space-y-4">
-                          <div className="h-8"></div>
-                          {LINEUP_SLOTS.map(slot => (
-                            <div key={slot.id} className="space-y-2">
-                              <div className="h-6"></div>
-                              {Array.from({ length: slot.count }).map((_, index) => (
-                                <div key={index} className="flex justify-center items-center h-10">
-                                  {matchupLineups[matchup.id]?.home[slot.id]?.[index] ? 
-                                    getPlayerScore(matchupLineups[matchup.id].home[slot.id][index], matchupPlayers[matchup.id]?.home || []) : 
-                                    '0'} 
-                                  {' | '} 
-                                  {matchupLineups[matchup.id]?.away[slot.id]?.[index] ? 
-                                    getPlayerScore(matchupLineups[matchup.id].away[slot.id][index], matchupPlayers[matchup.id]?.away || []) : 
-                                    '0'}
-                                </div>
-                              ))}
-                            </div>
-                          ))}
-                        </div>
-
-                        {/* Away Team */}
-                        <div className="space-y-4">
-                          <h4 className="text-lg font-semibold">{matchup.awayTeam}</h4>
-                          {LINEUP_SLOTS.map(slot => (
-                            <div key={slot.id} className="space-y-2">
-                              <h5 className="font-medium">{slot.label}</h5>
-                              {Array.from({ length: slot.count }).map((_, index) => (
-                                isCurrentWeek() ? (
-                                  <Select
-                                    key={index}
-                                    value={matchupLineups[matchup.id]?.away[slot.id]?.[index] ? {
-                                      value: matchupLineups[matchup.id].away[slot.id][index],
-                                      label: matchupPlayers[matchup.id]?.away.find(p => p.id === matchupLineups[matchup.id].away[slot.id][index])?.name || '',
-                                      team: matchupPlayers[matchup.id]?.away.find(p => p.id === matchupLineups[matchup.id].away[slot.id][index])?.team
-                                    } : null}
-                                    onChange={(option) => handleLineupChange(matchup.id, 'away', slot.id, option?.value || '', index)}
-                                    options={[
-                                      { value: '', label: 'Empty' },
-                                      ...getAvailablePlayers(
-                                        matchupPlayers[matchup.id]?.away || [],
-                                        slot.id,
-                                        matchupLineups[matchup.id]?.away || {},
-                                        matchupLineups[matchup.id]?.away[slot.id]?.[index]
-                                      )
-                                    ]}
-                                    styles={customStyles}
-                                    formatOptionLabel={formatOptionLabel}
-                                    isClearable={false}
-                                    placeholder="Empty"
-                                    className="w-full"
-                                  />
-                                ) : ( // past week
-                                  <div key={index} className="w-full bg-primary text-white px-3 py-2 rounded">
-                                    {matchupLineups[matchup.id]?.away[slot.id]?.[index] ? (
-                                      (() => {
-                                        const player = matchupPlayers[matchup.id]?.away.find(p => p.id === matchupLineups[matchup.id].away[slot.id][index]);
-                                        return player ? (
-                                          <div className="flex items-center">
-                                            <span>{player.name}</span>
-                                            {player.team && (
-                                              <span className="ml-2 text-sm text-gray-400">({player.team})</span>
-                                            )}
-                                          </div>
-                                        ) : 'Empty';
-                                      })()
-                                    ) : 'Empty'}
-                                  </div>
-                                )
-                              ))}
-                            </div>
-                          ))}
-                        </div>
-                      </div>
+                        </tbody>
+                      </table>
 
                       {isCurrentWeek() && (
                         <button

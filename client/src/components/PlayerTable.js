@@ -3,6 +3,7 @@ import { db } from '../firebase';
 import { collection, getDocs } from 'firebase/firestore';
 import { getCache, setCache } from '../utils/cache';
 import {LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, ReferenceLine} from 'recharts';
+import Select from 'react-select';
 
 const playerStatNameMap = {
   passYards: 'Passing Yards',
@@ -24,6 +25,39 @@ const defenseStatNameMap = {
   pointsAllowed: 'Points Allowed',
   safeties: 'Safeties',
   returned2pts: 'Returned 2 Point Conversions',
+};
+
+const customStyles = {
+  control: (base, state) => ({
+    ...base,
+    backgroundColor: 'var(--color-bg-primary)',
+    borderColor: 'transparent',
+    boxShadow: state.isFocused ? '0 0 0 2px var(--color-primary)' : 'none',
+    '&:hover': {
+      borderColor: 'var(--color-border)'
+    }
+  }),
+  menu: (base) => ({
+    ...base,
+    backgroundColor: 'var(--color-bg-primary)',
+    zIndex: 9999
+  }),
+  option: (base, state) => ({
+    ...base,
+    backgroundColor: state.isFocused ? 'var(--color-bg-tertiary)' : 'var(--color-bg-primary)',
+    color: 'white',
+    '&:hover': {
+      backgroundColor: 'var(--color-bg-tertiary)'
+    }
+  }),
+  singleValue: (base) => ({
+    ...base,
+    color: 'white'
+  }),
+  input: (base) => ({
+    ...base,
+    color: 'white'
+  })
 };
 
 function PlayerTable() {
@@ -161,6 +195,7 @@ function PlayerTable() {
   const weekOptions = ['All', ...Array.from({ length: 18 }, (_, i) => (i + 1).toString())];
   const ownerOptions = ['All', ...Array.from(new Set([...Object.values(ownerMap), 'Free Agent']))];
   const teamOptions = ["All", ...[...new Set(players.map(p => p.team))].filter(t => t !== "All").sort()];
+  const yearOptions = [{ value: '2024', label: '2024' }];
 
   const handlePlayerSelect = (player) => {
     setSelectedPlayer(player);
@@ -190,6 +225,8 @@ function PlayerTable() {
     };
   }, []);
 
+  
+
   return (
     <div className="flex h-[calc(100vh-80px)] bg-primary text-primary overflow-hidden overscroll-none">
       {/* Left side: filters, search, table */}
@@ -205,7 +242,7 @@ function PlayerTable() {
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
               </svg>
-              Filters
+              
             </button>
 
             {/* Dropdown Menu */}
@@ -221,74 +258,83 @@ function PlayerTable() {
                   <div className="space-y-2 sm:space-y-3">
                     <div>
                       <label className="block text-sm font-semibold mb-1">Year</label>
-                      <select 
-                        value={selectedYear} 
-                        onChange={(e) => setSelectedYear(e.target.value)}
-                        className="w-full bg-tertiary text-primary border border-primary rounded-md px-2 sm:px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary transition"
-                      >
-                        <option value="2024">2024</option>
-                      </select>
+                      <Select
+                        value={yearOptions.find(o => o.value === selectedYear)}
+                        onChange={(selectedOption) => setSelectedYear(selectedOption.value)}
+                        options={yearOptions}
+                        styles={customStyles}
+                        components={{ IndicatorSeparator: () => null }}
+                        placeholder="Select Year"
+                      />
                     </div>
 
                     <div>
                       <label className="block text-sm font-semibold mb-1">Week</label>
-                      <select 
-                        value={selectedWeek} 
-                        onChange={(e) => setSelectedWeek(e.target.value)}
-                        className="w-full bg-tertiary text-primary border border-primary rounded-md px-2 sm:px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary transition"
-                      >
-                        {weekOptions.map(w => <option key={w} value={w}>{w === 'All' ? 'All Weeks' : `Week ${w}`}</option>)}
-                      </select>
+                      <Select
+                        value={{ value: selectedWeek, label: selectedWeek === 'All' ? 'All Weeks' : `Week ${selectedWeek}` }}
+                        onChange={(selectedOption) => setSelectedWeek(selectedOption.value)}
+                        options={weekOptions.map(w => ({ value: w, label: w === 'All' ? 'All Weeks' : `Week ${w}` }))}
+                        styles={customStyles}
+                        components={{ IndicatorSeparator: () => null }}
+                        placeholder="Select Week"
+                      />
                     </div>
 
                     <div>
                       <label className="block text-sm font-semibold mb-1">Position</label>
-                      <select 
-                        value={positionFilter} 
-                        onChange={(e) => setPositionFilter(e.target.value)}
-                        className="w-full bg-tertiary text-primary border border-primary rounded-md px-2 sm:px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary transition"
-                      >
-                        {positions.map(pos => <option key={pos} value={pos}>{pos}</option>)}
-                      </select>
+                      <Select
+                        value={{ value: positionFilter, label: positionFilter }}
+                        onChange={(selectedOption) => setPositionFilter(selectedOption.value)}
+                        options={positions.map(pos => ({ value: pos, label: pos }))}
+                        styles={customStyles}
+                        components={{ IndicatorSeparator: () => null }}
+                        placeholder="Select Position"
+                      />
                     </div>
                   </div>
 
                   <div className="space-y-2 sm:space-y-3">
                     <div>
                       <label className="block text-sm font-semibold mb-1">Team</label>
-                      <select 
-                        value={teamFilter} 
-                        onChange={(e) => setTeamFilter(e.target.value)}
-                        className="w-full bg-tertiary text-primary border border-primary rounded-md px-2 sm:px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary transition"
-                      >
-                        {teamOptions.map(team => <option key={team} value={team}>{team}</option>)}
-                      </select>
+                      <Select
+                        value={{ value: teamFilter, label: teamFilter }}
+                        onChange={(selectedOption) => setTeamFilter(selectedOption.value)}
+                        options={teamOptions.map(team => ({ value: team, label: team }))}
+                        styles={customStyles}
+                        components={{ IndicatorSeparator: () => null }}
+                        placeholder="Select Team"
+                      />
                     </div>
 
                     <div>
                       <label className="block text-sm font-semibold mb-1">Owner</label>
-                      <select 
-                        value={ownerFilter} 
-                        onChange={(e) => setOwnerFilter(e.target.value)}
-                        className="w-full bg-tertiary text-primary border border-primary rounded-md px-2 sm:px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary transition"
-                      >
-                        {ownerOptions.map((owner) => (
-                          <option key={owner} value={owner}>{owner}</option>
-                        ))}
-                      </select>
+                      <Select
+                        value={{ value: ownerFilter, label: ownerFilter }}
+                        onChange={(selectedOption) => setOwnerFilter(selectedOption.value)}
+                        options={ownerOptions.map(owner => ({ value: owner, label: owner }))}
+                        styles={customStyles}
+                        components={{ IndicatorSeparator: () => null }}
+                        placeholder="Select Owner"
+                      />
                     </div>
 
                     {selectedWeek === 'All' && (
                       <div>
                         <label className="block text-sm font-semibold mb-1">Sort by</label>
-                        <select 
-                          value={sortBy} 
-                          onChange={(e) => setSortBy(e.target.value)}
-                          className="w-full bg-tertiary text-primary border border-primary rounded-md px-2 sm:px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary transition"
-                        >
-                          <option value="totalPoints">Total Points</option>
-                          <option value="averagePoints">Average Points</option>
-                        </select>
+                        <Select
+                          value={{ 
+                            value: sortBy, 
+                            label: sortBy === 'totalPoints' ? 'Total Points' : 'Average Points'
+                          }}
+                          onChange={(selectedOption) => setSortBy(selectedOption.value)}
+                          options={[
+                            { value: 'totalPoints', label: 'Total Points' },
+                            { value: 'averagePoints', label: 'Average Points' }
+                          ]}
+                          styles={customStyles}
+                          components={{ IndicatorSeparator: () => null }}
+                          placeholder="Sort by"
+                        />
                       </div>
                     )}
                   </div>
