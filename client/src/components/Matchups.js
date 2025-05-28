@@ -104,10 +104,10 @@ const Matchups = () => {
           <span className="mx-1">·</span>
         )}
         {!isAway && team && (
-          <span>({team})</span>
+          <span>{team}</span>
         )}
         {isAway && team && (
-          <span>({team})</span>
+          <span>{team}</span>
         )}
         {isAway && team && position && (
           <span className="mx-1">·</span>
@@ -695,7 +695,7 @@ const Matchups = () => {
                                                       {team && (
                                                         <>
                                                           <span className="mx-1">·</span>
-                                                          <span>({team})</span>
+                                                          <span>{team}</span>
                                                         </>
                                                       )}
                                                     </div>
@@ -730,7 +730,7 @@ const Matchups = () => {
                                                           {player.team && (
                                                             <>
                                                               <span className="mx-1">·</span>
-                                                              <span>({player.team})</span>
+                                                              <span>{player.team}</span>
                                                             </>
                                                           )}
                                                         </div>
@@ -806,7 +806,7 @@ const Matchups = () => {
                                                     <div className="flex items-center text-xs text-gray-400 justify-end w-full">
                                                       {team && (
                                                         <>
-                                                          <span>({team})</span>
+                                                          <span>{team}</span>
                                                           <span className="mx-1">·</span>
                                                         </>
                                                       )}
@@ -841,7 +841,7 @@ const Matchups = () => {
                                                         <div className="flex items-center text-xs text-gray-400 leading-tight justify-end">
                                                           {player.team && (
                                                             <>
-                                                              <span>({player.team})</span>
+                                                              <span>{player.team}</span>
                                                               <span className="mx-1">·</span>
                                                             </>
                                                           )}
