@@ -26,6 +26,59 @@ const POSITION_COLORS = {
   K: 'position-K'
 };
 
+const customStyles = {
+  control: (base, state) => ({
+    ...base,
+    backgroundColor: 'var(--color-bg-primary)',
+    borderColor: 'transparent',
+    boxShadow: state.isFocused ? '0 0 0 2px var(--color-primary)' : 'none',
+    '&:hover': {
+      borderColor: 'var(--color-border)'
+    },
+    minHeight: '2.5rem'
+  }),
+  menu: (base) => ({
+    ...base,
+    backgroundColor: 'var(--color-bg-primary)',
+    zIndex: 9999,
+  }),
+  menuList: (base) => ({
+    ...base,
+    maxHeight: '300px'
+  }),
+  option: (base, state) => ({
+    ...base,
+    backgroundColor: state.isFocused ? 'var(--color-bg-tertiary)' : 'var(--color-bg-primary)',
+    color: 'white',
+    '&:hover': {
+      backgroundColor: 'var(--color-bg-tertiary)'
+    },
+    whiteSpace: 'normal',
+    wordBreak: 'break-word'
+  }),
+  singleValue: (base) => ({
+    ...base,
+    color: 'white',
+    whiteSpace: 'normal',
+    wordBreak: 'break-word'
+  }),
+  input: (base) => ({
+    ...base,
+    color: 'white'
+  }),
+  indicatorsContainer: () => ({
+    display: 'none'
+  })
+};
+
+const topSelectStyles = {
+  ...customStyles,
+  indicatorsContainer: (base) => ({
+    ...base,
+    display: 'flex'
+  })
+};
+
 const Matchups = () => {
   const [selectedYear, setSelectedYear] = useState('2024');
   const [selectedWeek, setSelectedWeek] = useState('week1');
@@ -36,139 +89,6 @@ const Matchups = () => {
   const [loading, setLoading] = useState(true);
   const [currentDate, setCurrentDate] = useState(null);
   const [availableWeeks, setAvailableWeeks] = useState([]);
-
-  // Custom styles for react-select
-  const expandedSelectStyles = {
-    control: (base, state) => ({
-      ...base,
-      backgroundColor: 'var(--color-bg-primary)',
-      borderColor: 'transparent',
-      boxShadow: state.isFocused ? '0 0 0 2px var(--color-primary)' : 'none',
-      '&:hover': {
-        borderColor: 'var(--color-border)'
-      },
-      minHeight: '3.5rem',
-      '@media (min-width: 640px)': {
-        minHeight: '2.5rem'
-      }
-    }),
-    menu: (base) => ({
-      ...base,
-      backgroundColor: 'var(--color-bg-primary)',
-      zIndex: 9999,
-      position: 'absolute',
-      width: '100%'
-    }),
-    menuList: (base) => ({
-      ...base,
-      maxHeight: '300px'
-    }),
-    option: (base, state) => ({
-      ...base,
-      backgroundColor: state.isFocused ? 'var(--color-bg-tertiary)' : 'var(--color-bg-primary)',
-      color: 'white',
-      '&:hover': {
-        backgroundColor: 'var(--color-bg-tertiary)'
-      },
-      whiteSpace: 'normal',
-      wordBreak: 'break-word',
-      fontSize: '0.875rem',
-      '@media (min-width: 640px)': {
-        fontSize: '1rem'
-      }
-    }),
-    singleValue: (base) => ({
-      ...base,
-      color: 'white',
-      whiteSpace: 'normal',
-      wordBreak: 'break-word',
-      fontSize: '0.875rem',
-      '@media (min-width: 640px)': {
-        fontSize: '1rem'
-      }
-    }),
-    input: (base) => ({
-      ...base,
-      color: 'white',
-      fontSize: '0.875rem',
-      '@media (min-width: 640px)': {
-        fontSize: '1rem'
-      }
-    }),
-    indicatorsContainer: () => ({
-      display: 'none'
-    })
-  };
-
-  const awaySelectStyles = {
-    ...expandedSelectStyles,
-    control: (base, state) => ({
-      ...expandedSelectStyles.control(base, state),
-      flexDirection: 'row-reverse'
-    }),
-    valueContainer: (base) => ({
-      ...base,
-      flexDirection: 'row-reverse'
-    }),
-    placeholder: (base) => ({
-      ...base,
-      textAlign: 'right',
-      fontSize: '0.875rem',
-      '@media (min-width: 640px)': {
-        fontSize: '1rem'
-      }
-    }),
-  };
-
-  const topSelectStyles = {
-    control: (base, state) => ({
-      ...base,
-      backgroundColor: 'var(--color-bg-secondary)',
-      borderColor: 'transparent',
-      boxShadow: state.isFocused ? '0 0 0 2px var(--color-primary)' : 'none',
-      '&:hover': {
-        borderColor: 'var(--color-border)'
-      },
-      minHeight: '2.5rem'
-    }),
-    menu: (base) => ({
-      ...base,
-      backgroundColor: 'var(--color-bg-secondary)',
-      zIndex: 9999
-    }),
-    option: (base, state) => ({
-      ...base,
-      backgroundColor: state.isFocused ? 'var(--color-bg-tertiary)' : 'var(--color-bg-secondary)',
-      color: 'white',
-      '&:hover': {
-        backgroundColor: 'var(--color-bg-tertiary)'
-      },
-      whiteSpace: 'normal',
-      wordBreak: 'break-word',
-      fontSize: '0.875rem',
-      '@media (min-width: 640px)': {
-        fontSize: '1rem'
-      }
-    }),
-    singleValue: (base) => ({
-      ...base,
-      color: 'white',
-      whiteSpace: 'normal',
-      wordBreak: 'break-word',
-      fontSize: '0.875rem',
-      '@media (min-width: 640px)': {
-        fontSize: '1rem'
-      }
-    }),
-    input: (base) => ({
-      ...base,
-      color: 'white',
-      fontSize: '0.875rem',
-      '@media (min-width: 640px)': {
-        fontSize: '1rem'
-      }
-    })
-  };
 
   // Format option for react-select
   const formatOptionLabel = ({ label, team, position, playerPosition, isAway }) => (
@@ -659,47 +579,35 @@ const Matchups = () => {
   }));
 
   return (
-    <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-8 max-w-full overflow-x-hidden">
-      <div className="mb-4 sm:mb-8">
-        
-        {/* Year and Week Selection */}
-        <div className="flex flex-row items-center gap-2 sm:gap-4 mb-4 sm:mb-6">
-          
+    <div className="flex h-[calc(100vh-80px)] bg-primary text-primary overflow-hidden overscroll-none">
+      <div className="flex-1 flex flex-col p-4 sm:p-6 relative overflow-hidden overscroll-none">
+        {/* Top Controls */}
+        <div className="flex flex-wrap items-center gap-2 sm:gap-4 mb-4 sm:mb-6">
           <Select
             value={yearOptions.find(opt => opt.value === selectedYear)}
             onChange={(selected) => setSelectedYear(selected.value)}
             options={yearOptions}
-            styles={{
-              ...topSelectStyles,
-              control: (base, state) => ({
-                ...topSelectStyles.control(base, state),
-                minWidth: '80px'
-              })
-            }}
+            styles={topSelectStyles}
             placeholder="Select year"
             components={{ IndicatorSeparator: () => null }}
             isSearchable={false}
+            menuPortalTarget={document.body}
           />
 
           <Select
             value={weekOptions.find(opt => opt.value === selectedWeek)}
             onChange={(selected) => setSelectedWeek(selected.value)}
             options={weekOptions}
-            styles={{
-              ...topSelectStyles,
-              control: (base, state) => ({
-                ...topSelectStyles.control(base, state),
-                minWidth: '80px'
-              })
-            }}
+            styles={topSelectStyles}
             placeholder="Select week"
             components={{ IndicatorSeparator: () => null }}
             isSearchable={false}
+            menuPortalTarget={document.body}
           />
 
           <button
             onClick={refreshCache}
-            className="bg-primary p-2 rounded-lg hover:text-white hover:bg-[var(--color-primary)] focus:outline-none transition-all duration-200 flex items-center justify-center"
+            className="bg-secondary p-2 rounded-lg hover:bg-[var(--color-bg-tertiary)] focus:outline-none transition-all duration-200 flex items-center justify-center"
             title="Refresh Data"
           >
             <RefreshCw className="w-5 h-5" />
@@ -707,65 +615,48 @@ const Matchups = () => {
         </div>
 
         {/* Matchups List */}
-        {loading ? (
-          <div>Loading...</div>
-        ) : (
-          <div className="space-y-4">
-            {matchups.map((matchup) => {
-              const scores = calculateTotalScore(matchup.id);
-              return (
-                <div key={matchup.id} className="bg-secondary px-2 sm:px-4 py-2 rounded-lg">
-                  {/* Collapsed Headers */}
-                  <div className="grid grid-cols-12 items-center gap-1 sm:gap-2 w-full">
-                    <div className="col-span-2 flex justify-end"></div>
-                    <div className="col-span-3 text-left text-base sm:text-xl truncate">{matchup.homeTeam}</div>
-
-                    <div className="col-span-2 flex justify-center items-center gap-1 sm:gap-2 text-lg sm:text-2xl font-bold">
-                      <div className="min-w-[2.5rem] w-[2.5rem] sm:min-w-[3rem] sm:w-[3rem] md:min-w-[4rem] md:w-[4rem] flex justify-end">
-                        <span className="tabular-nums inline-block w-full text-right">{scores.home}</span>
-                      </div>
-                      <div className="h-8 sm:h-10 border-r border-primary mx-1 sm:mx-2 flex-shrink-0"></div>
-                      <div className="min-w-[2.5rem] w-[2.5rem] sm:min-w-[3rem] sm:w-[3rem] md:min-w-[4rem] md:w-[4rem] flex justify-start">
-                        <span className="tabular-nums inline-block w-full text-left">{scores.away}</span>
-                      </div>
-                    </div>
-
-                    <div className="col-span-3 text-right text-base sm:text-xl truncate">{matchup.awayTeam}</div>
-
-                    <div className="col-span-2 flex justify-end">
-                      <button
+        <div className="flex-1 overflow-hidden overscroll-none">
+          <div className="h-full overflow-y-auto overscroll-none -mr-6 pr-6">
+            {loading ? (
+              <div className="text-muted text-sm italic">Loading...</div>
+            ) : (
+              <div className="space-y-4">
+                {matchups.map((matchup) => {
+                  const scores = calculateTotalScore(matchup.id);
+                  return (
+                    <div key={matchup.id} className="bg-secondary rounded-xl shadow-lg overflow-hidden">
+                      {/* Collapsed Header */}
+                      <div 
                         onClick={() => handleExpandMatchup(matchup.id)}
-                        className="p-1 sm:p-2 hover:bg-primary/20 rounded-full transition"
-                        aria-label={expandedMatchups.has(matchup.id) ? 'Collapse' : 'Expand'}
+                        className="p-3 sm:p-4 cursor-pointer hover:bg-[var(--color-bg-tertiary)] transition-colors"
                       >
-                        {expandedMatchups.has(matchup.id) ? (
-                          <ChevronUp className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
-                        ) : (
-                          <ChevronDown className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
-                        )}
-                      </button>
-                    </div>
-                  </div>
+                        <div className="grid grid-cols-12 items-center gap-2 sm:gap-4">
+                          <div className="col-span-5 text-left text-base sm:text-xl truncate">
+                            {matchup.homeTeam}
+                          </div>
+                          <div className="col-span-2 flex justify-center items-center gap-1 sm:gap-2 text-lg sm:text-2xl font-bold">
+                            <div className="min-w-[2rem] sm:min-w-[2.5rem] text-right">{scores.home}</div>
+                            <div className="h-8 border-r border-primary mx-1 sm:mx-2"></div>
+                            <div className="min-w-[2rem] sm:min-w-[2.5rem] text-left">{scores.away}</div>
+                          </div>
+                          <div className="col-span-5 text-right text-base sm:text-xl truncate">
+                            {matchup.awayTeam}
+                          </div>
+                        </div>
+                      </div>
 
-                  {/* Expanded View */}
-                  {expandedMatchups.has(matchup.id) && (
-                    <div className="mt-0 relative">
-                      <div className="w-full overflow-visible">
-                        <table className="w-full table-fixed">
-                          <thead>
-                            <tr>
-                              <th className="w-1/2 border-r border-primary"></th>
-                              <th className="w-1/2"></th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {LINEUP_SLOTS.map(slot => (
-                              <React.Fragment key={slot.id}>
-                                {Array.from({ length: slot.count }).map((_, index) => (
-                                  <tr key={index} className="h-12">
-                                    <td className="pr-2 sm:pr-4 border-r border-primary">
-                                      <div className="flex justify-between items-center">
-                                        <div className="flex-1 min-w-0 max-w-[calc(100%-60px)]">
+                      {/* Expanded Content */}
+                      {expandedMatchups.has(matchup.id) && (
+                        <div className="border-t border-border">
+                          <div className="p-3 sm:p-4">
+                            <div className="w-full">
+                              <div className="space-y-2">
+                                {LINEUP_SLOTS.map(slot => (
+                                  <React.Fragment key={slot.id}>
+                                    {Array.from({ length: slot.count }).map((_, index) => (
+                                      <div key={index} className="grid grid-cols-2 gap-2 min-h-[3.5rem]">
+                                        {/* Home Team */}
+                                        <div className="flex flex-col justify-center">
                                           {isCurrentWeek() ? (
                                             <Select
                                               value={matchupLineups[matchup.id]?.home[slot.id]?.[index] ? {
@@ -773,7 +664,9 @@ const Matchups = () => {
                                                 label: matchupPlayers[matchup.id]?.home.find(p => p.id === matchupLineups[matchup.id].home[slot.id][index])?.name || '',
                                                 team: matchupPlayers[matchup.id]?.home.find(p => p.id === matchupLineups[matchup.id].home[slot.id][index])?.team,
                                                 position: slot.label,
-                                                playerPosition: matchupPlayers[matchup.id]?.home.find(p => p.id === matchupLineups[matchup.id].home[slot.id][index])?.position
+                                                playerPosition: matchupPlayers[matchup.id]?.home.find(p => p.id === matchupLineups[matchup.id].home[slot.id][index])?.position,
+                                                score: getPlayerScore(matchupLineups[matchup.id].home[slot.id][index], matchupPlayers[matchup.id]?.home || []),
+                                                isSelected: true
                                               } : null}
                                               onChange={(option) => handleLineupChange(matchup.id, 'home', slot.id, option?.value || '', index)}
                                               options={[
@@ -786,64 +679,77 @@ const Matchups = () => {
                                                 ).map(player => ({
                                                   ...player,
                                                   position: slot.label,
-                                                  playerPosition: player.position
+                                                  playerPosition: player.position,
+                                                  score: getPlayerScore(player.id, matchupPlayers[matchup.id]?.home || [])
                                                 }))
                                               ]}
-                                              styles={{
-                                                ...expandedSelectStyles,
-                                                control: (base, state) => ({
-                                                  ...expandedSelectStyles.control(base, state),
-                                                  minWidth: '120px'
-                                                })
-                                              }}
-                                              formatOptionLabel={formatOptionLabel}
+                                              styles={customStyles}
+                                              formatOptionLabel={({ label, team, position, playerPosition, score, isSelected }) => (
+                                                <div className="flex justify-between items-center w-full">
+                                                  <div className="flex flex-col">
+                                                    <div className="font-medium break-words text-sm sm:text-base">{label}</div>
+                                                    <div className="flex items-center text-xs text-gray-400">
+                                                      <span className={POSITION_COLORS[position === 'FLEX' && playerPosition ? playerPosition : position]}>
+                                                        {position === 'FLEX' && playerPosition ? playerPosition : position}
+                                                      </span>
+                                                      {team && (
+                                                        <>
+                                                          <span className="mx-1">·</span>
+                                                          <span>({team})</span>
+                                                        </>
+                                                      )}
+                                                    </div>
+                                                  </div>
+                                                  {isSelected && (
+                                                    <div className="ml-2 bg-primary text-white pl-2 py-1 rounded text-sm">
+                                                      {score}
+                                                    </div>
+                                                  )}
+                                                </div>
+                                              )}
                                               isClearable={false}
                                               placeholder={`Empty ${slot.label}`}
                                               className="w-full"
                                               components={{ IndicatorSeparator: () => null }}
                                               isSearchable={false}
+                                              menuPortalTarget={document.body}
                                             />
                                           ) : (
-                                            <div className="w-full bg-primary text-white px-2 sm:px-3 py-1 sm:py-1.5 rounded min-h-[3.5rem] sm:min-h-[2.5rem] flex items-center">
-                                              {matchupLineups[matchup.id]?.home[slot.id]?.[index] ? (
-                                                (() => {
-                                                  const player = matchupPlayers[matchup.id]?.home.find(p => p.id === matchupLineups[matchup.id].home[slot.id][index]);
-                                                  return player ? (
-                                                    <div className="flex flex-col gap-0.5">
-                                                      <div className="font-medium leading-tight break-words text-sm sm:text-base">{player.name}</div>
-                                                      <div className="flex items-center text-xs text-gray-400 leading-tight">
-                                                        <span className={POSITION_COLORS[slot.label === 'FLEX' ? player.position : slot.label]}>
-                                                          {slot.label === 'FLEX' ? player.position : slot.label}
-                                                        </span>
-                                                        {player.team && (
-                                                          <span className="mx-1">·</span>
-                                                        )}
-                                                        {player.team && (
-                                                          <span>({player.team})</span>
-                                                        )}
-                                                      </div>
-                                                    </div>
-                                                  ) : `Empty ${slot.label}`;
-                                                })()
-                                              ) : `Empty ${slot.label}`}
+                                            <div className="w-full bg-primary text-white px-3 py-1.5 rounded min-h-[2.5rem] flex items-center justify-between">
+                                              <div className="flex flex-col gap-0.5">
+                                                {matchupLineups[matchup.id]?.home[slot.id]?.[index] ? (
+                                                  (() => {
+                                                    const player = matchupPlayers[matchup.id]?.home.find(p => p.id === matchupLineups[matchup.id].home[slot.id][index]);
+                                                    return player ? (
+                                                      <>
+                                                        <div className="font-medium leading-tight break-words text-sm sm:text-base">{player.name}</div>
+                                                        <div className="flex items-center text-xs text-gray-400 leading-tight">
+                                                          <span className={POSITION_COLORS[slot.label === 'FLEX' ? player.position : slot.label]}>
+                                                            {slot.label === 'FLEX' ? player.position : slot.label}
+                                                          </span>
+                                                          {player.team && (
+                                                            <>
+                                                              <span className="mx-1">·</span>
+                                                              <span>({player.team})</span>
+                                                            </>
+                                                          )}
+                                                        </div>
+                                                      </>
+                                                    ) : `Empty ${slot.label}`;
+                                                  })()
+                                                ) : `Empty ${slot.label}`}
+                                              </div>
+                                              <div className="ml-2 text-white pl-2 py-1 rounded text-sm">
+                                                {matchupLineups[matchup.id]?.home[slot.id]?.[index] ? 
+                                                  getPlayerScore(matchupLineups[matchup.id].home[slot.id][index], matchupPlayers[matchup.id]?.home || []) : 
+                                                  0}
+                                              </div>
                                             </div>
                                           )}
                                         </div>
-                                        <div className="ml-2 sm:ml-4 bg-primary text-white px-2 sm:px-3 py-1.5 sm:py-2 rounded min-w-[50px] sm:min-w-[60px] text-center flex-shrink-0">
-                                          {matchupLineups[matchup.id]?.home[slot.id]?.[index] ? 
-                                            getPlayerScore(matchupLineups[matchup.id].home[slot.id][index], matchupPlayers[matchup.id]?.home || []) : 
-                                            0}
-                                        </div>
-                                      </div>
-                                    </td>
-                                    <td className="pl-2 sm:pl-4">
-                                      <div className="flex justify-between items-center">
-                                        <div className="bg-primary text-white px-2 sm:px-3 py-1.5 sm:py-2 rounded min-w-[50px] sm:min-w-[60px] text-center flex-shrink-0">
-                                          {matchupLineups[matchup.id]?.away[slot.id]?.[index] ? 
-                                            getPlayerScore(matchupLineups[matchup.id].away[slot.id][index], matchupPlayers[matchup.id]?.away || []) : 
-                                            0}
-                                        </div>
-                                        <div className="flex-1 ml-2 sm:ml-4 min-w-0 max-w-[calc(100%-60px)]">
+
+                                        {/* Away Team */}
+                                        <div className="flex flex-col justify-center">
                                           {isCurrentWeek() ? (
                                             <Select
                                               value={matchupLineups[matchup.id]?.away[slot.id]?.[index] ? {
@@ -852,6 +758,8 @@ const Matchups = () => {
                                                 team: matchupPlayers[matchup.id]?.away.find(p => p.id === matchupLineups[matchup.id].away[slot.id][index])?.team,
                                                 position: slot.label,
                                                 playerPosition: matchupPlayers[matchup.id]?.away.find(p => p.id === matchupLineups[matchup.id].away[slot.id][index])?.position,
+                                                score: getPlayerScore(matchupLineups[matchup.id].away[slot.id][index], matchupPlayers[matchup.id]?.away || []),
+                                                isSelected: true,
                                                 isAway: true
                                               } : null}
                                               onChange={(option) => handleLineupChange(matchup.id, 'away', slot.id, option?.value || '', index)}
@@ -866,74 +774,114 @@ const Matchups = () => {
                                                   ...player,
                                                   position: slot.label,
                                                   playerPosition: player.position,
+                                                  score: getPlayerScore(player.id, matchupPlayers[matchup.id]?.away || []),
                                                   isAway: true
                                                 }))
                                               ]}
                                               styles={{
-                                                ...awaySelectStyles,
+                                                ...customStyles,
                                                 control: (base, state) => ({
-                                                  ...awaySelectStyles.control(base, state),
-                                                  minWidth: '120px'
+                                                  ...customStyles.control(base, state),
+                                                  flexDirection: 'row-reverse'
+                                                }),
+                                                valueContainer: (base) => ({
+                                                  ...base,
+                                                  flexDirection: 'row-reverse'
+                                                }),
+                                                placeholder: (base) => ({
+                                                  ...base,
+                                                  textAlign: 'right',
+                                                  width: '100%'
                                                 })
                                               }}
-                                              formatOptionLabel={formatOptionLabel}
+                                              formatOptionLabel={({ label, team, position, playerPosition, score, isSelected, isAway }) => (
+                                                <div className="flex justify-between items-center w-full">
+                                                  {isSelected && (
+                                                    <div className="ml-2 bg-primary text-white pr-2 py-1 rounded text-sm whitespace-nowrap">
+                                                      {score}
+                                                    </div>
+                                                  )}
+                                                  <div className="flex flex-col items-end w-full">
+                                                    <div className="font-medium break-words text-sm sm:text-base text-right w-full">{label}</div>
+                                                    <div className="flex items-center text-xs text-gray-400 justify-end w-full">
+                                                      {team && (
+                                                        <>
+                                                          <span>({team})</span>
+                                                          <span className="mx-1">·</span>
+                                                        </>
+                                                      )}
+                                                      <span className={POSITION_COLORS[position === 'FLEX' && playerPosition ? playerPosition : position]}>
+                                                        {position === 'FLEX' && playerPosition ? playerPosition : position}
+                                                      </span>
+                                                    </div>
+                                                  </div>
+                                                </div>
+                                              )}
                                               isClearable={false}
                                               placeholder={`Empty ${slot.label}`}
                                               className="w-full"
                                               components={{ IndicatorSeparator: () => null }}
                                               isSearchable={false}
+                                              menuPortalTarget={document.body}
                                             />
                                           ) : (
-                                            <div className="w-full bg-primary text-white px-2 sm:px-3 py-1 sm:py-1.5 rounded min-h-[3.5rem] sm:min-h-[2.5rem] flex items-center">
-                                              {matchupLineups[matchup.id]?.away[slot.id]?.[index] ? (
-                                                (() => {
-                                                  const player = matchupPlayers[matchup.id]?.away.find(p => p.id === matchupLineups[matchup.id].away[slot.id][index]);
-                                                  return player ? (
-                                                    <div className="flex flex-col gap-0.5 w-full">
-                                                      <div className="font-medium leading-tight text-right break-words text-sm sm:text-base">{player.name}</div>
-                                                      <div className="flex items-center text-xs text-gray-400 leading-tight justify-end">
-                                                        {player.team && (
-                                                          <span>({player.team})</span>
-                                                        )}
-                                                        {player.team && (
-                                                          <span className="mx-1">·</span>
-                                                        )}
-                                                        <span className={POSITION_COLORS[slot.label === 'FLEX' ? player.position : slot.label]}>
-                                                          {slot.label === 'FLEX' ? player.position : slot.label}
-                                                        </span>
-                                                      </div>
-                                                    </div>
-                                                  ) : <div className="text-right w-full">Empty {slot.label}</div>;
-                                                })()
-                                              ) : <div className="text-right w-full">Empty {slot.label}</div>}
+                                            <div className="w-full bg-primary text-white px-3 py-1.5 rounded min-h-[2.5rem] flex items-center justify-between">
+                                              <div className="text-white pr-2 py-1 text-sm">
+                                                {matchupLineups[matchup.id]?.away[slot.id]?.[index] ? 
+                                                  getPlayerScore(matchupLineups[matchup.id].away[slot.id][index], matchupPlayers[matchup.id]?.away || []) : 
+                                                  0}
+                                              </div>
+                                              <div className="flex flex-col gap-0.5 items-end">
+                                                {matchupLineups[matchup.id]?.away[slot.id]?.[index] ? (
+                                                  (() => {
+                                                    const player = matchupPlayers[matchup.id]?.away.find(p => p.id === matchupLineups[matchup.id].away[slot.id][index]);
+                                                    return player ? (
+                                                      <>
+                                                        <div className="font-medium leading-tight text-right break-words text-sm sm:text-base">{player.name}</div>
+                                                        <div className="flex items-center text-xs text-gray-400 leading-tight justify-end">
+                                                          {player.team && (
+                                                            <>
+                                                              <span>({player.team})</span>
+                                                              <span className="mx-1">·</span>
+                                                            </>
+                                                          )}
+                                                          <span className={POSITION_COLORS[slot.label === 'FLEX' ? player.position : slot.label]}>
+                                                            {slot.label === 'FLEX' ? player.position : slot.label}
+                                                          </span>
+                                                        </div>
+                                                      </>
+                                                    ) : <div className="text-right w-full">Empty {slot.label}</div>;
+                                                  })()
+                                                ) : <div className="text-right w-full">Empty {slot.label}</div>}
+                                              </div>
                                             </div>
                                           )}
                                         </div>
                                       </div>
-                                    </td>
-                                  </tr>
+                                    ))}
+                                  </React.Fragment>
                                 ))}
-                              </React.Fragment>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
+                              </div>
+                            </div>
 
-                      {isCurrentWeek() && (
-                        <button
-                          onClick={() => handleSubmitStarters(matchup.id)}
-                          className="mt-4 mb-2 bg-primary px-4 py-2 rounded-lg border border-primary hover:bg-[var(--color-bg-tertiary)] transition-colors w-full sm:w-auto"
-                        >
-                          Save Starters
-                        </button>
+                            {isCurrentWeek() && (
+                              <button
+                                onClick={() => handleSubmitStarters(matchup.id)}
+                                className="mt-4 w-full bg-primary px-4 py-2 rounded-lg border border-primary hover:bg-[var(--color-bg-tertiary)] transition-colors"
+                              >
+                                Save Starters
+                              </button>
+                            )}
+                          </div>
+                        </div>
                       )}
                     </div>
-                  )}
-                </div>
-              );
-            })}
+                  );
+                })}
+              </div>
+            )}
           </div>
-        )}
+        </div>
       </div>
     </div>
   );
