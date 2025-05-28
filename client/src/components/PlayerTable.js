@@ -265,6 +265,7 @@ function PlayerTable() {
                         styles={customStyles}
                         components={{ IndicatorSeparator: () => null }}
                         placeholder="Select Year"
+                        isSearchable={false}
                       />
                     </div>
 
@@ -277,6 +278,7 @@ function PlayerTable() {
                         styles={customStyles}
                         components={{ IndicatorSeparator: () => null }}
                         placeholder="Select Week"
+                        isSearchable={false}
                       />
                     </div>
 
@@ -289,6 +291,7 @@ function PlayerTable() {
                         styles={customStyles}
                         components={{ IndicatorSeparator: () => null }}
                         placeholder="Select Position"
+                        isSearchable={false}
                       />
                     </div>
                   </div>
@@ -303,6 +306,7 @@ function PlayerTable() {
                         styles={customStyles}
                         components={{ IndicatorSeparator: () => null }}
                         placeholder="Select Team"
+                        isSearchable={false}
                       />
                     </div>
 
@@ -315,6 +319,7 @@ function PlayerTable() {
                         styles={customStyles}
                         components={{ IndicatorSeparator: () => null }}
                         placeholder="Select Owner"
+                        isSearchable={false}
                       />
                     </div>
 
@@ -334,6 +339,7 @@ function PlayerTable() {
                           styles={customStyles}
                           components={{ IndicatorSeparator: () => null }}
                           placeholder="Sort by"
+                          isSearchable={false}
                         />
                       </div>
                     )}

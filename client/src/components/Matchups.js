@@ -3,6 +3,7 @@ import { collection, doc, getDoc, getDocs, updateDoc } from 'firebase/firestore'
 import { db } from '../firebase';
 import { getCache, setCache, clearCache } from '../utils/cache';
 import Select from 'react-select';
+import { ChevronDown, ChevronUp, RefreshCw } from 'lucide-react';
 import React from 'react';
 
 const LINEUP_SLOTS = [
@@ -14,6 +15,16 @@ const LINEUP_SLOTS = [
   { id: 'K', label: 'K', count: 1 },
   { id: 'DST', label: 'DST', count: 1 },
 ];
+
+const POSITION_COLORS = {
+  QB: 'position-QB',
+  RB: 'position-RB',
+  WR: 'position-WR',
+  TE: 'position-TE',
+  FLEX: 'position-FLEX',
+  DST: 'position-DST',
+  K: 'position-K'
+};
 
 const Matchups = () => {
   const [selectedYear, setSelectedYear] = useState('2024');
@@ -57,7 +68,26 @@ const Matchups = () => {
     input: (base) => ({
       ...base,
       color: 'white'
+    }),
+    indicatorsContainer: () => ({
+      display: 'none'
     })
+  };
+
+  const awaySelectStyles = {
+    ...expandedSelectStyles,
+    control: (base, state) => ({
+      ...expandedSelectStyles.control(base, state),
+      flexDirection: 'row-reverse'
+    }),
+    valueContainer: (base) => ({
+      ...base,
+      flexDirection: 'row-reverse'
+    }),
+    placeholder: (base) => ({
+      ...base,
+      textAlign: 'right', 
+    }),
   };
 
   const topSelectStyles = {
@@ -94,12 +124,33 @@ const Matchups = () => {
   };
 
   // Format option for react-select
-  const formatOptionLabel = ({ label, team }) => (
-    <div className="flex items-center">
-      <span>{label}</span>
-      {team && (
-        <span className="ml-2 text-sm text-muted">({team})</span>
-      )}
+  const formatOptionLabel = ({ label, team, position, playerPosition, isAway }) => (
+    <div className="flex flex-col w-full">
+      <div className={`font-medium ${isAway ? 'text-right' : ''}`}>{label}</div>
+      <div className={`flex items-center text-xs text-muted ${isAway ? 'justify-end' : ''}`}>
+        {!isAway && team && (
+          <span>({team})</span>
+        )}
+        {!isAway && team && position && (
+          <span className="mx-1">·</span>
+        )}
+        {!isAway && position && (
+          <span className={POSITION_COLORS[position === 'FLEX' && playerPosition ? playerPosition : position]}>
+            {position === 'FLEX' && playerPosition ? playerPosition : position}
+          </span>
+        )}
+        {isAway && position && (
+          <span className={POSITION_COLORS[position === 'FLEX' && playerPosition ? playerPosition : position]}>
+            {position === 'FLEX' && playerPosition ? playerPosition : position}
+          </span>
+        )}
+        {isAway && position && team && (
+          <span className="mx-1">·</span>
+        )}
+        {isAway && team && (
+          <span>({team})</span>
+        )}
+      </div>
     </div>
   );
 
@@ -451,7 +502,8 @@ const Matchups = () => {
       .map(player => ({
         value: player.id,
         label: player.name,
-        team: player.team
+        team: player.team,
+        position: player.position
       }));
   };
   
@@ -536,9 +588,10 @@ const Matchups = () => {
             value={yearOptions.find(opt => opt.value === selectedYear)}
             onChange={(selected) => setSelectedYear(selected.value)}
             options={yearOptions}
-            styles={topSelectStyles} // Optional: reuse your react-select styles
+            styles={topSelectStyles}
             placeholder="Select year"
             components={{ IndicatorSeparator: () => null }}
+            isSearchable={false}
           />
 
           <Select
@@ -548,16 +601,15 @@ const Matchups = () => {
             styles={topSelectStyles}
             placeholder="Select week"
             components={{ IndicatorSeparator: () => null }}
+            isSearchable={false}
           />
 
           <button
             onClick={refreshCache}
-            className="bg-accent text-white px-4 py-2 rounded-lg hover:bg-accent-dark flex items-center gap-2"
+            className="bg-primary px-4 py-2 rounded-lg hover:text-white hover:bg-[var(--color-primary)] focus:outline-none transition-all duration-200 flex items-center gap-2 group"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clipRule="evenodd" />
-            </svg>
-            Refresh Data
+            <RefreshCw className="w-5 h-5" />
+            <span>Refresh Data</span>
           </button>
         </div>
 
@@ -569,145 +621,186 @@ const Matchups = () => {
             {matchups.map((matchup) => {
               const scores = calculateTotalScore(matchup.id);
               return (
-                <div key={matchup.id} className="bg-secondary p-4 rounded-lg">
-                  <div className="flex justify-between items-center mb-4">
-                    <div className="flex-1">
-                      <div className="flex justify-between items-center">
-                        <div className="text-xl font-semibold">{matchup.homeTeam}</div>
-                        <div className="text-2xl font-bold">{scores.home}</div>
-                      </div>
-                      <div className="flex justify-between items-center mt-2">
-                        <div className="text-xl font-semibold">{matchup.awayTeam}</div>
-                        <div className="text-2xl font-bold">{scores.away}</div>
-                      </div>
+                <div key={matchup.id} className="bg-secondary px-4 py-2 rounded-lg">
+                  {/* Collapsed Headers */}
+                  <div className="grid grid-cols-12 items-center gap-2 w-full">
+
+                    <div className="col-span-2 flex justify-end"></div>
+                    <div className="col-span-3 text-left text-xl">{matchup.homeTeam}</div>
+
+                    <div className="col-span-2 flex justify-center items-center gap-2 text-2xl font-bold">
+                      <div>{scores.home}</div>
+                      <div className="h-10 border-r border-primary mx-2"></div>
+                      <div>{scores.away}</div>
                     </div>
-                    <button
-                      onClick={() => handleExpandMatchup(matchup.id)}
-                      className="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary-dark ml-4"
-                    >
-                      {expandedMatchups.has(matchup.id) ? 'Collapse' : 'Expand'}
-                    </button>
+
+                    <div className="col-span-3 text-right text-xl">{matchup.awayTeam}</div>
+
+                    <div className="col-span-2 flex justify-end">
+                      <button
+                        onClick={() => handleExpandMatchup(matchup.id)}
+                        className="p-2 hover:bg-primary/20 rounded-full transition"
+                        aria-label={expandedMatchups.has(matchup.id) ? 'Collapse' : 'Expand'}
+                      >
+                        {expandedMatchups.has(matchup.id) ? (
+                          <ChevronUp className="w-5 h-5 text-white" />
+                        ) : (
+                          <ChevronDown className="w-5 h-5 text-white" />
+                        )}
+                      </button>
+                    </div>
                   </div>
 
                   {/* Expanded View */}
                   {expandedMatchups.has(matchup.id) && (
-                    <div className="mt-4">
+                    <div className="mt-0">
                       <table className="w-full">
                         <thead>
                           <tr>
-                            <th className="w-1/4 text-left">{matchup.homeTeam}</th>
-                            <th className="w-1/6 text-center">Score</th>
-                            <th className="w-1/12 border-l border-r border-primary"></th>
-                            <th className="w-1/6 text-center">Score</th>
-                            <th className="w-1/4 text-right">{matchup.awayTeam}</th>
+                            <th className="w-1/2 border-r border-primary"></th>
+                            <th className="w-1/2"></th>
                           </tr>
                         </thead>
                         <tbody>
                           {LINEUP_SLOTS.map(slot => (
                             <React.Fragment key={slot.id}>
-                              <tr>
-                                <td colSpan="5" className="py-2">
-                                  <h5 className="font-medium text-lg">{slot.label}</h5>
-                                </td>
-                              </tr>
                               {Array.from({ length: slot.count }).map((_, index) => (
                                 <tr key={index} className="h-12">
-                                  <td className="pr-4">
-                                    {isCurrentWeek() ? (
-                                      <Select
-                                        value={matchupLineups[matchup.id]?.home[slot.id]?.[index] ? {
-                                          value: matchupLineups[matchup.id].home[slot.id][index],
-                                          label: matchupPlayers[matchup.id]?.home.find(p => p.id === matchupLineups[matchup.id].home[slot.id][index])?.name || '',
-                                          team: matchupPlayers[matchup.id]?.home.find(p => p.id === matchupLineups[matchup.id].home[slot.id][index])?.team
-                                        } : null}
-                                        onChange={(option) => handleLineupChange(matchup.id, 'home', slot.id, option?.value || '', index)}
-                                        options={[
-                                          { value: '', label: 'Empty' },
-                                          ...getAvailablePlayers(
-                                            matchupPlayers[matchup.id]?.home || [],
-                                            slot.id,
-                                            matchupLineups[matchup.id]?.home || {},
-                                            matchupLineups[matchup.id]?.home[slot.id]?.[index]
-                                          )
-                                        ]}
-                                        styles={expandedSelectStyles}
-                                        formatOptionLabel={formatOptionLabel}
-                                        isClearable={false}
-                                        placeholder="Empty"
-                                        className="w-full"
-                                        components={{ IndicatorSeparator: () => null }}
-                                      />
-                                    ) : (
-                                      <div className="w-full bg-primary text-white px-3 py-2 rounded">
-                                        {matchupLineups[matchup.id]?.home[slot.id]?.[index] ? (
-                                          (() => {
-                                            const player = matchupPlayers[matchup.id]?.home.find(p => p.id === matchupLineups[matchup.id].home[slot.id][index]);
-                                            return player ? (
-                                              <div className="flex items-center">
-                                                <span>{player.name}</span>
-                                                {player.team && (
-                                                  <span className="ml-2 text-sm text-gray-400">({player.team})</span>
-                                                )}
-                                              </div>
-                                            ) : 'Empty';
-                                          })()
-                                        ) : 'Empty'}
+                                  <td className="pr-4 border-r border-primary">
+                                    <div className="flex justify-between items-center">
+                                      <div className="flex-1">
+                                        {isCurrentWeek() ? (
+                                          <Select
+                                            value={matchupLineups[matchup.id]?.home[slot.id]?.[index] ? {
+                                              value: matchupLineups[matchup.id].home[slot.id][index],
+                                              label: matchupPlayers[matchup.id]?.home.find(p => p.id === matchupLineups[matchup.id].home[slot.id][index])?.name || '',
+                                              team: matchupPlayers[matchup.id]?.home.find(p => p.id === matchupLineups[matchup.id].home[slot.id][index])?.team,
+                                              position: slot.label,
+                                              playerPosition: matchupPlayers[matchup.id]?.home.find(p => p.id === matchupLineups[matchup.id].home[slot.id][index])?.position
+                                            } : null}
+                                            onChange={(option) => handleLineupChange(matchup.id, 'home', slot.id, option?.value || '', index)}
+                                            options={[
+                                              { value: '', label: `Empty ${slot.label}`, position: slot.label },
+                                              ...getAvailablePlayers(
+                                                matchupPlayers[matchup.id]?.home || [],
+                                                slot.id,
+                                                matchupLineups[matchup.id]?.home || {},
+                                                matchupLineups[matchup.id]?.home[slot.id]?.[index]
+                                              ).map(player => ({
+                                                ...player,
+                                                position: slot.label,
+                                                playerPosition: player.position
+                                              }))
+                                            ]}
+                                            styles={expandedSelectStyles}
+                                            formatOptionLabel={formatOptionLabel}
+                                            isClearable={false}
+                                            placeholder={`Empty ${slot.label}`}
+                                            className="w-full"
+                                            components={{ IndicatorSeparator: () => null }}
+                                            isSearchable={false}
+                                          />
+                                        ) : (
+                                          <div className="w-full bg-primary text-white px-3 py-1.5 rounded">
+                                            {matchupLineups[matchup.id]?.home[slot.id]?.[index] ? (
+                                              (() => {
+                                                const player = matchupPlayers[matchup.id]?.home.find(p => p.id === matchupLineups[matchup.id].home[slot.id][index]);
+                                                return player ? (
+                                                  <div className="flex flex-col gap-0.5">
+                                                    <div className="font-medium leading-tight">{player.name}</div>
+                                                    <div className="flex items-center text-xs text-gray-400 leading-tight">
+                                                      {player.team && (
+                                                        <span>({player.team})</span>
+                                                      )}
+                                                      {player.team && (
+                                                        <span className="mx-1">·</span>
+                                                      )}
+                                                      <span className={POSITION_COLORS[slot.label === 'FLEX' ? player.position : slot.label]}>
+                                                        {slot.label === 'FLEX' ? player.position : slot.label}
+                                                      </span>
+                                                    </div>
+                                                  </div>
+                                                ) : `Empty ${slot.label}`;
+                                              })()
+                                            ) : `Empty ${slot.label}`}
+                                          </div>
+                                        )}
                                       </div>
-                                    )}
-                                  </td>
-                                  <td className="bg-primary text-white px-3 py-2 rounded text-right">
-                                    {matchupLineups[matchup.id]?.home[slot.id]?.[index] ? 
-                                      getPlayerScore(matchupLineups[matchup.id].home[slot.id][index], matchupPlayers[matchup.id]?.home || []) : 
-                                      0}
-                                  </td>
-                                  <td className="border-l border-r border-primary"></td>
-                                  <td className="bg-primary text-white px-3 py-2 rounded text-left">
-                                    {matchupLineups[matchup.id]?.away[slot.id]?.[index] ? 
-                                      getPlayerScore(matchupLineups[matchup.id].away[slot.id][index], matchupPlayers[matchup.id]?.away || []) : 
-                                      0}
+                                      <div className="ml-4 bg-primary text-white px-3 py-2 rounded min-w-[60px] text-center">
+                                        {matchupLineups[matchup.id]?.home[slot.id]?.[index] ? 
+                                          getPlayerScore(matchupLineups[matchup.id].home[slot.id][index], matchupPlayers[matchup.id]?.home || []) : 
+                                          0}
+                                      </div>
+                                    </div>
                                   </td>
                                   <td className="pl-4">
-                                    {isCurrentWeek() ? (
-                                      <Select
-                                        value={matchupLineups[matchup.id]?.away[slot.id]?.[index] ? {
-                                          value: matchupLineups[matchup.id].away[slot.id][index],
-                                          label: matchupPlayers[matchup.id]?.away.find(p => p.id === matchupLineups[matchup.id].away[slot.id][index])?.name || '',
-                                          team: matchupPlayers[matchup.id]?.away.find(p => p.id === matchupLineups[matchup.id].away[slot.id][index])?.team
-                                        } : null}
-                                        onChange={(option) => handleLineupChange(matchup.id, 'away', slot.id, option?.value || '', index)}
-                                        options={[
-                                          { value: '', label: 'Empty' },
-                                          ...getAvailablePlayers(
-                                            matchupPlayers[matchup.id]?.away || [],
-                                            slot.id,
-                                            matchupLineups[matchup.id]?.away || {},
-                                            matchupLineups[matchup.id]?.away[slot.id]?.[index]
-                                          )
-                                        ]}
-                                        styles={expandedSelectStyles}
-                                        formatOptionLabel={formatOptionLabel}
-                                        isClearable={false}
-                                        placeholder="Empty"
-                                        className="w-full"
-                                        components={{ IndicatorSeparator: () => null }}
-                                      />
-                                    ) : (
-                                      <div className="w-full bg-primary text-white px-3 py-2 rounded">
-                                        {matchupLineups[matchup.id]?.away[slot.id]?.[index] ? (
-                                          (() => {
-                                            const player = matchupPlayers[matchup.id]?.away.find(p => p.id === matchupLineups[matchup.id].away[slot.id][index]);
-                                            return player ? (
-                                              <div className="flex items-center">
-                                                <span>{player.name}</span>
-                                                {player.team && (
-                                                  <span className="ml-2 text-sm text-gray-400">({player.team})</span>
-                                                )}
-                                              </div>
-                                            ) : 'Empty';
-                                          })()
-                                        ) : 'Empty'}
+                                    <div className="flex justify-between items-center">
+                                      <div className="bg-primary text-white px-3 py-2 rounded min-w-[60px] text-center">
+                                        {matchupLineups[matchup.id]?.away[slot.id]?.[index] ? 
+                                          getPlayerScore(matchupLineups[matchup.id].away[slot.id][index], matchupPlayers[matchup.id]?.away || []) : 
+                                          0}
                                       </div>
-                                    )}
+                                      <div className="flex-1 ml-4">
+                                        {isCurrentWeek() ? (
+                                          <Select
+                                            value={matchupLineups[matchup.id]?.away[slot.id]?.[index] ? {
+                                              value: matchupLineups[matchup.id].away[slot.id][index],
+                                              label: matchupPlayers[matchup.id]?.away.find(p => p.id === matchupLineups[matchup.id].away[slot.id][index])?.name || '',
+                                              team: matchupPlayers[matchup.id]?.away.find(p => p.id === matchupLineups[matchup.id].away[slot.id][index])?.team,
+                                              position: slot.label,
+                                              playerPosition: matchupPlayers[matchup.id]?.away.find(p => p.id === matchupLineups[matchup.id].away[slot.id][index])?.position,
+                                              isAway: true
+                                            } : null}
+                                            onChange={(option) => handleLineupChange(matchup.id, 'away', slot.id, option?.value || '', index)}
+                                            options={[
+                                              { value: '', label: `Empty ${slot.label}`, position: slot.label, isAway: true },
+                                              ...getAvailablePlayers(
+                                                matchupPlayers[matchup.id]?.away || [],
+                                                slot.id,
+                                                matchupLineups[matchup.id]?.away || {},
+                                                matchupLineups[matchup.id]?.away[slot.id]?.[index]
+                                              ).map(player => ({
+                                                ...player,
+                                                position: slot.label,
+                                                playerPosition: player.position,
+                                                isAway: true
+                                              }))
+                                            ]}
+                                            styles={awaySelectStyles}
+                                            formatOptionLabel={formatOptionLabel}
+                                            isClearable={false}
+                                            placeholder={`Empty ${slot.label}`}
+                                            className="w-full"
+                                            components={{ IndicatorSeparator: () => null }}
+                                            isSearchable={false}
+                                          />
+                                        ) : (
+                                          <div className="w-full bg-primary text-white px-3 py-1.5 rounded">
+                                            {matchupLineups[matchup.id]?.away[slot.id]?.[index] ? (
+                                              (() => {
+                                                const player = matchupPlayers[matchup.id]?.away.find(p => p.id === matchupLineups[matchup.id].away[slot.id][index]);
+                                                return player ? (
+                                                  <div className="flex flex-col gap-0.5">
+                                                    <div className="font-medium leading-tight text-right">{player.name}</div>
+                                                    <div className="flex items-center text-xs text-gray-400 leading-tight justify-end">
+                                                      <span className={POSITION_COLORS[slot.label === 'FLEX' ? player.position : slot.label]}>
+                                                        {slot.label === 'FLEX' ? player.position : slot.label}
+                                                      </span>
+                                                      {player.team && (
+                                                        <span className="mx-1">·</span>
+                                                      )}
+                                                      {player.team && (
+                                                        <span>({player.team})</span>
+                                                      )}
+                                                    </div>
+                                                  </div>
+                                                ) : <div className="text-right">Empty {slot.label}</div>;
+                                              })()
+                                            ) : <div className="text-right">Empty {slot.label}</div>}
+                                          </div>
+                                        )}
+                                      </div>
+                                    </div>
                                   </td>
                                 </tr>
                               ))}
@@ -719,7 +812,7 @@ const Matchups = () => {
                       {isCurrentWeek() && (
                         <button
                           onClick={() => handleSubmitStarters(matchup.id)}
-                          className="w-full mt-6 bg-accent text-white px-4 py-2 rounded-lg hover:bg-accent-dark"
+                          className="mt-4 mb-2 bg-primary px-4 py-2 rounded-lg border border-primary hover:bg-[var(--color-bg-tertiary)] transition-colors"
                         >
                           Save Starters
                         </button>
