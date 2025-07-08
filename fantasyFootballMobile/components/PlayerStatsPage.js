@@ -78,7 +78,8 @@ const TEAM_LOGOS = {
   WAS: require('../assets/teams/WAS.png'),
 };
 
-export default function PlayerStatsPage({ players, ownerMap }) {
+export default function PlayerStatsPage({ players, ownerMap, currentUser }) {
+  const isAdmin = currentUser && currentUser.email === 'chefboyrd53@gmail.com';
   const [filteredPlayers, setFilteredPlayers] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedPlayer, setSelectedPlayer] = useState(null);
@@ -87,21 +88,20 @@ export default function PlayerStatsPage({ players, ownerMap }) {
   const [selectedWeek, setSelectedWeek] = useState('All');
   const [positionFilter, setPositionFilter] = useState('All');
   const [teamFilter, setTeamFilter] = useState('All');
-  const [ownerFilter, setOwnerFilter] = useState('All');
   const [sortBy, setSortBy] = useState('totalPoints');
   const [teamOptions, setTeamOptions] = useState(['All']);
   const [positionOptions, setPositionOptions] = useState(['All']);
-  const [ownerOptions, setOwnerOptions] = useState(['All']);
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [yearOpen, setYearOpen] = useState(false);
   const [weekOpen, setWeekOpen] = useState(false);
   const [positionOpen, setPositionOpen] = useState(false);
   const [teamOpen, setTeamOpen] = useState(false);
-  const [ownerOpen, setOwnerOpen] = useState(false);
   const [sortOpen, setSortOpen] = useState(false);
   // State for multi-select filters:
   const [selectedPositions, setSelectedPositions] = useState(['All']);
   const [selectedTeams, setSelectedTeams] = useState(['All']);
+  // Owner filter for admin
+  const [ownerOptions, setOwnerOptions] = useState(['All']);
   const [selectedOwners, setSelectedOwners] = useState(['All']);
 
   useEffect(() => {
@@ -133,6 +133,23 @@ export default function PlayerStatsPage({ players, ownerMap }) {
       };
     });
     let filtered = [...updated];
+    
+    if (!isAdmin) {
+      // Filter by current user's team (only show their players)
+      if (currentUser && currentUser.email) {
+        const userTeam = getUserTeamFromEmail(currentUser.email);
+        if (userTeam) {
+          filtered = filtered.filter(p => ownerMap[p.id] === userTeam);
+        } else {
+          filtered = [];
+        }
+      }
+    } else {
+      // Admin: filter by owner if not All
+      if (!(selectedOwners.length === 1 && selectedOwners[0] === 'All')) {
+        filtered = filtered.filter(p => selectedOwners.includes(ownerMap[p.id] || 'Free Agent'));
+      }
+    }
     // Position filter (multi-select)
     if (!(selectedPositions.length === 1 && selectedPositions[0] === 'All')) {
       filtered = filtered.filter(p => selectedPositions.includes(p.position));
@@ -141,17 +158,34 @@ export default function PlayerStatsPage({ players, ownerMap }) {
     if (!(selectedTeams.length === 1 && selectedTeams[0] === 'All')) {
       filtered = filtered.filter(p => selectedTeams.includes(p.team));
     }
-    // Owner filter (multi-select)
-    if (!(selectedOwners.length === 1 && selectedOwners[0] === 'All')) {
-      filtered = filtered.filter(p => selectedOwners.includes(ownerMap[p.id] || 'Free Agent'));
-    }
     if (searchQuery.trim() !== '') {
       const query = searchQuery.trim().toLowerCase();
       filtered = filtered.filter(p => p.name.toLowerCase().includes(query));
     }
     filtered.sort((a, b) => b[sortBy] - a[sortBy]);
     setFilteredPlayers(filtered);
-  }, [players, selectedPositions, selectedTeams, selectedOwners, sortBy, selectedYear, selectedWeek, ownerMap, searchQuery]);
+  }, [players, selectedPositions, selectedTeams, sortBy, selectedYear, selectedWeek, ownerMap, searchQuery, currentUser, isAdmin, selectedOwners]);
+
+  // Helper function to map user email to team name
+  const getUserTeamFromEmail = (email) => {
+    const emailPrefix = email.split('@')[0].toLowerCase();
+    
+    // Map email prefixes to team names
+    // You'll need to update this mapping based on your actual user emails
+    const emailToTeamMap = {
+      'paul': 'Paul',
+      'mick': 'Mick', 
+      'steve': 'Steve',
+      'jason': 'Jason',
+      'mike': 'Mike',
+      'dr.c2d2': 'Chris',
+      'mark': 'Mark',
+      'john': 'John',
+      // Add more mappings as needed
+    };
+    
+    return emailToTeamMap[emailPrefix] || null;
+  };
 
   const renderPlayer = ({ item, index }) => (
     <TouchableOpacity style={[styles.row, index % 2 === 0 ? styles.rowEven : styles.rowOdd]} onPress={() => setSelectedPlayer(item)}>
@@ -308,28 +342,7 @@ export default function PlayerStatsPage({ players, ownerMap }) {
                   ))}
                 </RNScrollView>
               </View>
-              <View style={styles.filterModalItem}>
-                <Text style={styles.filterLabel}>Owner</Text>
-                <RNScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.weekScroll} contentContainerStyle={{ paddingVertical: 4 }}>
-                  {ownerOptions.map(owner => (
-                    <TouchableOpacity
-                      key={owner}
-                      style={[styles.toggleButton, selectedOwners.includes(owner) ? styles.toggleButtonActive : null, { minWidth: 48, alignItems: 'center' }]}
-                      onPress={() => {
-                        if (owner === 'All') {
-                          setSelectedOwners(['All']);
-                        } else {
-                          setSelectedOwners(prev => prev.includes(owner)
-                            ? prev.filter(o => o !== owner && o !== 'All')
-                            : [...prev.filter(o => o !== 'All'), owner]);
-                        }
-                      }}
-                    >
-                      <Text style={[styles.toggleButtonText, selectedOwners.includes(owner) ? styles.toggleButtonTextActive : null]}>{owner}</Text>
-                    </TouchableOpacity>
-                  ))}
-                </RNScrollView>
-              </View>
+
               {selectedWeek === 'All' && (
                 <View style={styles.filterModalItem}>
                   <Text style={styles.filterLabel}>Sort By</Text>
@@ -347,6 +360,30 @@ export default function PlayerStatsPage({ players, ownerMap }) {
                       <Text style={[styles.sortToggleButtonText, sortBy === 'averagePoints' ? styles.sortToggleButtonTextActive : null]}>Average Points</Text>
                     </TouchableOpacity>
                   </View>
+                </View>
+              )}
+              {isAdmin && (
+                <View style={styles.filterModalItem}>
+                  <Text style={styles.filterLabel}>Owner</Text>
+                  <RNScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.weekScroll} contentContainerStyle={{ paddingVertical: 4 }}>
+                    {ownerOptions.map(owner => (
+                      <TouchableOpacity
+                        key={owner}
+                        style={[styles.toggleButton, selectedOwners.includes(owner) ? styles.toggleButtonActive : null, { minWidth: 48, alignItems: 'center' }]}
+                        onPress={() => {
+                          if (owner === 'All') {
+                            setSelectedOwners(['All']);
+                          } else {
+                            setSelectedOwners(prev => prev.includes(owner)
+                              ? prev.filter(o => o !== owner && o !== 'All')
+                              : [...prev.filter(o => o !== 'All'), owner]);
+                          }
+                        }}
+                      >
+                        <Text style={[styles.toggleButtonText, selectedOwners.includes(owner) ? styles.toggleButtonTextActive : null]}>{owner}</Text>
+                      </TouchableOpacity>
+                    ))}
+                  </RNScrollView>
                 </View>
               )}
             </View>

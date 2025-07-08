@@ -1,77 +1,106 @@
 import 'react-native-reanimated';
 import React, { useEffect, useState, useRef } from 'react';
 import { View, Text, TouchableOpacity, Modal, StyleSheet, Animated, Image } from 'react-native';
-import { db } from './firebase';
+import { db, auth } from './firebase';
 import { collection, getDocs } from 'firebase/firestore';
+import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { Ionicons } from '@expo/vector-icons';
 import PlayerStatsPage from './components/PlayerStatsPage';
 import RostersPage from './components/RostersPage';
 import MatchupsPage from './components/MatchupsPage';
-
-
+import LoginPage from './components/LoginPage';
 
 export default function App() {
   const [players, setPlayers] = useState([]);
   const [ownerMap, setOwnerMap] = useState({});
   const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState(null);
+  const [authLoading, setAuthLoading] = useState(true);
   // Navigation state:
   const [currentPage, setCurrentPage] = useState('playerStats');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const slideAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    async function fetchData() {
-      setLoading(true);
-      const [playerSnap, defenseSnap, fantasySnap] = await Promise.all([
-        getDocs(collection(db, 'players')),
-        getDocs(collection(db, 'defense')),
-        getDocs(collection(db, 'fantasyTeams')),
-      ]);
-      const data = [];
-      playerSnap.forEach((doc) => {
-        const player = doc.data();
-        if (player && player.roster) {
-          data.push({
-            id: doc.id,
-            name: player.roster.name || '',
-            position: player.roster.position || '',
-            team: player.roster.team || '',
-            scoring: player.scoring || {},
-          });
-        }
-      });
-      defenseSnap.forEach((doc) => {
-        const team = doc.id;
-        const scoring = doc.data();
-        if (team) {
-          data.push({
-            id: team,
-            name: team,
-            position: 'DST',
-            team: team,
-            scoring: scoring || {},
-          });
-        }
-      });
-      // Build owner map
-      const map = {};
-      fantasySnap.forEach((doc) => {
-        const teamName = doc.id;
-        const data = doc.data();
-        if (teamName && data && Array.isArray(data.roster)) {
-          data.roster.forEach(id => {
-            if (id) {
-              map[id] = teamName;
-            }
-          });
-        }
-      });
-      setOwnerMap(map);
-      setPlayers(data);
-      setLoading(false);
-    }
-    fetchData();
+    // Listen for authentication state changes
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setUser(user);
+      setAuthLoading(false);
+    });
+
+    return () => unsubscribe();
   }, []);
+
+  useEffect(() => {
+    if (user) {
+      fetchData();
+    }
+  }, [user]);
+
+  async function fetchData() {
+    setLoading(true);
+    const [playerSnap, defenseSnap, fantasySnap] = await Promise.all([
+      getDocs(collection(db, 'players')),
+      getDocs(collection(db, 'defense')),
+      getDocs(collection(db, 'fantasyTeams')),
+    ]);
+    const data = [];
+    playerSnap.forEach((doc) => {
+      const player = doc.data();
+      if (player && player.roster) {
+        data.push({
+          id: doc.id,
+          name: player.roster.name || '',
+          position: player.roster.position || '',
+          team: player.roster.team || '',
+          scoring: player.scoring || {},
+        });
+      }
+    });
+    defenseSnap.forEach((doc) => {
+      const team = doc.id;
+      const scoring = doc.data();
+      if (team) {
+        data.push({
+          id: team,
+          name: team,
+          position: 'DST',
+          team: team,
+          scoring: scoring || {},
+        });
+      }
+    });
+    // Build owner map
+    const map = {};
+    fantasySnap.forEach((doc) => {
+      const teamName = doc.id;
+      const data = doc.data();
+      if (teamName && data && Array.isArray(data.roster)) {
+        data.roster.forEach(id => {
+          if (id) {
+            map[id] = teamName;
+          }
+        });
+      }
+    });
+    setOwnerMap(map);
+    setPlayers(data);
+    setLoading(false);
+  }
+
+  const handleLoginSuccess = (user) => {
+    setUser(user);
+  };
+
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      setUser(null);
+      setCurrentPage('playerStats');
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
+  };
 
   const toggleMenu = () => {
     if (isMenuOpen) {
@@ -103,31 +132,45 @@ export default function App() {
     
     switch (currentPage) {
       case 'playerStats':
-        return <PlayerStatsPage players={safePlayers} ownerMap={safeOwnerMap} />;
+        return <PlayerStatsPage players={safePlayers} ownerMap={safeOwnerMap} currentUser={user} />;
       case 'rosters':
         return <RostersPage players={safePlayers} ownerMap={safeOwnerMap} />;
       case 'matchups':
-        return <MatchupsPage />;
+        return <MatchupsPage currentUser={user} />;
       default:
-        return <PlayerStatsPage players={safePlayers} ownerMap={safeOwnerMap} />;
+        return <PlayerStatsPage players={safePlayers} ownerMap={safeOwnerMap} currentUser={user} />;
     }
   };
 
+  // Show loading screen while checking authentication
+  if (authLoading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <Image source={require('./assets/icon.png')} style={styles.loadingLogo} resizeMode="contain" />
+        <Text style={styles.loadingText}>Loading...</Text>
+      </View>
+    );
+  }
 
+  // Show login page if not authenticated
+  if (!user) {
+    return <LoginPage onLoginSuccess={handleLoginSuccess} />;
+  }
 
   return (
     <View style={styles.container}>
       {/* Navbar */}
       <View style={styles.navbar}>
         <Image source={require('./assets/icon.png')} style={styles.navbarLogo} resizeMode="contain" />
-        <TouchableOpacity style={styles.menuButton} onPress={toggleMenu}>
-          <Ionicons name={isMenuOpen ? "close" : "menu"} size={24} color="#fff" />
-        </TouchableOpacity>
+        <View style={styles.navbarRight}>
+          <Text style={styles.userEmail}>{user.email}</Text>
+          <TouchableOpacity style={styles.menuButton} onPress={toggleMenu}>
+            <Ionicons name={isMenuOpen ? "close" : "menu"} size={24} color="#fff" />
+          </TouchableOpacity>
+        </View>
       </View>
       <View style={{ height: 16 }} />
       
-
-
       {/* Slide-out Navigation Menu */}
       {isMenuOpen && (
         <>
@@ -177,6 +220,13 @@ export default function App() {
               }}
             >
               <Text style={[styles.slideMenuItemText, currentPage === 'matchups' && styles.slideMenuItemTextActive]}>Matchups</Text>
+            </TouchableOpacity>
+            <View style={styles.slideMenuDivider} />
+            <TouchableOpacity
+              style={styles.slideMenuItem}
+              onPress={handleLogout}
+            >
+              <Text style={styles.slideMenuItemText}>Logout</Text>
             </TouchableOpacity>
           </Animated.View>
         </>
@@ -598,7 +648,31 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
   },
-
+  navbarRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  userEmail: {
+    color: '#fff',
+    fontSize: 16,
+    marginRight: 10,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#18181b',
+  },
+  loadingLogo: {
+    width: 80,
+    height: 80,
+    marginBottom: 20,
+  },
+  loadingText: {
+    color: '#fff',
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
   menuButton: {
     padding: 8,
   },
@@ -704,6 +778,12 @@ const styles = StyleSheet.create({
     paddingBottom: 60,
     zIndex: 1001,
     alignItems: 'flex-start',
+  },
+  slideMenuDivider: {
+    height: 1,
+    backgroundColor: '#6666ff',
+    marginVertical: 16,
+    marginBottom: 20,
   },
 
   slideMenuItem: {

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, ScrollView, Platform } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, ScrollView, Platform, Modal } from 'react-native';
 import { ScrollView as RNScrollView } from 'react-native';
 import { db } from '../firebase';
 import { collection, doc, getDoc, getDocs, updateDoc } from 'firebase/firestore';
@@ -28,10 +28,12 @@ function getPositionColor(pos) {
   return POSITION_COLORS[pos] || '#fff';
 }
 
-export default function MatchupsPage() {
+export default function MatchupsPage({ currentUser }) {
+  const isAdmin = currentUser && currentUser.email === 'chefboyrd53@gmail.com';
   const [selectedYear, setSelectedYear] = useState('2024');
   const [selectedWeek, setSelectedWeek] = useState('week1');
   const [matchups, setMatchups] = useState([]);
+  const [filteredMatchups, setFilteredMatchups] = useState([]);
   const [expanded, setExpanded] = useState({});
   const [loading, setLoading] = useState(true);
   const [currentDate, setCurrentDate] = useState(null);
@@ -39,6 +41,10 @@ export default function MatchupsPage() {
   const [playersCache, setPlayersCache] = useState({});
   const [lineups, setLineups] = useState({});
   const [saving, setSaving] = useState(false);
+  const [userTeam, setUserTeam] = useState(null);
+  const [userTeamPlayers, setUserTeamPlayers] = useState([]);
+  const [userLineup, setUserLineup] = useState({});
+  const [showLineupModal, setShowLineupModal] = useState(false);
 
   // Fetch current date (for current week logic)
   useEffect(() => {
@@ -85,6 +91,154 @@ export default function MatchupsPage() {
     }
     if (selectedYear && selectedWeek) fetchMatchups();
   }, [selectedYear, selectedWeek]);
+
+  // Filter matchups based on current user and week
+  useEffect(() => {
+    if (isAdmin) {
+      setFilteredMatchups(matchups);
+      return;
+    }
+    if (!currentUser || !matchups.length) {
+      setFilteredMatchups(matchups);
+      return;
+    }
+    const isCurrentWeek = currentDate && selectedWeek === `week${currentDate.week}`;
+    if (isCurrentWeek) {
+      // For current week, only show the user's matchup
+      const userTeam = getUserTeamFromEmail(currentUser.email);
+      if (userTeam) {
+        const userMatchup = matchups.find(matchup => 
+          matchup.homeTeam === userTeam || matchup.awayTeam === userTeam
+        );
+        setFilteredMatchups(userMatchup ? [userMatchup] : []);
+      } else {
+        setFilteredMatchups([]);
+      }
+    } else {
+      // For past weeks, show all matchups
+      setFilteredMatchups(matchups);
+    }
+  }, [matchups, currentUser, currentDate, selectedWeek, isAdmin]);
+
+  // Helper function to map user email to team name
+  const getUserTeamFromEmail = (email) => {
+    const emailPrefix = email.split('@')[0].toLowerCase();
+    
+    // Map email prefixes to team names
+    // You'll need to update this mapping based on your actual user emails
+    const emailToTeamMap = {
+      'paul': 'Paul',
+      'mick': 'Mick', 
+      'steve': 'Steve',
+      'jason': 'Jason',
+      'mike': 'Mike',
+      'dr.c2d2': 'Chris',
+      'mark': 'Mark',
+      'john': 'John',
+      // Add more mappings as needed
+    };
+    
+    return emailToTeamMap[emailPrefix] || null;
+  };
+
+  // Set user team when currentUser changes
+  useEffect(() => {
+    if (currentUser && currentUser.email) {
+      const team = getUserTeamFromEmail(currentUser.email);
+      setUserTeam(team);
+    }
+  }, [currentUser]);
+
+  // Fetch user's team players when userTeam changes
+  useEffect(() => {
+    if (userTeam) {
+      fetchTeamPlayers(userTeam).then(players => {
+        setUserTeamPlayers(players);
+      });
+    }
+  }, [userTeam]);
+
+  // Check if current week and user can manage lineup
+  const isCurrentWeek = currentDate && selectedWeek === `week${currentDate.week}`;
+  const canManageLineup = isCurrentWeek && userTeam && !isAdmin;
+
+  // Get current user's lineup from matchup data
+  const getCurrentUserLineup = () => {
+    if (!userTeam || !matchups.length) return {};
+    
+    const userMatchup = matchups.find(m => 
+      m.homeTeam === userTeam || m.awayTeam === userTeam
+    );
+    
+    if (!userMatchup) return {};
+    
+    const isHomeTeam = userMatchup.homeTeam === userTeam;
+    const starterIds = isHomeTeam ? userMatchup.homeStarters : userMatchup.awayStarters;
+    
+    if (!starterIds || !Array.isArray(starterIds)) return {};
+    
+    // Convert flat array to slot-based structure
+    const lineup = {};
+    const usedPlayerIds = new Set();
+    
+    LINEUP_SLOTS.forEach(slot => {
+      lineup[slot.id] = [];
+      const slotPlayers = starterIds.filter(id => {
+        const player = userTeamPlayers.find(p => p.id === id);
+        if (!player) return false;
+        const isValidForSlot = (
+          slot.id === 'FLEX'
+            ? ['RB', 'WR', 'TE'].includes(player.position)
+            : player.position === slot.id
+        );
+        return isValidForSlot && !usedPlayerIds.has(id);
+      });
+      
+      slotPlayers.forEach((playerId, index) => {
+        if (index < slot.count) {
+          lineup[slot.id].push(playerId);
+          usedPlayerIds.add(playerId);
+        }
+      });
+    });
+    
+    return lineup;
+  };
+
+  // Save lineup to Firebase
+  const saveLineup = async (lineup) => {
+    if (!userTeam || !isCurrentWeek) return;
+    
+    setSaving(true);
+    try {
+      // Find the user's matchup
+      const userMatchup = matchups.find(m => 
+        m.homeTeam === userTeam || m.awayTeam === userTeam
+      );
+      
+      if (userMatchup) {
+        const isHomeTeam = userMatchup.homeTeam === userTeam;
+        const updateData = isHomeTeam 
+          ? { homeStarters: Object.values(lineup).flat().filter(id => id) }
+          : { awayStarters: Object.values(lineup).flat().filter(id => id) };
+        
+        // Update the specific matchup document
+        const matchupDoc = doc(db, 'matchups', selectedYear, 'weeks', selectedWeek, 'games', userMatchup.id);
+        await updateDoc(matchupDoc, updateData);
+        
+        // Update local state
+        setMatchups(prev => prev.map(m => 
+          m.id === userMatchup.id 
+            ? { ...m, ...updateData }
+            : m
+        ));
+      }
+    } catch (error) {
+      console.error('Error saving lineup:', error);
+    } finally {
+      setSaving(false);
+    }
+  };
 
   // Fetch players for a team
   async function fetchTeamPlayers(teamName) {
@@ -181,7 +335,7 @@ export default function MatchupsPage() {
         <ActivityIndicator size="large" style={{ marginTop: 40 }} />
       ) : (
         <ScrollView contentContainerStyle={{ paddingBottom: 40 }}>
-          {matchups.map((matchup) => (
+          {filteredMatchups.map((matchup) => (
             <MatchupCard
               key={matchup.id}
               matchup={matchup}
@@ -193,9 +347,211 @@ export default function MatchupsPage() {
               calculateTeamScore={calculateTeamScore}
             />
           ))}
+          {canManageLineup && (
+            <View style={styles.setLineupButtonContainer}>
+              <TouchableOpacity
+                style={styles.manageLineupButton}
+                onPress={() => setShowLineupModal(true)}
+              >
+                <Text style={[styles.manageLineupButtonText, styles.manageLineupButtonTextActive]}>Set Lineup</Text>
+              </TouchableOpacity>
+            </View>
+          )}
         </ScrollView>
       )}
+      
+      {/* Lineup Management Modal */}
+      {showLineupModal && (
+        <LineupModal
+          visible={showLineupModal}
+          onClose={() => setShowLineupModal(false)}
+          players={userTeamPlayers}
+          currentLineup={getCurrentUserLineup()}
+          onSave={saveLineup}
+          saving={saving}
+          userTeam={userTeam}
+        />
+      )}
     </View>
+  );
+}
+
+function LineupModal({ visible, onClose, players, currentLineup, onSave, saving, userTeam }) {
+  const [lineup, setLineup] = useState({});
+  const [selectedSlot, setSelectedSlot] = useState(null);
+  const [showPlayerPicker, setShowPlayerPicker] = useState(false);
+
+  // Initialize lineup when modal opens
+  useEffect(() => {
+    if (visible) {
+      setLineup(currentLineup || {});
+    }
+  }, [visible, currentLineup]);
+
+  // Group players by position
+  const playersByPosition = players.reduce((acc, player) => {
+    const pos = player.position;
+    if (!acc[pos]) acc[pos] = [];
+    acc[pos].push(player);
+    return acc;
+  }, {});
+
+  // Get available players for a slot
+  const getAvailablePlayers = (slotId) => {
+    if (slotId === 'FLEX') {
+      return [...(playersByPosition.RB || []), ...(playersByPosition.WR || []), ...(playersByPosition.TE || [])];
+    }
+    return playersByPosition[slotId] || [];
+  };
+
+  // Check if player is already in lineup
+  const isPlayerInLineup = (playerId) => {
+    return Object.values(lineup).flat().includes(playerId);
+  };
+
+  // Set player for slot and index (replace any existing player in that slot position)
+  const setPlayerForSlot = (slotId, index, playerId) => {
+    setLineup(prev => {
+      const newLineup = { ...prev };
+      if (!newLineup[slotId]) newLineup[slotId] = Array(index + 1).fill('');
+      // Remove player from all slots first
+      Object.keys(newLineup).forEach(key => {
+        newLineup[key] = newLineup[key].map(id => (id === playerId ? '' : id));
+      });
+      // Set the player at the correct index
+      newLineup[slotId][index] = playerId;
+      return newLineup;
+    });
+  };
+
+  // Get player by ID
+  const getPlayerById = (playerId) => {
+    return players.find(p => p.id === playerId);
+  };
+
+  const handleSave = () => {
+    onSave(lineup);
+    onClose();
+  };
+
+  return (
+    <Modal
+      visible={visible}
+      animationType="fade"
+      transparent={true}
+      onRequestClose={onClose}
+    >
+      <View style={styles.modalOverlay}>
+        <View style={styles.lineupModalContent}>
+          <View style={styles.lineupModalHeader}>
+            <Text style={styles.lineupModalTitle}>Set Lineup - {userTeam}</Text>
+            <TouchableOpacity onPress={onClose} style={styles.closeButton}>
+              <Text style={styles.closeButtonText}>×</Text>
+            </TouchableOpacity>
+          </View>
+          
+          <ScrollView style={styles.lineupModalBody}>
+            {LINEUP_SLOTS.map(slot => (
+              <View key={slot.id} style={styles.lineupSlot}>
+                <Text style={styles.lineupSlotTitle}>
+                  <Text style={{ color: getPositionColor(slot.id) }}>{slot.label}</Text>
+                  <Text style={{ color: '#a1a1aa' }}> ({slot.count})</Text>
+                </Text>
+                <View style={styles.lineupSlotPlayers}>
+                  {Array.from({ length: slot.count }, (_, index) => {
+                    const playerId = lineup[slot.id]?.[index];
+                    const player = playerId ? getPlayerById(playerId) : null;
+                    return (
+                      <TouchableOpacity
+                        key={index}
+                        style={[styles.lineupPlayerSlot, player ? styles.lineupPlayerSlotFilled : styles.lineupPlayerSlotEmpty]}
+                        onPress={() => {
+                          setSelectedSlot({ slotId: slot.id, index });
+                          setShowPlayerPicker(true);
+                        }}
+                      >
+                        {player ? (
+                          <View style={styles.lineupPlayerInfo}>
+                            <Text style={styles.lineupPlayerName}>{player.name}</Text>
+                            <Text style={styles.lineupPlayerMeta}>
+                              <Text style={{ color: getPositionColor(player.position) }}>{player.position}</Text>
+                              {player.team ? <Text>{' • '}{player.team}</Text> : null}
+                            </Text>
+                          </View>
+                        ) : (
+                          <Text style={styles.lineupPlayerEmpty}>Tap to add player</Text>
+                        )}
+                      </TouchableOpacity>
+                    );
+                  })}
+                </View>
+              </View>
+            ))}
+          </ScrollView>
+          
+          <View style={styles.lineupModalFooter}>
+            <TouchableOpacity
+              style={[styles.saveLineupButton, saving && styles.saveLineupButtonDisabled]}
+              onPress={handleSave}
+              disabled={saving}
+            >
+              <Text style={styles.saveLineupButtonText}>
+                {saving ? 'Saving...' : 'Save Lineup'}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+      
+      {/* Player Picker Modal */}
+      <Modal
+        visible={showPlayerPicker}
+        animationType="fade"
+        transparent={true}
+        onRequestClose={() => setShowPlayerPicker(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.playerPickerContent}>
+            <View style={styles.playerPickerHeader}>
+              <Text style={styles.playerPickerTitle}>Select Player</Text>
+              <TouchableOpacity onPress={() => setShowPlayerPicker(false)} style={styles.closeButton}>
+                <Text style={styles.closeButtonText}>×</Text>
+              </TouchableOpacity>
+            </View>
+            
+            <ScrollView style={styles.playerPickerBody}>
+              {getAvailablePlayers(selectedSlot?.slotId).map(player => (
+                <TouchableOpacity
+                  key={player.id}
+                  style={[
+                    styles.playerPickerItem,
+                    isPlayerInLineup(player.id) && styles.playerPickerItemSelected
+                  ]}
+                  onPress={() => {
+                    if (!isPlayerInLineup(player.id) || (lineup[selectedSlot.slotId]?.[selectedSlot.index] === player.id)) {
+                      setPlayerForSlot(selectedSlot.slotId, selectedSlot.index, player.id);
+                    }
+                    setShowPlayerPicker(false);
+                  }}
+                  disabled={isPlayerInLineup(player.id) && (lineup[selectedSlot?.slotId]?.[selectedSlot?.index] !== player.id)}
+                >
+                  <View style={styles.playerPickerInfo}>
+                    <Text style={styles.playerPickerName}>{player.name}</Text>
+                    <Text style={styles.playerPickerMeta}>
+                      <Text style={{ color: getPositionColor(player.position) }}>{player.position}</Text>
+                      {player.team ? <Text>{' • '}{player.team}</Text> : null}
+                    </Text>
+                  </View>
+                  {isPlayerInLineup(player.id) && (lineup[selectedSlot?.slotId]?.[selectedSlot?.index] !== player.id) && (
+                    <Text style={styles.playerPickerSelectedText}>In Lineup</Text>
+                  )}
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
+    </Modal>
   );
 }
 
@@ -681,5 +1037,201 @@ const styles = StyleSheet.create({
     color: '#a1a1aa',
     fontSize: 12,
     marginHorizontal: 1,
+  },
+  // Lineup Management Styles
+  manageLineupButton: {
+    backgroundColor: '#f59e0b',
+    borderRadius: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    marginLeft: 8,
+  },
+  manageLineupButtonText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: 'bold',
+  },
+  manageLineupButtonTextActive: {
+    color: '#18181b',
+    fontWeight: 'bold',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.7)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  lineupModalContent: {
+    backgroundColor: '#232336',
+    borderRadius: 16,
+    width: '90%',
+    height: '80%',
+    borderWidth: 1,
+    borderColor: '#6666ff',
+  },
+  lineupModalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#6666ff',
+  },
+  lineupModalTitle: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  closeButton: {
+    padding: 4,
+  },
+  closeButtonText: {
+    color: '#fff',
+    fontSize: 24,
+    fontWeight: 'bold',
+  },
+  lineupModalBody: {
+    flex: 1,
+    padding: 16,
+    paddingBottom: 20,
+  },
+  lineupSlot: {
+    marginBottom: 20,
+  },
+  lineupSlotTitle: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 8,
+  },
+  lineupSlotPlayers: {
+    gap: 8,
+  },
+  lineupPlayerSlot: {
+    borderWidth: 1,
+    borderColor: '#6666ff',
+    borderRadius: 8,
+    padding: 12,
+    minHeight: 60,
+  },
+  lineupPlayerSlotEmpty: {
+    borderStyle: 'dashed',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  lineupPlayerSlotFilled: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  lineupPlayerInfo: {
+    flex: 1,
+  },
+  lineupPlayerName: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  lineupPlayerMeta: {
+    color: '#a1a1aa',
+    fontSize: 14,
+    marginTop: 2,
+  },
+  lineupPlayerEmpty: {
+    color: '#a1a1aa',
+    fontSize: 16,
+    fontStyle: 'italic',
+  },
+  removePlayerButton: {
+    backgroundColor: '#ff6666',
+    borderRadius: 16,
+    width: 24,
+    height: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  removePlayerButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  lineupModalFooter: {
+    padding: 16,
+    borderTopWidth: 1,
+    borderTopColor: '#6666ff',
+  },
+  saveLineupButton: {
+    backgroundColor: '#6666ff',
+    borderRadius: 8,
+    paddingVertical: 12,
+    alignItems: 'center',
+  },
+  saveLineupButtonDisabled: {
+    backgroundColor: '#4a4a6a',
+  },
+  saveLineupButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  playerPickerContent: {
+    backgroundColor: '#232336',
+    borderRadius: 16,
+    width: '90%',
+    height: '80%',
+    borderWidth: 1,
+    borderColor: '#6666ff',
+  },
+  playerPickerHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#6666ff',
+  },
+  playerPickerTitle: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  playerPickerBody: {
+    flex: 1,
+    padding: 16,
+    paddingBottom: 20,
+  },
+  playerPickerItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#18181b',
+  },
+  playerPickerItemSelected: {
+    backgroundColor: '#18181b',
+  },
+  playerPickerInfo: {
+    flex: 1,
+  },
+  playerPickerName: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  playerPickerMeta: {
+    color: '#a1a1aa',
+    fontSize: 14,
+    marginTop: 2,
+  },
+  playerPickerSelectedText: {
+    color: '#6666ff',
+    fontSize: 14,
+    fontWeight: 'bold',
+  },
+  setLineupButtonContainer: {
+    alignItems: 'center',
+    marginTop: 16,
+    marginBottom: 8,
   },
 }); 
