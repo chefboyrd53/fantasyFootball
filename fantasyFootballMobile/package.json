@@ -1,0 +1,29 @@
+{
+  "name": "fantasyfootballmobile",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "start": "expo start",
+    "android": "expo start --android",
+    "ios": "expo start --ios",
+    "web": "expo start --web"
+  },
+  "dependencies": {
+    "@react-native-picker/picker": "^2.11.1",
+    "expo": "~53.0.17",
+    "expo-status-bar": "~2.2.3",
+    "firebase": "^11.10.0",
+    "react": "19.0.0",
+    "react-native": "0.79.5",
+    "react-native-dropdown-picker": "^5.4.6",
+    "react-native-reanimated": "~3.17.4",
+    "react-native-svg": "15.11.2",
+    "victory": "^37.3.6",
+    "victory-native": "^37.3.6"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.20.0",
+    "@react-native-community/cli": "latest"
+  },
+  "private": true
+}
