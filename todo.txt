@@ -1,0 +1,15 @@
+TODO:
+
+Scoring Site:
+- login system 
+- waivers/trades page
+- add record to teams page
+- player of the week/team of the week/team
+
+
+Draft Algorithm
+- store all relevant data
+- build algorithm 
+- refine and test algorithm
+- build a way to use it during the draft
+- modify it to use on who to play during regular season/who to pick up
