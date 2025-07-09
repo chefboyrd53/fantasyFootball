@@ -2,13 +2,15 @@ import 'react-native-reanimated';
 import React, { useEffect, useState, useRef } from 'react';
 import { View, Text, TouchableOpacity, Modal, StyleSheet, Animated, Image } from 'react-native';
 import { db, auth } from './firebase';
-import { collection, getDocs } from 'firebase/firestore';
+import { collection, getDocs, doc, getDoc, query } from 'firebase/firestore';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { Ionicons } from '@expo/vector-icons';
 import PlayerStatsPage from './components/PlayerStatsPage';
 import RostersPage from './components/RostersPage';
 import MatchupsPage from './components/MatchupsPage';
 import LoginPage from './components/LoginPage';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import SettingsPage from './components/SettingsPage';
 
 export default function App() {
   const [players, setPlayers] = useState([]);
@@ -16,32 +18,86 @@ export default function App() {
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
   const [authLoading, setAuthLoading] = useState(true);
+  const [currentDate, setCurrentDate] = useState(null); // { year, week }
+  const [lastFetchedDate, setLastFetchedDate] = useState(null); // { year, week }
   // Navigation state:
   const [currentPage, setCurrentPage] = useState('playerStats');
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const slideAnim = useRef(new Animated.Value(0)).current;
+  // In-memory cache for player/defense/fantasyTeams data
+  const dataCache = useRef({});
 
+  // Utility: get admin status
+  const isAdmin = user && user.email === 'chefboyrd53@gmail.com';
+
+  // Utility: cache key for AsyncStorage
+  const getCacheKey = (date) => `ff_cache_${date?.year}_${date?.week}`;
+
+  // Listen for authentication state changes
   useEffect(() => {
-    // Listen for authentication state changes
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setUser(user);
       setAuthLoading(false);
     });
-
     return () => unsubscribe();
   }, []);
 
+  // Fetch currentDate from Firestore on mount and when app resumes
   useEffect(() => {
-    if (user) {
-      fetchData();
+    async function fetchCurrentDate() {
+      try {
+        const whenDoc = await getDoc(doc(db, 'currentDate', 'when'));
+        if (whenDoc.exists()) {
+          const data = whenDoc.data();
+          setCurrentDate({ year: data.year, week: data.week });
+        }
+      } catch (err) {
+        console.error('Error fetching currentDate:', err);
+      }
     }
-  }, [user]);
+    fetchCurrentDate();
+    // Optionally, add AppState listener to refresh on resume
+  }, []);
 
-  async function fetchData() {
+  // Only fetch player/defense/fantasyTeams data if currentDate changes
+  useEffect(() => {
+    if (!user || !currentDate) return;
+    // Try to load from AsyncStorage first
+    (async () => {
+      const cacheKey = getCacheKey(currentDate);
+      try {
+        const cached = await AsyncStorage.getItem(cacheKey);
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          setPlayers(parsed.players);
+          setOwnerMap(parsed.ownerMap);
+          setLoading(false);
+          dataCache.current = { ...parsed, year: currentDate.year, week: currentDate.week };
+          return;
+        }
+      } catch (err) {
+        // Ignore cache errors, fallback to fetch
+      }
+      // If not cached, fetch from Firestore
+      fetchData(currentDate.year, currentDate.week);
+    })();
+  }, [user, currentDate, currentPage]);
+
+
+
+  async function fetchData(year, week) {
     setLoading(true);
+    // Use .select() to limit fields if possible (Firestore web SDK supports it)
+    let playerQ = collection(db, 'players');
+    let defenseQ = collection(db, 'defense');
+    // Always fetch fantasyTeams to build ownerMap (needed for all pages)
+    // If you want to limit fields, you can use query(playerQ, select('roster', 'scoring'))
+    // But for now, fetch all fields (Firestore free tier charges per doc, not per field)
+    // If you want to optimize further, uncomment below:
+    // import { query, select } from 'firebase/firestore';
+    // playerQ = query(playerQ, select('roster', 'scoring'));
+    // defenseQ = query(defenseQ, select('scoring'));
     const [playerSnap, defenseSnap, fantasySnap] = await Promise.all([
-      getDocs(collection(db, 'players')),
-      getDocs(collection(db, 'defense')),
+      getDocs(playerQ),
+      getDocs(defenseQ),
       getDocs(collection(db, 'fantasyTeams')),
     ]);
     const data = [];
@@ -86,6 +142,20 @@ export default function App() {
     setOwnerMap(map);
     setPlayers(data);
     setLoading(false);
+    // Cache the data for this date in memory and AsyncStorage
+    dataCache.current = {
+      year,
+      week,
+      players: data,
+      ownerMap: map,
+    };
+    const cacheKey = getCacheKey({ year, week });
+    try {
+      await AsyncStorage.setItem(cacheKey, JSON.stringify({ players: data, ownerMap: map }));
+    } catch (err) {
+      // Ignore cache errors
+    }
+    setLastFetchedDate({ year, week });
   }
 
   const handleLoginSuccess = (user) => {
@@ -94,6 +164,8 @@ export default function App() {
 
   const handleLogout = async () => {
     try {
+      setPlayers([]);
+      setOwnerMap({});
       await signOut(auth);
       setUser(null);
       setCurrentPage('playerStats');
@@ -102,34 +174,13 @@ export default function App() {
     }
   };
 
-  const toggleMenu = () => {
-    if (isMenuOpen) {
-      // Close menu
-      Animated.timing(slideAnim, {
-        toValue: 0,
-        duration: 200,
-        useNativeDriver: true,
-      }).start(() => setIsMenuOpen(false));
-    } else {
-      // Open menu
-      setIsMenuOpen(true);
-      Animated.timing(slideAnim, {
-        toValue: 1,
-        duration: 200,
-        useNativeDriver: true,
-      }).start();
-    }
-  };
-
   const renderCurrentPage = () => {
     if (loading) {
       return null;
     }
-    
     // Ensure we have valid data
     const safePlayers = players || [];
     const safeOwnerMap = ownerMap || {};
-    
     switch (currentPage) {
       case 'playerStats':
         return <PlayerStatsPage players={safePlayers} ownerMap={safeOwnerMap} currentUser={user} />;
@@ -137,6 +188,8 @@ export default function App() {
         return <RostersPage players={safePlayers} ownerMap={safeOwnerMap} />;
       case 'matchups':
         return <MatchupsPage currentUser={user} />;
+      case 'settings':
+        return <SettingsPage onLogout={handleLogout} user={user} />;
       default:
         return <PlayerStatsPage players={safePlayers} ownerMap={safeOwnerMap} currentUser={user} />;
     }
@@ -159,81 +212,33 @@ export default function App() {
 
   return (
     <View style={styles.container}>
-      {/* Navbar */}
+      {/* Top Navbar */}
       <View style={styles.navbar}>
         <Image source={require('./assets/icon.png')} style={styles.navbarLogo} resizeMode="contain" />
         <View style={styles.navbarRight}>
-          <Text style={styles.userEmail}>{user.email}</Text>
-          <TouchableOpacity style={styles.menuButton} onPress={toggleMenu}>
-            <Ionicons name={isMenuOpen ? "close" : "menu"} size={24} color="#fff" />
+          <TouchableOpacity style={styles.settingsButton} onPress={() => setCurrentPage('settings')}>
+            <Ionicons name="settings-sharp" size={24} color="#fff" />
           </TouchableOpacity>
         </View>
       </View>
-      <View style={{ height: 16 }} />
-      
-      {/* Slide-out Navigation Menu */}
-      {isMenuOpen && (
-        <>
-          {/* Overlay */}
-          <TouchableOpacity
-            style={styles.slideMenuOverlay}
-            activeOpacity={1}
-            onPress={toggleMenu}
-          />
-          {/* Slide-out Menu */}
-          <Animated.View 
-            style={[
-              styles.slideMenuContent,
-              {
-                transform: [{
-                  translateX: slideAnim.interpolate({
-                    inputRange: [0, 1],
-                    outputRange: [-300, 0], // Slide from 300px left to 0
-                  })
-                }]
-              }
-            ]}
-          >
-            <TouchableOpacity
-              style={[styles.slideMenuItem, currentPage === 'playerStats' && styles.slideMenuItemActive]}
-              onPress={() => {
-                setCurrentPage('playerStats');
-                toggleMenu();
-              }}
-            >
-              <Text style={[styles.slideMenuItemText, currentPage === 'playerStats' && styles.slideMenuItemTextActive]}>Player Stats</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.slideMenuItem, currentPage === 'rosters' && styles.slideMenuItemActive]}
-              onPress={() => {
-                setCurrentPage('rosters');
-                toggleMenu();
-              }}
-            >
-              <Text style={[styles.slideMenuItemText, currentPage === 'rosters' && styles.slideMenuItemTextActive]}>Rosters</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.slideMenuItem, currentPage === 'matchups' && styles.slideMenuItemActive]}
-              onPress={() => {
-                setCurrentPage('matchups');
-                toggleMenu();
-              }}
-            >
-              <Text style={[styles.slideMenuItemText, currentPage === 'matchups' && styles.slideMenuItemTextActive]}>Matchups</Text>
-            </TouchableOpacity>
-            <View style={styles.slideMenuDivider} />
-            <TouchableOpacity
-              style={styles.slideMenuItem}
-              onPress={handleLogout}
-            >
-              <Text style={styles.slideMenuItemText}>Logout</Text>
-            </TouchableOpacity>
-          </Animated.View>
-        </>
-      )}
-
-      {/* Render current page content */}
-      {renderCurrentPage()}
+      <View style={{ flex: 1 }}>
+        {renderCurrentPage()}
+      </View>
+      {/* Bottom Navbar */}
+      <View style={styles.bottomNavbar}>
+        <TouchableOpacity style={styles.bottomNavItem} onPress={() => setCurrentPage('playerStats')}>
+          <Ionicons name="stats-chart" size={24} color={currentPage === 'playerStats' ? '#f59e0b' : '#fff'} />
+          <Text style={[styles.bottomNavLabel, currentPage === 'playerStats' && styles.bottomNavLabelActive]}>Stats</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.bottomNavItem} onPress={() => setCurrentPage('rosters')}>
+          <Ionicons name="people" size={24} color={currentPage === 'rosters' ? '#f59e0b' : '#fff'} />
+          <Text style={[styles.bottomNavLabel, currentPage === 'rosters' && styles.bottomNavLabelActive]}>Rosters</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.bottomNavItem} onPress={() => setCurrentPage('matchups')}>
+          <Ionicons name="american-football" size={24} color={currentPage === 'matchups' ? '#f59e0b' : '#fff'} />
+          <Text style={[styles.bottomNavLabel, currentPage === 'matchups' && styles.bottomNavLabelActive]}>Matchups</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
@@ -243,7 +248,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#18181b',
     paddingTop: 50,
-    paddingHorizontal: 16,
+    paddingHorizontal: 0, // Remove horizontal padding for full width navbars
   },
   header: {
     fontSize: 28,
@@ -641,7 +646,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#6666ff',
     zIndex: 100,
-    marginHorizontal: -16,
+    marginHorizontal: 0,
     marginTop: -50,
   },
   navbarLogo: {
@@ -656,6 +661,9 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     marginRight: 10,
+  },
+  settingsButton: {
+    padding: 8,
   },
   loadingContainer: {
     flex: 1,
@@ -757,54 +765,29 @@ const styles = StyleSheet.create({
     fontSize: 12,
     marginLeft: 4,
   },
-  slideMenuOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(0,0,0,0.7)',
-    zIndex: 1000,
-  },
-  slideMenuContent: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    bottom: 0,
-    width: '70%', // Adjust as needed
+  bottomNavbar: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    alignItems: 'center',
     backgroundColor: '#232336',
-    paddingTop: 60,
-    paddingHorizontal: 20,
-    paddingBottom: 60,
-    zIndex: 1001,
-    alignItems: 'flex-start',
+    borderTopWidth: 1,
+    borderTopColor: '#6666ff',
+    paddingVertical: 4,
+    paddingBottom: 20, // Add padding to avoid iOS home indicator
+    height: 76, // Increase height to accommodate padding
   },
-  slideMenuDivider: {
-    height: 1,
-    backgroundColor: '#6666ff',
-    marginVertical: 16,
-    marginBottom: 20,
+  bottomNavItem: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-
-  slideMenuItem: {
-    alignItems: 'flex-start',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 10,
-    marginBottom: 8,
-    minWidth: 120,
+  bottomNavLabel: {
+    color: '#a1a1aa',
+    fontSize: 11,
+    marginTop: 2,
   },
-  slideMenuItemActive: {
-    backgroundColor: '#6666ff',
-    borderColor: '#6666ff',
-  },
-  slideMenuItemText: {
-    color: '#fff',
-    fontSize: 18,
-    textAlign: 'left',
-  },
-  slideMenuItemTextActive: {
-    color: '#18181b',
+  bottomNavLabelActive: {
+    color: '#f59e0b',
     fontWeight: 'bold',
   },
 });

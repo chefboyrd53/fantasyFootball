@@ -244,6 +244,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 12,
     paddingHorizontal: 16,
+    paddingTop: 12,
   },
   divisionTitleGold: {
     color: '#f59e0b',

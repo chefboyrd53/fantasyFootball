@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "fantasyFootballMobile",
+    "name": "Blue & Gold FFL",
     "slug": "fantasyFootballMobile",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
+    "userInterfaceStyle": "dark",
     "newArchEnabled": true,
     "jsEngine": "hermes",
     "splash": {
@@ -14,17 +14,30 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "runtimeVersion": {
+        "policy": "appVersion"
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "package": "com.anonymous.fantasyFootballMobile",
+      "runtimeVersion": "1.0.0"
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "c4933219-47ae-473f-9326-d344b68c49c3"
+      }
+    },
+    "updates": {
+      "url": "https://u.expo.dev/c4933219-47ae-473f-9326-d344b68c49c3"
     }
   }
 }

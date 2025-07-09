@@ -178,7 +178,7 @@ export default function PlayerStatsPage({ players, ownerMap, currentUser }) {
       'steve': 'Steve',
       'jason': 'Jason',
       'mike': 'Mike',
-      'dr.c2d2': 'Chris',
+      'njemail25': 'Chris',
       'mark': 'Mark',
       'john': 'John',
       // Add more mappings as needed
