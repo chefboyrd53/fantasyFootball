@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, ScrollView, Platform, Modal } from 'react-native';
+import React, { useEffect, useState, useCallback } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, ScrollView, Platform, Modal, RefreshControl } from 'react-native';
 import { ScrollView as RNScrollView } from 'react-native';
 import { db } from '../firebase';
 import { collection, doc, getDoc, getDocs, updateDoc } from 'firebase/firestore';
@@ -28,7 +28,7 @@ function getPositionColor(pos) {
   return POSITION_COLORS[pos] || '#fff';
 }
 
-export default function MatchupsPage({ currentUser }) {
+export default function MatchupsPage({ currentUser, currentDate: appCurrentDate }) {
   const isAdmin = currentUser && currentUser.email === 'chefboyrd53@gmail.com';
   const [selectedYear, setSelectedYear] = useState('2024');
   const [selectedWeek, setSelectedWeek] = useState('week1');
@@ -36,7 +36,7 @@ export default function MatchupsPage({ currentUser }) {
   const [filteredMatchups, setFilteredMatchups] = useState([]);
   const [expanded, setExpanded] = useState({});
   const [loading, setLoading] = useState(true);
-  const [currentDate, setCurrentDate] = useState(null);
+  const [currentDate, setCurrentDate] = useState(appCurrentDate);
   const [availableWeeks, setAvailableWeeks] = useState([]);
   const [playersCache, setPlayersCache] = useState({});
   const [lineups, setLineups] = useState({});
@@ -45,18 +45,15 @@ export default function MatchupsPage({ currentUser }) {
   const [userTeamPlayers, setUserTeamPlayers] = useState([]);
   const [userLineup, setUserLineup] = useState({});
   const [showLineupModal, setShowLineupModal] = useState(false);
+  const [fetchError, setFetchError] = useState(null);
+  const [refreshing, setRefreshing] = useState(false);
 
-  // Fetch current date (for current week logic)
+  // Update currentDate when appCurrentDate changes
   useEffect(() => {
-    async function fetchCurrentDate() {
-      const whenDoc = await getDoc(doc(db, 'currentDate', 'when'));
-      if (whenDoc.exists()) {
-        const data = whenDoc.data();
-        setCurrentDate({ year: data.year, week: data.week });
-      }
+    if (appCurrentDate) {
+      setCurrentDate(appCurrentDate);
     }
-    fetchCurrentDate();
-  }, []);
+  }, [appCurrentDate]);
 
   // Set available weeks when currentDate changes
   useEffect(() => {
@@ -68,17 +65,32 @@ export default function MatchupsPage({ currentUser }) {
       setAvailableWeeks(weeks);
       setSelectedWeek(`week${currentDate.week}`);
       setSelectedYear(currentDate.year.toString());
+    } else {
+      // Fallback to default values if currentDate is not available
+      setAvailableWeeks(['week1', 'week2', 'week3', 'week4', 'week5', 'week6', 'week7', 'week8', 'week9', 'week10', 'week11', 'week12', 'week13', 'week14', 'week15', 'week16', 'week17', 'week18']);
+      setSelectedWeek('week1');
+      setSelectedYear('2024');
     }
   }, [currentDate]);
 
-  // Fetch matchups when year/week changes
-  useEffect(() => {
-    async function fetchMatchups() {
+  // Function to fetch matchups
+  const fetchMatchups = useCallback(async (isRefresh = false) => {
+    if (!selectedYear || !selectedWeek) {
+      return;
+    }
+    
+    if (isRefresh) {
+      setRefreshing(true);
+    } else {
       setLoading(true);
+    }
+    
+    try {
       const gamesSnapshot = await getDocs(collection(db, 'matchups', selectedYear, 'weeks', selectedWeek, 'games'));
       const gamesData = gamesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       setMatchups(gamesData);
-      setLoading(false);
+      setFetchError(null);
+      
       // Preload lineups
       const newLineups = {};
       for (const matchup of gamesData) {
@@ -88,9 +100,28 @@ export default function MatchupsPage({ currentUser }) {
         };
       }
       setLineups(newLineups);
+    } catch (error) {
+      console.error('MatchupsPage: Error fetching matchups:', error);
+      setMatchups([]);
+      setFetchError(error.message);
+    } finally {
+      if (isRefresh) {
+        setRefreshing(false);
+      } else {
+        setLoading(false);
+      }
     }
-    if (selectedYear && selectedWeek) fetchMatchups();
   }, [selectedYear, selectedWeek]);
+
+  // Fetch matchups when year/week changes
+  useEffect(() => {
+    fetchMatchups();
+  }, [fetchMatchups]);
+
+  // Pull to refresh handler
+  const onRefresh = useCallback(() => {
+    fetchMatchups(true);
+  }, [fetchMatchups]);
 
   // Filter matchups based on current user and week
   useEffect(() => {
@@ -331,34 +362,63 @@ export default function MatchupsPage({ currentUser }) {
         </View>
       </View>
       {/* Matchups List */}
-      {loading ? (
-        <ActivityIndicator size="large" style={{ marginTop: 40 }} />
-      ) : (
-        <ScrollView contentContainerStyle={{ paddingBottom: 40 }}>
-          {filteredMatchups.map((matchup) => (
-            <MatchupCard
-              key={matchup.id}
-              matchup={matchup}
-              expanded={!!expanded[matchup.id]}
-              toggleExpand={() => toggleExpand(matchup.id)}
-              selectedYear={selectedYear}
-              selectedWeek={selectedWeek}
-              fetchTeamPlayers={fetchTeamPlayers}
-              calculateTeamScore={calculateTeamScore}
-            />
-          ))}
-          {canManageLineup && (
-            <View style={styles.setLineupButtonContainer}>
-              <TouchableOpacity
-                style={styles.manageLineupButton}
-                onPress={() => setShowLineupModal(true)}
-              >
-                <Text style={[styles.manageLineupButtonText, styles.manageLineupButtonTextActive]}>Set Lineup</Text>
-              </TouchableOpacity>
-            </View>
-          )}
-        </ScrollView>
-      )}
+      {loading || !currentDate ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#f59e0b" />
+          <Text style={styles.loadingText}>
+            {!currentDate ? 'Loading current week...' : 'Loading matchups...'}
+          </Text>
+        </View>
+      ) : fetchError ? (
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>Error loading matchups: {fetchError}</Text>
+          <TouchableOpacity
+            style={styles.retryButton}
+            onPress={() => {
+              setFetchError(null);
+              fetchMatchups();
+            }}
+          >
+            <Text style={styles.retryButtonText}>Retry</Text>
+          </TouchableOpacity>
+        </View>
+              ) : (
+          <ScrollView 
+            contentContainerStyle={{ paddingBottom: 40 }}
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={onRefresh}
+                colors={['#fff']}
+              />
+            }
+          >
+            {filteredMatchups.map((matchup) => (
+              <MatchupCard
+                key={matchup.id}
+                matchup={matchup}
+                expanded={!!expanded[matchup.id]}
+                toggleExpand={() => toggleExpand(matchup.id)}
+                selectedYear={selectedYear}
+                selectedWeek={selectedWeek}
+                fetchTeamPlayers={fetchTeamPlayers}
+                calculateTeamScore={calculateTeamScore}
+              />
+            ))}
+            {canManageLineup && (
+              <View style={styles.setLineupButtonContainer}>
+                <TouchableOpacity
+                  style={styles.manageLineupButton}
+                  onPress={() => setShowLineupModal(true)}
+                >
+                  <Text style={[styles.manageLineupButtonText, styles.manageLineupButtonTextActive]}>Set Lineup</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+            
+
+          </ScrollView>
+        )}
       
       {/* Lineup Management Modal */}
       {showLineupModal && (
@@ -1233,5 +1293,42 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 16,
     marginBottom: 8,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingTop: 40,
+  },
+  loadingText: {
+    color: '#fff',
+    fontSize: 16,
+    marginTop: 16,
+    textAlign: 'center',
+  },
+
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingTop: 40,
+    paddingHorizontal: 20,
+  },
+  errorText: {
+    color: '#ff6666',
+    fontSize: 16,
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  retryButton: {
+    backgroundColor: '#6666ff',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 8,
+  },
+  retryButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 }); 

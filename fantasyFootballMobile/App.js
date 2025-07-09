@@ -29,7 +29,7 @@ export default function App() {
   const isAdmin = user && user.email === 'chefboyrd53@gmail.com';
 
   // Utility: cache key for AsyncStorage
-  const getCacheKey = (date) => `ff_cache_${date?.year}_${date?.week}`;
+  const getCacheKey = (date, user) => `ff_cache_${user?.email || 'nouser'}_${date?.year}_${date?.week}`;
 
   // Listen for authentication state changes
   useEffect(() => {
@@ -48,9 +48,14 @@ export default function App() {
         if (whenDoc.exists()) {
           const data = whenDoc.data();
           setCurrentDate({ year: data.year, week: data.week });
+        } else {
+          // Set a fallback currentDate if the document doesn't exist
+          setCurrentDate({ year: 2024, week: 1 });
         }
       } catch (err) {
-        console.error('Error fetching currentDate:', err);
+        console.error('App: Error fetching currentDate:', err);
+        // Set a fallback currentDate if there's an error
+        setCurrentDate({ year: 2024, week: 1 });
       }
     }
     fetchCurrentDate();
@@ -62,7 +67,7 @@ export default function App() {
     if (!user || !currentDate) return;
     // Try to load from AsyncStorage first
     (async () => {
-      const cacheKey = getCacheKey(currentDate);
+      const cacheKey = getCacheKey(currentDate, user);
       try {
         const cached = await AsyncStorage.getItem(cacheKey);
         if (cached) {
@@ -149,7 +154,7 @@ export default function App() {
       players: data,
       ownerMap: map,
     };
-    const cacheKey = getCacheKey({ year, week });
+    const cacheKey = getCacheKey({ year, week }, user);
     try {
       await AsyncStorage.setItem(cacheKey, JSON.stringify({ players: data, ownerMap: map }));
     } catch (err) {
@@ -187,7 +192,7 @@ export default function App() {
       case 'rosters':
         return <RostersPage players={safePlayers} ownerMap={safeOwnerMap} />;
       case 'matchups':
-        return <MatchupsPage currentUser={user} />;
+        return <MatchupsPage currentUser={user} currentDate={currentDate} />;
       case 'settings':
         return <SettingsPage onLogout={handleLogout} user={user} />;
       default:
