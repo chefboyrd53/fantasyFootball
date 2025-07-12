@@ -2,7 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { View, Text, ScrollView, StyleSheet, Image, RefreshControl } from 'react-native';
 import { db } from '../firebase';
 import { collection, getDocs } from 'firebase/firestore';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { cacheRosters } from '../utils/cache';
 
 const POSITION_COLORS = {
   QB: '#ff6666',
@@ -26,18 +26,20 @@ function getPositionColor(pos) {
 
 const NAVY_BLUE = '#6666ff';
 
-export default function RostersPage({ players, ownerMap, currentUser, onDataRefresh, refreshTrigger }) {
+export default function RostersPage({ players, ownerMap, currentUser, onDataRefresh }) {
   const [teams, setTeams] = useState({ blue: [], gold: [] });
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [lastFetchedDate, setLastFetchedDate] = useState(null);
-
-  // Cache key for AsyncStorage
-  const getCacheKey = (user) => `rosters_cache_${user?.email || 'nouser'}`;
+  const [dataLoaded, setDataLoaded] = useState(false);
 
   // Function to fetch teams data from Firestore
   const fetchTeamsData = useCallback(async (isRefresh = false) => {
-    if (players.length === 0 || Object.keys(ownerMap).length === 0) {
+    // Get current values from props to avoid stale closure issues
+    const currentPlayers = players;
+    const currentOwnerMap = ownerMap;
+    
+    if (currentPlayers.length === 0 || Object.keys(currentOwnerMap).length === 0) {
       console.log('RostersPage: Skipping fetch - no players or ownerMap data');
       return;
     }
@@ -82,7 +84,7 @@ export default function RostersPage({ players, ownerMap, currentUser, onDataRefr
         if (Array.isArray(teamData.roster)) {
           teamData.roster.forEach(playerId => {
             // Find the player in our players array
-            const player = players.find(p => p.id === playerId);
+            const player = currentPlayers.find(p => p.id === playerId);
             if (player) {
               teamMap[teamName].push(player);
             }
@@ -102,7 +104,7 @@ export default function RostersPage({ players, ownerMap, currentUser, onDataRefr
         const irPlayers = [];
         if (Array.isArray(fantasyTeamData.irList)) {
           fantasyTeamData.irList.forEach(playerId => {
-            const player = players.find(p => p.id === playerId);
+            const player = currentPlayers.find(p => p.id === playerId);
             if (player) {
               irPlayers.push(player);
             }
@@ -143,14 +145,14 @@ export default function RostersPage({ players, ownerMap, currentUser, onDataRefr
       console.log('RostersPage: Organized teams - Blue:', loadedTeams.blue.length, 'Gold:', loadedTeams.gold.length);
 
       setTeams(loadedTeams);
+      setDataLoaded(true);
       
       // Cache the data
-      const cacheKey = getCacheKey(currentUser);
       try {
-        await AsyncStorage.setItem(cacheKey, JSON.stringify({
+        await cacheRosters.set(currentUser, {
           teams: loadedTeams,
           timestamp: Date.now()
-        }));
+        });
         console.log('RostersPage: Data cached successfully');
       } catch (err) {
         console.log('RostersPage: Error caching data:', err);
@@ -190,7 +192,7 @@ export default function RostersPage({ players, ownerMap, currentUser, onDataRefr
       }
       console.log('RostersPage: Loading state updated');
     }
-  }, [players, ownerMap, currentUser]);
+  }, [currentUser]);
 
   // Load cached data or fetch from Firestore
   useEffect(() => {
@@ -199,19 +201,24 @@ export default function RostersPage({ players, ownerMap, currentUser, onDataRefr
       return;
     }
 
+    // Only load data if we haven't loaded it yet or if the data has changed
+    if (dataLoaded && teams.blue.length > 0 && teams.gold.length > 0) {
+      console.log('RostersPage: Data already loaded, skipping');
+      return;
+    }
+
     const loadData = async () => {
       console.log('RostersPage: Starting data load');
       
-      // Try to load from AsyncStorage first
-      const cacheKey = getCacheKey(currentUser);
+      // Try to load from cache first
       try {
-        const cached = await AsyncStorage.getItem(cacheKey);
+        const cached = await cacheRosters.get(currentUser);
         if (cached) {
           console.log('RostersPage: Found cached data, loading from cache');
-          const parsed = JSON.parse(cached);
-          setTeams(parsed.teams);
-          setLastFetchedDate(parsed.timestamp);
+          setTeams(cached.teams);
+          setLastFetchedDate(cached.timestamp);
           setLoading(false);
+          setDataLoaded(true);
           return;
         } else {
           console.log('RostersPage: No cached data found, will fetch from Firestore');
@@ -227,28 +234,7 @@ export default function RostersPage({ players, ownerMap, currentUser, onDataRefr
     };
 
     loadData();
-  }, [players, ownerMap, currentUser, fetchTeamsData]);
-
-  // Cache clearing function for when waivers are used
-  const clearCache = useCallback(async () => {
-    try {
-      const cacheKey = getCacheKey(currentUser);
-      await AsyncStorage.removeItem(cacheKey);
-      console.log('RostersPage: Cache cleared for user:', currentUser?.email);
-    } catch (error) {
-      console.error('RostersPage: Error clearing rosters cache:', error);
-    }
-  }, [currentUser]);
-
-  // Listen for refresh triggers (e.g., when waivers are used)
-  useEffect(() => {
-    if (refreshTrigger > 0) {
-      console.log('RostersPage: Refresh trigger detected, clearing cache and refetching');
-      // Clear cache and refetch when refresh is triggered
-      clearCache();
-      fetchTeamsData();
-    }
-  }, [refreshTrigger, clearCache, fetchTeamsData]);
+  }, [players, ownerMap, currentUser, dataLoaded, teams.blue.length, teams.gold.length]);
 
   // Pull to refresh handler
   const onRefresh = useCallback(() => {

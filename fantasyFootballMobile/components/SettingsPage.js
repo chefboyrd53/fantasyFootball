@@ -1,34 +1,41 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { clearAppCache, getCacheStats } from '../utils/cache';
 import { Alert } from 'react-native';
 
 export default function SettingsPage({ onLogout, user }) {
-  const clearAppCache = async () => {
+  const clearAppCacheHandler = async () => {
     try {
-      // Get all keys from AsyncStorage
-      const allKeys = await AsyncStorage.getAllKeys();
-      
-      // Filter out app-specific cache keys (preserve Firebase auth keys)
-      const cacheKeys = allKeys.filter(key => 
-        key.startsWith('ff_cache_') ||
-        key.startsWith('rosters_cache_') ||
-        key.startsWith('matchups_cache_') ||
-        key.startsWith('scores_cache_')
-      );
-      
-      console.log('SettingsPage: Clearing app cache keys:', cacheKeys);
-      
-      if (cacheKeys.length > 0) {
-        // Remove only the app cache keys
-        await AsyncStorage.multiRemove(cacheKeys);
-        Alert.alert('Cache Cleared', `Cleared ${cacheKeys.length} app cache entries. Authentication data preserved.`);
-      } else {
-        Alert.alert('Cache Cleared', 'No app cache data found to clear.');
-      }
+      const clearedCount = await clearAppCache();
+      Alert.alert('Cache Cleared', `Cleared ${clearedCount} app cache entries. Authentication data preserved.`);
     } catch (e) {
       console.error('SettingsPage: Error clearing cache:', e);
       Alert.alert('Error', 'Failed to clear cache.');
+    }
+  };
+
+  const showCacheStats = async () => {
+    try {
+      const stats = await getCacheStats();
+      if (stats) {
+        Alert.alert('Cache Statistics', 
+          `Total entries: ${stats.total}\n` +
+          `App cache: ${stats.app}\n` +
+          `Firebase: ${stats.firebase}\n` +
+          `Other: ${stats.other}\n\n` +
+          `By type:\n` +
+          `- Players: ${stats.byType.players}\n` +
+          `- Matchups: ${stats.byType.matchups}\n` +
+          `- Rosters: ${stats.byType.rosters}\n` +
+          `- Scores: ${stats.byType.scores}\n` +
+          `- Current Date: ${stats.byType.current_date}`
+        );
+      } else {
+        Alert.alert('Cache Statistics', 'Unable to retrieve cache statistics.');
+      }
+    } catch (e) {
+      console.error('SettingsPage: Error getting cache stats:', e);
+      Alert.alert('Error', 'Failed to get cache statistics.');
     }
   };
 
@@ -37,18 +44,7 @@ export default function SettingsPage({ onLogout, user }) {
       console.log('SettingsPage: Logout initiated, clearing cache first');
       
       // Clear app cache before logout
-      const allKeys = await AsyncStorage.getAllKeys();
-      const cacheKeys = allKeys.filter(key => 
-        key.startsWith('ff_cache_') ||
-        key.startsWith('rosters_cache_') ||
-        key.startsWith('matchups_cache_') ||
-        key.startsWith('scores_cache_')
-      );
-      
-      if (cacheKeys.length > 0) {
-        console.log('SettingsPage: Clearing cache before logout:', cacheKeys);
-        await AsyncStorage.multiRemove(cacheKeys);
-      }
+      await clearAppCache();
       
       // Now call the original logout function
       onLogout();
@@ -71,9 +67,15 @@ export default function SettingsPage({ onLogout, user }) {
       </TouchableOpacity>
       <TouchableOpacity
         style={styles.clearCacheButton}
-        onPress={clearAppCache}
+        onPress={clearAppCacheHandler}
       >
         <Text style={styles.clearCacheButtonText}>Clear Cache</Text>
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={styles.cacheStatsButton}
+        onPress={showCacheStats}
+      >
+        <Text style={styles.cacheStatsButtonText}>Cache Statistics</Text>
       </TouchableOpacity>
     </View>
   );
@@ -128,6 +130,19 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
   clearCacheButtonText: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  cacheStatsButton: {
+    backgroundColor: '#33adff',
+    borderRadius: 8,
+    paddingVertical: 12,
+    paddingHorizontal: 32,
+    alignItems: 'center',
+    marginTop: 16,
+  },
+  cacheStatsButtonText: {
     color: '#fff',
     fontSize: 18,
     fontWeight: 'bold',

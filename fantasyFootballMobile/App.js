@@ -9,7 +9,7 @@ import PlayerStatsPage from './components/PlayerStatsPage';
 import RostersPage from './components/RostersPage';
 import MatchupsPage from './components/MatchupsPage';
 import LoginPage from './components/LoginPage';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { cachePlayers, cacheCurrentDate, invalidateCacheOnDataChange } from './utils/cache';
 import SettingsPage from './components/SettingsPage';
 
 export default function App() {
@@ -22,15 +22,11 @@ export default function App() {
   const [lastFetchedDate, setLastFetchedDate] = useState(null); // { year, week }
   // Navigation state:
   const [currentPage, setCurrentPage] = useState('playerStats');
-  const [refreshTrigger, setRefreshTrigger] = useState(0);
   // In-memory cache for player/defense/fantasyTeams data
   const dataCache = useRef({});
 
   // Utility: get admin status
   const isAdmin = user && user.email === 'chefboyrd53@gmail.com';
-
-  // Utility: cache key for AsyncStorage
-  const getCacheKey = (date, user) => `ff_cache_${user?.email || 'nouser'}_${date?.year}_${date?.week}`;
 
   // Listen for authentication state changes
   useEffect(() => {
@@ -45,123 +41,135 @@ export default function App() {
   useEffect(() => {
     async function fetchCurrentDate() {
       try {
+        // Try to get from cache first
+        const cachedDate = await cacheCurrentDate.get();
+        if (cachedDate) {
+          setCurrentDate(cachedDate);
+          return;
+        }
+
+        // If not cached, fetch from Firestore
         const whenDoc = await getDoc(doc(db, 'currentDate', 'when'));
         if (whenDoc.exists()) {
           const data = whenDoc.data();
-          setCurrentDate({ year: data.year, week: data.week });
+          const dateData = { year: data.year, week: data.week };
+          setCurrentDate(dateData);
+          // Cache the current date
+          await cacheCurrentDate.set(dateData);
         } else {
           // Set a fallback currentDate if the document doesn't exist
-          setCurrentDate({ year: 2024, week: 1 });
+          const fallbackDate = { year: 2024, week: 1 };
+          setCurrentDate(fallbackDate);
+          await cacheCurrentDate.set(fallbackDate);
         }
       } catch (err) {
         console.error('App: Error fetching currentDate:', err);
         // Set a fallback currentDate if there's an error
-        setCurrentDate({ year: 2024, week: 1 });
+        const fallbackDate = { year: 2024, week: 1 };
+        setCurrentDate(fallbackDate);
+        await cacheCurrentDate.set(fallbackDate);
       }
     }
     fetchCurrentDate();
-    // Optionally, add AppState listener to refresh on resume
   }, []);
 
-  // Only fetch player/defense/fantasyTeams data if currentDate changes
+  // Only fetch player/defense/fantasyTeams data if currentDate changes or refresh is triggered
   useEffect(() => {
     if (!user || !currentDate) return;
-    // Try to load from AsyncStorage first
-    (async () => {
-      const cacheKey = getCacheKey(currentDate, user);
-      try {
-        const cached = await AsyncStorage.getItem(cacheKey);
-        if (cached) {
-          const parsed = JSON.parse(cached);
-          setPlayers(parsed.players);
-          setOwnerMap(parsed.ownerMap);
-          setLoading(false);
-          dataCache.current = { ...parsed, year: currentDate.year, week: currentDate.week };
-          return;
-        }
-      } catch (err) {
-        // Ignore cache errors, fallback to fetch
+    
+    const loadData = async () => {
+      // Try to load from cache first
+      const cached = await cachePlayers.get(user, currentDate.year, currentDate.week);
+      if (cached && !loading) { // Only load from cache if not currently loading
+        console.log('App: Loading data from cache');
+        setPlayers(cached.players);
+        setOwnerMap(cached.ownerMap);
+        setLoading(false);
+        dataCache.current = { ...cached, year: currentDate.year, week: currentDate.week };
+        return;
       }
-      // If not cached, fetch from Firestore
-      fetchData(currentDate.year, currentDate.week);
-    })();
-  }, [user, currentDate, currentPage, refreshTrigger]);
-
-
+      
+      // If not cached or refresh triggered, fetch from Firestore
+      console.log('App: Fetching data from Firestore');
+      await fetchData(currentDate.year, currentDate.week);
+    };
+    
+    loadData();
+  }, [user, currentDate, loading]); // Add loading to dependency array
 
   async function fetchData(year, week) {
     setLoading(true);
-    // Use .select() to limit fields if possible (Firestore web SDK supports it)
-    let playerQ = collection(db, 'players');
-    let defenseQ = collection(db, 'defense');
-    // Always fetch fantasyTeams to build ownerMap (needed for all pages)
-    // If you want to limit fields, you can use query(playerQ, select('roster', 'scoring'))
-    // But for now, fetch all fields (Firestore free tier charges per doc, not per field)
-    // If you want to optimize further, uncomment below:
-    // import { query, select } from 'firebase/firestore';
-    // playerQ = query(playerQ, select('roster', 'scoring'));
-    // defenseQ = query(defenseQ, select('scoring'));
-    const [playerSnap, defenseSnap, fantasySnap] = await Promise.all([
-      getDocs(playerQ),
-      getDocs(defenseQ),
-      getDocs(collection(db, 'fantasyTeams')),
-    ]);
-    const data = [];
-    playerSnap.forEach((doc) => {
-      const player = doc.data();
-      if (player && player.roster) {
-        data.push({
-          id: doc.id,
-          name: player.roster.name || '',
-          position: player.roster.position || '',
-          team: player.roster.team || '',
-          scoring: player.scoring || {},
-        });
-      }
-    });
-    defenseSnap.forEach((doc) => {
-      const team = doc.id;
-      const scoring = doc.data();
-      if (team) {
-        data.push({
-          id: team,
-          name: team,
-          position: 'DST',
-          team: team,
-          scoring: scoring || {},
-        });
-      }
-    });
-    // Build owner map
-    const map = {};
-    fantasySnap.forEach((doc) => {
-      const teamName = doc.id;
-      const data = doc.data();
-      if (teamName && data && Array.isArray(data.roster)) {
-        data.roster.forEach(id => {
-          if (id) {
-            map[id] = teamName;
-          }
-        });
-      }
-    });
-    setOwnerMap(map);
-    setPlayers(data);
-    setLoading(false);
-    // Cache the data for this date in memory and AsyncStorage
-    dataCache.current = {
-      year,
-      week,
-      players: data,
-      ownerMap: map,
-    };
-    const cacheKey = getCacheKey({ year, week }, user);
+    
     try {
-      await AsyncStorage.setItem(cacheKey, JSON.stringify({ players: data, ownerMap: map }));
-    } catch (err) {
-      // Ignore cache errors
+      const [playerSnap, defenseSnap, fantasySnap] = await Promise.all([
+        getDocs(collection(db, 'players')),
+        getDocs(collection(db, 'defense')),
+        getDocs(collection(db, 'fantasyTeams')),
+      ]);
+      
+      const data = [];
+      playerSnap.forEach((doc) => {
+        const player = doc.data();
+        if (player && player.roster) {
+          data.push({
+            id: doc.id,
+            name: player.roster.name || '',
+            position: player.roster.position || '',
+            team: player.roster.team || '',
+            scoring: player.scoring || {},
+          });
+        }
+      });
+      
+      defenseSnap.forEach((doc) => {
+        const team = doc.id;
+        const scoring = doc.data();
+        if (team) {
+          data.push({
+            id: team,
+            name: team,
+            position: 'DST',
+            team: team,
+            scoring: scoring || {},
+          });
+        }
+      });
+      
+      // Build owner map
+      const map = {};
+      fantasySnap.forEach((doc) => {
+        const teamName = doc.id;
+        const data = doc.data();
+        if (teamName && data && Array.isArray(data.roster)) {
+          data.roster.forEach(id => {
+            if (id) {
+              map[id] = teamName;
+            }
+          });
+        }
+      });
+      
+      setOwnerMap(map);
+      setPlayers(data);
+      setLoading(false);
+      
+      // Cache the data
+      const cacheData = {
+        year,
+        week,
+        players: data,
+        ownerMap: map,
+      };
+      
+      dataCache.current = cacheData;
+      await cachePlayers.set(user, year, week, cacheData);
+      setLastFetchedDate({ year, week });
+      
+      console.log('App: Data fetched and cached successfully');
+    } catch (error) {
+      console.error('App: Error fetching data:', error);
+      setLoading(false);
     }
-    setLastFetchedDate({ year, week });
   }
 
   const handleLoginSuccess = (user) => {
@@ -180,8 +188,11 @@ export default function App() {
     }
   };
 
-  const handleDataRefresh = () => {
-    setRefreshTrigger(prev => prev + 1);
+  // Enhanced data refresh that invalidates cache
+  const handleDataChange = async (changeType = 'general') => {
+    console.log(`App: Data change detected: ${changeType}`);
+    await invalidateCacheOnDataChange(user, changeType);
+    setLoading(true); // Set loading to true to trigger re-fetch
   };
 
   const renderCurrentPage = () => {
@@ -193,15 +204,15 @@ export default function App() {
     const safeOwnerMap = ownerMap || {};
     switch (currentPage) {
       case 'playerStats':
-        return <PlayerStatsPage players={safePlayers} ownerMap={safeOwnerMap} currentUser={user} onDataRefresh={handleDataRefresh} currentDate={currentDate} />;
+        return <PlayerStatsPage players={safePlayers} ownerMap={safeOwnerMap} currentUser={user} onDataRefresh={handleDataChange} currentDate={currentDate} />;
       case 'rosters':
-        return <RostersPage players={safePlayers} ownerMap={safeOwnerMap} currentUser={user} onDataRefresh={handleDataRefresh} refreshTrigger={refreshTrigger} />;
+        return <RostersPage players={safePlayers} ownerMap={safeOwnerMap} currentUser={user} onDataRefresh={handleDataChange} />;
       case 'matchups':
-        return <MatchupsPage currentUser={user} currentDate={currentDate} onDataRefresh={handleDataRefresh} refreshTrigger={refreshTrigger} />;
+        return <MatchupsPage currentUser={user} currentDate={currentDate} onDataRefresh={handleDataChange} />;
       case 'settings':
         return <SettingsPage onLogout={handleLogout} user={user} />;
       default:
-        return <PlayerStatsPage players={safePlayers} ownerMap={safeOwnerMap} currentUser={user} onDataRefresh={handleDataRefresh} currentDate={currentDate} />;
+        return <PlayerStatsPage players={safePlayers} ownerMap={safeOwnerMap} currentUser={user} onDataRefresh={handleDataChange} currentDate={currentDate} />;
     }
   };
 

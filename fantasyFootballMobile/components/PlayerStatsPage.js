@@ -6,7 +6,7 @@ import { ScrollView as RNScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { db } from '../firebase';
 import { doc, getDoc, updateDoc, getDocs, collection } from 'firebase/firestore';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { invalidateCacheOnDataChange } from '../utils/cache';
 
 const playerStatNameMap = {
   passYards: 'Passing Yards',
@@ -337,14 +337,14 @@ export default function PlayerStatsPage({ players, ownerMap, currentUser, onData
         
         // Clear cache and refresh data when ownership conflict occurs
         try {
-          await AsyncStorage.clear();
+          await invalidateCacheOnDataChange(currentUser, 'ownership_conflict');
           console.log('Cache cleared after ownership conflict');
         } catch (error) {
           console.error('Error clearing cache:', error);
         }
         
         if (onDataRefresh) {
-          onDataRefresh();
+          onDataRefresh('ownership_conflict');
         }
         return;
       }
@@ -365,14 +365,14 @@ export default function PlayerStatsPage({ players, ownerMap, currentUser, onData
         
         // Clear cache and refresh data when free agent conflict occurs
         try {
-          await AsyncStorage.clear();
+          await invalidateCacheOnDataChange(currentUser, 'free_agent_conflict');
           console.log('Cache cleared after free agent conflict');
         } catch (error) {
           console.error('Error clearing cache:', error);
         }
         
         if (onDataRefresh) {
-          onDataRefresh();
+          onDataRefresh('free_agent_conflict');
         }
         return;
       }
@@ -385,7 +385,7 @@ export default function PlayerStatsPage({ players, ownerMap, currentUser, onData
       }
       
       // Check if team has IR players and is trying to use their last waiver
-      if (currentIRList.length > 0 && currentWaivers <= 1) {
+      if (userIRList.length > 0 && currentWaivers <= 1) {
         Alert.alert('Error', 'You must keep at least 1 waiver when you have a player on IR.');
         setIsProcessingDropAdd(false);
         return;
@@ -414,14 +414,14 @@ export default function PlayerStatsPage({ players, ownerMap, currentUser, onData
       
       // Clear cache and trigger a refresh of the parent component's data
       try {
-        await AsyncStorage.clear();
+        await invalidateCacheOnDataChange(currentUser, 'drop_add');
         console.log('Cache cleared after drop/add transaction');
       } catch (error) {
         console.error('Error clearing cache:', error);
       }
       
       if (onDataRefresh) {
-        onDataRefresh();
+        onDataRefresh('drop_add');
       }
       
     } catch (error) {
@@ -436,6 +436,11 @@ export default function PlayerStatsPage({ players, ownerMap, currentUser, onData
   const handlePlaceOnIR = (player) => {
     if (!userTeam || !canPlaceOnIR) {
       Alert.alert('Error', 'IR placement is only allowed between weeks 1-11.');
+      return;
+    }
+    
+    if (userWaivers < 2) {
+      Alert.alert('Error', 'You need at least 2 waivers to place a player on IR.');
       return;
     }
     
@@ -457,8 +462,8 @@ export default function PlayerStatsPage({ players, ownerMap, currentUser, onData
 
   // Handle IR removal
   const handleRemoveFromIR = (player) => {
-    if (!userTeam || userWaivers <= 1) {
-      Alert.alert('Error', 'You must have at least 2 waivers to remove a player from IR (1 for the transaction, 1 reserved for future IR removal).');
+    if (!userTeam || userWaivers <= 0) {
+      Alert.alert('Error', 'You must have at least 1 waiver to remove a player from IR.');
       return;
     }
     
@@ -479,8 +484,8 @@ export default function PlayerStatsPage({ players, ownerMap, currentUser, onData
       return;
     }
     
-    if (userWaivers <= 0) {
-      Alert.alert('Error', 'You have no waivers remaining.');
+    if (userWaivers < 2) {
+      Alert.alert('Error', 'You need at least 2 waivers to place a player on IR.');
       return;
     }
     
@@ -505,14 +510,14 @@ export default function PlayerStatsPage({ players, ownerMap, currentUser, onData
         
         // Clear cache and refresh data
         try {
-          await AsyncStorage.clear();
+          await invalidateCacheOnDataChange(currentUser, 'ir_ownership_conflict');
           console.log('Cache cleared after IR ownership conflict');
         } catch (error) {
           console.error('Error clearing cache:', error);
         }
         
         if (onDataRefresh) {
-          onDataRefresh();
+          onDataRefresh('ir_ownership_conflict');
         }
         return;
       }
@@ -533,21 +538,21 @@ export default function PlayerStatsPage({ players, ownerMap, currentUser, onData
         
         // Clear cache and refresh data
         try {
-          await AsyncStorage.clear();
+          await invalidateCacheOnDataChange(currentUser, 'ir_free_agent_conflict');
           console.log('Cache cleared after free agent conflict');
         } catch (error) {
           console.error('Error clearing cache:', error);
         }
         
         if (onDataRefresh) {
-          onDataRefresh();
+          onDataRefresh('ir_free_agent_conflict');
         }
         return;
       }
       
       // Check if we have enough waivers
-      if (currentWaivers <= 0) {
-        Alert.alert('Error', 'You have no waivers remaining.');
+      if (currentWaivers < 2) {
+        Alert.alert('Error', 'You need at least 2 waivers to place a player on IR.');
         setIsProcessingIR(false);
         return;
       }
@@ -578,14 +583,14 @@ export default function PlayerStatsPage({ players, ownerMap, currentUser, onData
       
       // Clear cache and trigger a refresh
       try {
-        await AsyncStorage.clear();
+        await invalidateCacheOnDataChange(currentUser, 'ir_placement');
         console.log('Cache cleared after IR placement');
       } catch (error) {
         console.error('Error clearing cache:', error);
       }
       
       if (onDataRefresh) {
-        onDataRefresh();
+        onDataRefresh('ir_placement');
       }
       
     } catch (error) {
@@ -603,8 +608,8 @@ export default function PlayerStatsPage({ players, ownerMap, currentUser, onData
       return;
     }
     
-    if (userWaivers <= 1) {
-      Alert.alert('Error', 'You must have at least 2 waivers to remove a player from IR.');
+    if (userWaivers <= 0) {
+      Alert.alert('Error', 'You must have at least 1 waiver to remove a player from IR.');
       return;
     }
     
@@ -629,14 +634,14 @@ export default function PlayerStatsPage({ players, ownerMap, currentUser, onData
         
         // Clear cache and refresh data
         try {
-          await AsyncStorage.clear();
+          await invalidateCacheOnDataChange(currentUser, 'ir_removal_conflict');
           console.log('Cache cleared after IR removal conflict');
         } catch (error) {
           console.error('Error clearing cache:', error);
         }
         
         if (onDataRefresh) {
-          onDataRefresh();
+          onDataRefresh('ir_removal_conflict');
         }
         return;
       }
@@ -648,21 +653,21 @@ export default function PlayerStatsPage({ players, ownerMap, currentUser, onData
         
         // Clear cache and refresh data
         try {
-          await AsyncStorage.clear();
+          await invalidateCacheOnDataChange(currentUser, 'ir_drop_conflict');
           console.log('Cache cleared after drop player conflict');
         } catch (error) {
           console.error('Error clearing cache:', error);
         }
         
         if (onDataRefresh) {
-          onDataRefresh();
+          onDataRefresh('ir_drop_conflict');
         }
         return;
       }
       
       // Check if we have enough waivers
-      if (currentWaivers <= 1) {
-        Alert.alert('Error', 'You must have at least 2 waivers to remove a player from IR.');
+      if (currentWaivers <= 0) {
+        Alert.alert('Error', 'You must have at least 1 waiver to remove a player from IR.');
         setIsProcessingIR(false);
         return;
       }
@@ -692,14 +697,14 @@ export default function PlayerStatsPage({ players, ownerMap, currentUser, onData
       
       // Clear cache and trigger a refresh
       try {
-        await AsyncStorage.clear();
+        await invalidateCacheOnDataChange(currentUser, 'ir_removal');
         console.log('Cache cleared after IR removal');
       } catch (error) {
         console.error('Error clearing cache:', error);
       }
       
       if (onDataRefresh) {
-        onDataRefresh();
+        onDataRefresh('ir_removal');
       }
       
     } catch (error) {
@@ -1336,11 +1341,11 @@ export default function PlayerStatsPage({ players, ownerMap, currentUser, onData
                     {/* IR Placement button - only show for roster players */}
                     {ownerMap[selectedPlayer.id] === userTeam && canPlaceOnIR && userIRList.length === 0 && (
                       <TouchableOpacity 
-                        style={[styles.irButton, userWaivers <= 0 && styles.irButtonDisabled]} 
+                        style={[styles.irButton, userWaivers < 2 && styles.irButtonDisabled]} 
                         onPress={() => handlePlaceOnIR(selectedPlayer)}
-                        disabled={userWaivers <= 0}
+                        disabled={userWaivers < 2}
                       >
-                        <Text style={[styles.irButtonText, userWaivers <= 0 && styles.irButtonTextDisabled]}>
+                        <Text style={[styles.irButtonText, userWaivers < 2 && styles.irButtonTextDisabled]}>
                           Place on IR
                         </Text>
                       </TouchableOpacity>
@@ -1349,11 +1354,11 @@ export default function PlayerStatsPage({ players, ownerMap, currentUser, onData
                     {/* IR Removal button - only show for IR players */}
                     {userIRList && userIRList.includes(selectedPlayer.id) && (
                       <TouchableOpacity 
-                        style={[styles.irButton, userWaivers <= 1 && styles.irButtonDisabled]} 
+                        style={[styles.irButton, userWaivers <= 0 && styles.irButtonDisabled]} 
                         onPress={() => handleRemoveFromIR(selectedPlayer)}
-                        disabled={userWaivers <= 1}
+                        disabled={userWaivers <= 0}
                       >
-                        <Text style={[styles.irButtonText, userWaivers <= 1 && styles.irButtonTextDisabled]}>
+                        <Text style={[styles.irButtonText, userWaivers <= 0 && styles.irButtonTextDisabled]}>
                           Remove from IR
                         </Text>
                       </TouchableOpacity>

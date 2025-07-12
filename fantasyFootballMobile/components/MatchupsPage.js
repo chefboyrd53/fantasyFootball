@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, ScrollView
 import { ScrollView as RNScrollView } from 'react-native';
 import { db } from '../firebase';
 import { collection, doc, getDoc, getDocs, updateDoc } from 'firebase/firestore';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { cacheMatchups, cacheScores, invalidateCacheOnDataChange } from '../utils/cache';
 
 const LINEUP_SLOTS = [
   { id: 'QB', label: 'QB', count: 1 },
@@ -37,7 +37,13 @@ const VALID_DEFENSE_IDS = [
   'TEN', 'WAS'
 ];
 
-export default function MatchupsPage({ currentUser, currentDate: appCurrentDate, onDataRefresh, refreshTrigger }) {
+export default function MatchupsPage({ currentUser, currentDate: appCurrentDate, onDataRefresh }) {
+  console.log('MatchupsPage: Component rendered', { currentUser: currentUser?.email, currentDate: appCurrentDate?.week });
+  
+  // Note: For current week, we always fetch fresh data from Firestore to ensure
+  // we have the latest matchups. This prevents showing stale data when switching
+  // between pages. Historical weeks still use cache for performance.
+  
   const isAdmin = currentUser && currentUser.email === 'chefboyrd53@gmail.com';
   const [selectedYear, setSelectedYear] = useState('2024');
   const [selectedWeek, setSelectedWeek] = useState('week1');
@@ -59,12 +65,19 @@ export default function MatchupsPage({ currentUser, currentDate: appCurrentDate,
   const [lastFetchedDate, setLastFetchedDate] = useState(null);
   const [scoresPreloading, setScoresPreloading] = useState(false);
   const [scoresPreloaded, setScoresPreloaded] = useState(false);
+  const [dataLoaded, setDataLoaded] = useState(false);
+  const [forceRefresh, setForceRefresh] = useState(0);
+  const [lastLoadedYear, setLastLoadedYear] = useState(null);
+  const [lastLoadedWeek, setLastLoadedWeek] = useState(null);
 
-  // Cache key for AsyncStorage
-  const getCacheKey = (year, week, user) => `matchups_cache_${user?.email || 'nouser'}_${year}_${week}`;
-  
-  // Cache key for scores
-  const getScoresCacheKey = (year, week, user) => `scores_cache_${user?.email || 'nouser'}_${year}_${week}`;
+  // Track component mount/unmount and clear stale cache
+  useEffect(() => {
+    console.log('MatchupsPage: Component mounted');
+    
+    return () => {
+      console.log('MatchupsPage: Component unmounted');
+    };
+  }, []);
 
   // Update currentDate when appCurrentDate changes
   useEffect(() => {
@@ -85,181 +98,184 @@ export default function MatchupsPage({ currentUser, currentDate: appCurrentDate,
       setSelectedYear(currentDate.year.toString());
       // Reset scores preloaded flag when date changes
       setScoresPreloaded(false);
+      // Reset data loaded flag when date changes
+      setDataLoaded(false);
     } else {
       // Fallback to default values if currentDate is not available
       setAvailableWeeks(['week1', 'week2', 'week3', 'week4', 'week5', 'week6', 'week7', 'week8', 'week9', 'week10', 'week11', 'week12', 'week13', 'week14', 'week15', 'week16', 'week17', 'week18']);
       setSelectedWeek('week1');
       setSelectedYear('2024');
       setScoresPreloaded(false);
+      setDataLoaded(false);
     }
   }, [currentDate]);
 
-  // Function to fetch matchups
-  const fetchMatchups = useCallback(async (isRefresh = false) => {
-    if (!selectedYear || !selectedWeek) {
-      console.log('MatchupsPage: fetchMatchups skipped - no year or week');
-      return;
-    }
+  // Reset state when week changes
+  useEffect(() => {
+    console.log('MatchupsPage: Week change useEffect triggered', { selectedYear, selectedWeek, currentDate: currentDate?.week });
     
-    console.log('MatchupsPage: fetchMatchups called, isRefresh:', isRefresh);
+    // Check if this is the current week
+    const isCurrentWeek = currentDate && selectedWeek === `week${currentDate.week}`;
     
-    if (isRefresh) {
-      setRefreshing(true);
+    // Reset state when week changes to prevent data carryover
+    setMatchups([]);
+    setLineups({});
+    setDataLoaded(false);
+    setScoresPreloaded(false);
+    setLastLoadedYear(null);
+    setLastLoadedWeek(null);
+    
+    // Only set loading to true if we don't have cached data for current week
+    if (isCurrentWeek) {
+      // For current week, check if we have cached data first
+      const checkCacheAndSetLoading = async () => {
+        try {
+          const cached = await cacheMatchups.get(currentUser, selectedYear, selectedWeek);
+          if (!cached) {
+            setLoading(true);
+          }
+        } catch (err) {
+          setLoading(true);
+        }
+      };
+      checkCacheAndSetLoading();
     } else {
+      // For historical weeks, always set loading
       setLoading(true);
     }
     
-    try {
-      console.log('MatchupsPage: Fetching matchups from Firestore');
-      const gamesSnapshot = await getDocs(collection(db, 'matchups', selectedYear, 'weeks', selectedWeek, 'games'));
-      const gamesData = gamesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setMatchups(gamesData);
-      setFetchError(null);
-      
-      console.log('MatchupsPage: Found', gamesData.length, 'matchups');
-      
-      // Preload lineups
-      const newLineups = {};
-      for (const matchup of gamesData) {
-        newLineups[matchup.id] = {
-          home: matchup.homeLineup || {},
-          away: matchup.awayLineup || {},
-        };
-      }
-      setLineups(newLineups);
-
-      // Cache the data
-      const cacheKey = getCacheKey(selectedYear, selectedWeek, currentUser);
-      try {
-        await AsyncStorage.setItem(cacheKey, JSON.stringify({
-          matchups: gamesData,
-          lineups: newLineups,
-          timestamp: Date.now()
-        }));
-        console.log('MatchupsPage: Data cached successfully');
-      } catch (err) {
-        console.log('MatchupsPage: Error caching data:', err);
-        // Ignore cache errors
-      }
-      
-      setLastFetchedDate(Date.now());
-      console.log('MatchupsPage: fetchMatchups completed successfully');
-    } catch (error) {
-      console.error('MatchupsPage: Error fetching matchups:', error);
-      setMatchups([]);
-      setFetchError(error.message);
-    } finally {
-      if (isRefresh) {
-        setRefreshing(false);
-      } else {
-        setLoading(false);
-      }
-      console.log('MatchupsPage: Loading state updated');
-    }
-  }, [selectedYear, selectedWeek, currentUser]);
+    console.log('MatchupsPage: Week changed, resetting state');
+  }, [selectedWeek, selectedYear, currentUser, currentDate]);
 
   // Load cached data or fetch from Firestore when year/week changes
   useEffect(() => {
+    console.log('MatchupsPage: Main useEffect triggered', { selectedYear, selectedWeek, currentDate: currentDate?.week, forceRefresh });
+    
     if (!selectedYear || !selectedWeek) {
+      console.log('MatchupsPage: Missing year or week, skipping');
       return;
     }
 
+    // Reset force refresh when week changes to prevent infinite loops
+    if (forceRefresh > 0 && (selectedYear !== lastLoadedYear || selectedWeek !== lastLoadedWeek)) {
+      console.log('MatchupsPage: Week changed during force refresh, resetting');
+      setForceRefresh(0);
+    }
+
     const loadData = async () => {
-      // Try to load from AsyncStorage first
-      const cacheKey = getCacheKey(selectedYear, selectedWeek, currentUser);
-      try {
-        const cached = await AsyncStorage.getItem(cacheKey);
-        if (cached) {
-          const parsed = JSON.parse(cached);
-          setMatchups(parsed.matchups);
-          setLineups(parsed.lineups);
-          setLastFetchedDate(parsed.timestamp);
-          setLoading(false);
-          return;
-        }
-      } catch (err) {
-        // Ignore cache errors, fallback to fetch
+      // Check if this is the current week
+      const isCurrentWeek = currentDate && selectedWeek === `week${currentDate.week}`;
+      console.log('MatchupsPage: Is current week:', isCurrentWeek);
+      // Check if this is a force refresh (pull-to-refresh or refresh trigger)
+      const isForceRefresh = forceRefresh > 0;
+      
+      // For current week, always fetch fresh data to ensure we have the latest matchups
+      // This fixes the bug where wrong matchups show when switching from other pages
+      if (isCurrentWeek && !isForceRefresh) {
+        console.log('MatchupsPage: Current week - always fetching fresh data to ensure latest matchups');
+        // Clear cache to force fresh fetch
+        await cacheMatchups.clear(currentUser);
       }
       
-      // If not cached, fetch from Firestore
-      fetchMatchups();
+      // If not current week, no cache, or force refresh, fetch from Firestore
+      console.log(`MatchupsPage: Fetching data from Firestore for ${isCurrentWeek ? 'current week' : 'historical week'}${isForceRefresh ? ' (force refresh)' : ''}`);
+      
+      // Set loading state
+      if (isForceRefresh) {
+        setRefreshing(true);
+      } else {
+        setLoading(true);
+      }
+      
+      try {
+        console.log('MatchupsPage: Fetching matchups from Firestore');
+        const gamesSnapshot = await getDocs(collection(db, 'matchups', selectedYear, 'weeks', selectedWeek, 'games'));
+        const gamesData = gamesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        
+        // For current week, only keep the user's matchup if not admin
+        let finalGamesData = gamesData;
+        
+        const isAdminUser = currentUser && currentUser.email === 'chefboyrd53@gmail.com';
+        if (isCurrentWeek && !isAdminUser && currentUser) {
+          const userTeam = getUserTeamFromEmail(currentUser.email);
+          if (userTeam) {
+            const userMatchup = gamesData.find(matchup => 
+              matchup.homeTeam === userTeam || matchup.awayTeam === userTeam
+            );
+            if (userMatchup) {
+              finalGamesData = [userMatchup];
+              console.log('MatchupsPage: Filtered to user matchup for current week');
+            }
+          }
+        }
+        
+        setMatchups(finalGamesData);
+        setDataLoaded(true);
+        setFetchError(null);
+        setLastLoadedYear(selectedYear);
+        setLastLoadedWeek(selectedWeek);
+        
+        console.log('MatchupsPage: Found', finalGamesData.length, 'matchups');
+        
+        // Preload lineups
+        const newLineups = {};
+        for (const matchup of finalGamesData) {
+          newLineups[matchup.id] = {
+            home: matchup.homeLineup || {},
+            away: matchup.awayLineup || {},
+          };
+        }
+        setLineups(newLineups);
+
+        // Cache data for current week to improve performance for subsequent loads
+        if (isCurrentWeek) {
+          console.log('MatchupsPage: Caching fresh data for current week');
+          try {
+            await cacheMatchups.set(currentUser, selectedYear, selectedWeek, {
+              matchups: finalGamesData,
+              lineups: newLineups,
+              timestamp: Date.now()
+            });
+            console.log('MatchupsPage: Current week data cached successfully');
+          } catch (err) {
+            console.log('MatchupsPage: Error caching current week data:', err);
+            // Ignore cache errors
+          }
+        } else {
+          console.log('MatchupsPage: Historical week data not cached');
+        }
+        
+        setLastFetchedDate(Date.now());
+        console.log('MatchupsPage: fetchMatchups completed successfully');
+      } catch (error) {
+        console.error('MatchupsPage: Error fetching matchups:', error);
+        setMatchups([]);
+        setFetchError(error.message);
+      } finally {
+        if (forceRefresh > 0) {
+          setRefreshing(false);
+          // Reset force refresh counter
+          setForceRefresh(0);
+        } else {
+          setLoading(false);
+        }
+        console.log('MatchupsPage: Loading state updated');
+      }
     };
 
     loadData();
-  }, [selectedYear, selectedWeek, currentUser, fetchMatchups]);
+  }, [selectedYear, selectedWeek, currentUser, forceRefresh]);
 
   // Pull to refresh handler
   const onRefresh = useCallback(async () => {
     console.log('MatchupsPage: Pull-to-refresh triggered');
     
     // Clear cache first
-    await clearCache();
+    await cacheMatchups.clear(currentUser);
     
-    // Force a fresh fetch from Firestore
-    setRefreshing(true);
-    try {
-      console.log('MatchupsPage: Fetching fresh data from Firestore');
-      const gamesSnapshot = await getDocs(collection(db, 'matchups', selectedYear, 'weeks', selectedWeek, 'games'));
-      const gamesData = gamesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setMatchups(gamesData);
-      setFetchError(null);
-      
-      // Preload lineups
-      const newLineups = {};
-      for (const matchup of gamesData) {
-        newLineups[matchup.id] = {
-          home: matchup.homeLineup || {},
-          away: matchup.awayLineup || {},
-        };
-      }
-      setLineups(newLineups);
-
-      // Cache the fresh data
-      const cacheKey = getCacheKey(selectedYear, selectedWeek, currentUser);
-      try {
-        await AsyncStorage.setItem(cacheKey, JSON.stringify({
-          matchups: gamesData,
-          lineups: newLineups,
-          timestamp: Date.now()
-        }));
-        console.log('MatchupsPage: Fresh data cached');
-      } catch (err) {
-        console.log('MatchupsPage: Error caching fresh data:', err);
-      }
-      
-      setLastFetchedDate(Date.now());
-      console.log('MatchupsPage: Pull-to-refresh completed successfully');
-    } catch (error) {
-      console.error('MatchupsPage: Error during pull-to-refresh:', error);
-      setFetchError(error.message);
-    } finally {
-      setRefreshing(false);
-    }
-  }, [selectedYear, selectedWeek, currentUser, clearCache]);
-
-  // Cache clearing function for when waivers are used
-  const clearCache = useCallback(async () => {
-    try {
-      const cacheKey = getCacheKey(selectedYear, selectedWeek, currentUser);
-      const scoresCacheKey = getScoresCacheKey(selectedYear, selectedWeek, currentUser);
-      await AsyncStorage.removeItem(cacheKey);
-      await AsyncStorage.removeItem(scoresCacheKey);
-      console.log('MatchupsPage: Cache cleared');
-      // Reset scores preloaded flag when cache is cleared
-      setScoresPreloaded(false);
-    } catch (error) {
-      console.error('Error clearing matchups cache:', error);
-    }
-  }, [selectedYear, selectedWeek, currentUser]);
-
-  // Listen for refresh triggers (e.g., when waivers are used)
-  useEffect(() => {
-    if (refreshTrigger > 0) {
-      // Clear cache and refetch when refresh is triggered
-      clearCache();
-      fetchMatchups();
-    }
-  }, [refreshTrigger, clearCache, fetchMatchups]);
+    // Force a fresh fetch
+    setForceRefresh(prev => prev + 1);
+  }, [currentUser]);
 
   // Filter matchups based on current user and week
   useEffect(() => {
@@ -396,11 +412,29 @@ export default function MatchupsPage({ currentUser, currentDate: appCurrentDate,
         await updateDoc(matchupDoc, updateData);
         
         // Update local state
-        setMatchups(prev => prev.map(m => 
+        const updatedMatchups = matchups.map(m => 
           m.id === userMatchup.id 
             ? { ...m, ...updateData }
             : m
-        ));
+        );
+        setMatchups(updatedMatchups);
+        
+        // Update cache with the new data
+        try {
+          await cacheMatchups.set(currentUser, selectedYear, selectedWeek, {
+            matchups: updatedMatchups,
+            lineups: lineups,
+            timestamp: Date.now()
+          });
+          console.log('MatchupsPage: Cache updated after lineup save');
+        } catch (err) {
+          console.log('MatchupsPage: Error updating cache after lineup save:', err);
+        }
+        
+        // Trigger data refresh for other components
+        if (onDataRefresh) {
+          onDataRefresh('lineup_change');
+        }
       }
     } catch (error) {
       console.error('Error saving lineup:', error);
@@ -473,12 +507,11 @@ export default function MatchupsPage({ currentUser, currentDate: appCurrentDate,
     }
     
     const weekNum = parseInt(week.replace('week', ''));
-    const scoresCacheKey = getScoresCacheKey(year, week, currentUser);
     
     try {
       // Try to load cached scores first
-      const cachedScores = await AsyncStorage.getItem(scoresCacheKey);
-      let scoresCache = cachedScores ? JSON.parse(cachedScores) : {};
+      const cachedScores = await cacheScores.get(currentUser, year, week);
+      let scoresCache = cachedScores || {};
       
       // Find which players need their scores fetched
       const playersToFetch = playerIds.filter(id => !scoresCache.hasOwnProperty(id));
@@ -536,7 +569,7 @@ export default function MatchupsPage({ currentUser, currentDate: appCurrentDate,
       }
       
       // Cache the updated scores
-      await AsyncStorage.setItem(scoresCacheKey, JSON.stringify(scoresCache));
+      await cacheScores.set(currentUser, year, week, scoresCache);
       
       return scoresCache;
     } catch (error) {
@@ -565,9 +598,8 @@ export default function MatchupsPage({ currentUser, currentDate: appCurrentDate,
     
     try {
       // Check if scores are already cached
-      const scoresCacheKey = getScoresCacheKey(selectedYear, selectedWeek, currentUser);
-      const cachedScores = await AsyncStorage.getItem(scoresCacheKey);
-      const scoresCache = cachedScores ? JSON.parse(cachedScores) : {};
+      const cachedScores = await cacheScores.get(currentUser, selectedYear, selectedWeek);
+      const scoresCache = cachedScores || {};
       
       // Get all player IDs from matchups
       const allPlayerIds = new Set();
@@ -665,51 +697,49 @@ export default function MatchupsPage({ currentUser, currentDate: appCurrentDate,
             style={styles.retryButton}
             onPress={() => {
               setFetchError(null);
-              fetchMatchups();
+              setForceRefresh(prev => prev + 1);
             }}
           >
             <Text style={styles.retryButtonText}>Retry</Text>
           </TouchableOpacity>
         </View>
-              ) : (
-          <ScrollView 
-            contentContainerStyle={{ paddingBottom: 40 }}
-            refreshControl={
-              <RefreshControl
-                refreshing={refreshing}
-                onRefresh={onRefresh}
-                colors={['#fff']}
-              />
-            }
-          >
-            {filteredMatchups.map((matchup) => (
-              <MatchupCard
-                key={matchup.id}
-                matchup={matchup}
-                expanded={!!expanded[matchup.id]}
-                toggleExpand={() => toggleExpand(matchup.id)}
-                selectedYear={selectedYear}
-                selectedWeek={selectedWeek}
-                fetchTeamPlayers={fetchTeamPlayers}
-                calculateTeamScore={calculateTeamScore}
-                calculateTotalScoreFromCache={calculateTotalScoreFromCache}
-                getCachedPlayerScore={getCachedPlayerScore}
-              />
-            ))}
-            {canManageLineup && (
-              <View style={styles.setLineupButtonContainer}>
-                <TouchableOpacity
-                  style={styles.manageLineupButton}
-                  onPress={() => setShowLineupModal(true)}
-                >
-                  <Text style={[styles.manageLineupButtonText, styles.manageLineupButtonTextActive]}>Set Lineup</Text>
-                </TouchableOpacity>
-              </View>
-            )}
-            
-
-          </ScrollView>
-        )}
+      ) : (
+        <ScrollView 
+          contentContainerStyle={{ paddingBottom: 40 }}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              colors={['#fff']}
+            />
+          }
+        >
+          {filteredMatchups.map((matchup) => (
+            <MatchupCard
+              key={matchup.id}
+              matchup={matchup}
+              expanded={!!expanded[matchup.id]}
+              toggleExpand={() => toggleExpand(matchup.id)}
+              selectedYear={selectedYear}
+              selectedWeek={selectedWeek}
+              fetchTeamPlayers={fetchTeamPlayers}
+              calculateTeamScore={calculateTeamScore}
+              calculateTotalScoreFromCache={calculateTotalScoreFromCache}
+              getCachedPlayerScore={getCachedPlayerScore}
+            />
+          ))}
+          {canManageLineup && (
+            <View style={styles.setLineupButtonContainer}>
+              <TouchableOpacity
+                style={styles.manageLineupButton}
+                onPress={() => setShowLineupModal(true)}
+              >
+                <Text style={[styles.manageLineupButtonText, styles.manageLineupButtonTextActive]}>Set Lineup</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+        </ScrollView>
+      )}
       
       {/* Lineup Management Modal */}
       {showLineupModal && (
