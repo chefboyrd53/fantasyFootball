@@ -1,9 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, TouchableOpacity, TextInput, Modal, StyleSheet, ActivityIndicator, ScrollView, Dimensions, Image } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, TextInput, Modal, StyleSheet, ActivityIndicator, ScrollView, Dimensions, Image, Alert } from 'react-native';
 import { VictoryChart, VictoryLine, VictoryAxis, VictoryLabel } from 'victory-native';
 import { Line } from 'react-native-svg';
 import { ScrollView as RNScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { db } from '../firebase';
+import { doc, getDoc, updateDoc, getDocs, collection } from 'firebase/firestore';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const playerStatNameMap = {
   passYards: 'Passing Yards',
@@ -78,7 +81,7 @@ const TEAM_LOGOS = {
   WAS: require('../assets/teams/WAS.png'),
 };
 
-export default function PlayerStatsPage({ players, ownerMap, currentUser }) {
+export default function PlayerStatsPage({ players, ownerMap, currentUser, onDataRefresh, currentDate }) {
   const isAdmin = currentUser && currentUser.email === 'chefboyrd53@gmail.com';
   const [filteredPlayers, setFilteredPlayers] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -103,6 +106,27 @@ export default function PlayerStatsPage({ players, ownerMap, currentUser }) {
   // Owner filter for admin
   const [ownerOptions, setOwnerOptions] = useState(['All']);
   const [selectedOwners, setSelectedOwners] = useState(['All']);
+
+  // Drop/Add functionality state
+  const [isDropAddModalOpen, setIsDropAddModalOpen] = useState(false);
+  const [playerToDrop, setPlayerToDrop] = useState(null);
+  const [freeAgentSearchQuery, setFreeAgentSearchQuery] = useState('');
+  const [filteredFreeAgents, setFilteredFreeAgents] = useState([]);
+  const [selectedFreeAgent, setSelectedFreeAgent] = useState(null);
+  const [isProcessingDropAdd, setIsProcessingDropAdd] = useState(false);
+  const [userTeam, setUserTeam] = useState(null);
+  const [userWaivers, setUserWaivers] = useState(0);
+
+  // IR functionality state
+  const [isIRModalOpen, setIsIRModalOpen] = useState(false);
+  const [isIRPlacementModalOpen, setIsIRPlacementModalOpen] = useState(false);
+  const [isIRRemovalModalOpen, setIsIRRemovalModalOpen] = useState(false);
+  const [playerToIR, setPlayerToIR] = useState(null);
+  const [playerToRemoveFromIR, setPlayerToRemoveFromIR] = useState(null);
+  const [playerToDropForIR, setPlayerToDropForIR] = useState(null);
+  const [isProcessingIR, setIsProcessingIR] = useState(false);
+  const [userIRList, setUserIRList] = useState([]);
+  const [canPlaceOnIR, setCanPlaceOnIR] = useState(false);
 
   useEffect(() => {
     if (players.length > 0) {
@@ -139,7 +163,11 @@ export default function PlayerStatsPage({ players, ownerMap, currentUser }) {
       if (currentUser && currentUser.email) {
         const userTeam = getUserTeamFromEmail(currentUser.email);
         if (userTeam) {
-          filtered = filtered.filter(p => ownerMap[p.id] === userTeam);
+          // Show players on roster OR on IR
+          filtered = filtered.filter(p => 
+            ownerMap[p.id] === userTeam || 
+            (userIRList && userIRList.includes(p.id))
+          );
         } else {
           filtered = [];
         }
@@ -164,7 +192,16 @@ export default function PlayerStatsPage({ players, ownerMap, currentUser }) {
     }
     filtered.sort((a, b) => b[sortBy] - a[sortBy]);
     setFilteredPlayers(filtered);
-  }, [players, selectedPositions, selectedTeams, sortBy, selectedYear, selectedWeek, ownerMap, searchQuery, currentUser, isAdmin, selectedOwners]);
+  }, [players, selectedPositions, selectedTeams, sortBy, selectedYear, selectedWeek, ownerMap, searchQuery, currentUser, isAdmin, selectedOwners, userIRList]);
+
+  // Check if IR placement is allowed (weeks 1-11)
+  useEffect(() => {
+    if (currentDate && currentDate.week >= 1 && currentDate.week <= 11) {
+      setCanPlaceOnIR(true);
+    } else {
+      setCanPlaceOnIR(false);
+    }
+  }, [currentDate]);
 
   // Helper function to map user email to team name
   const getUserTeamFromEmail = (email) => {
@@ -187,24 +224,524 @@ export default function PlayerStatsPage({ players, ownerMap, currentUser }) {
     return emailToTeamMap[emailPrefix] || null;
   };
 
-  const renderPlayer = ({ item, index }) => (
-    <TouchableOpacity style={[styles.row, index % 2 === 0 ? styles.rowEven : styles.rowOdd]} onPress={() => setSelectedPlayer(item)}>
-      <Text style={styles.rank}>{index + 1}.</Text>
-      <View style={{ flex: 1, alignItems: 'flex-start' }}>
-        <Text style={styles.name}>{item.name || ''}</Text>
-        <Text style={styles.meta}>
-          <Text style={{ color: getPositionColor(item.position)}}>{item.position || ''}</Text>
-          <Text> · {item.team || ''} · {ownerMap[item.id] || 'Free Agent'}</Text>
-        </Text>
-      </View>
-      <View style={styles.pointsCol}>
-        <Text style={styles.points}>{item.totalPoints || 0}</Text>
-        {selectedWeek === 'All' && (
-          <Text style={styles.avgPoints}>{item.averagePoints || 0}</Text>
-        )}
-      </View>
-    </TouchableOpacity>
-  );
+  // Fetch user team and waiver information
+  useEffect(() => {
+    const fetchUserTeamInfo = async () => {
+      if (!currentUser || isAdmin) return;
+      
+      const teamName = getUserTeamFromEmail(currentUser.email);
+      if (!teamName) return;
+      
+      setUserTeam(teamName);
+      
+      try {
+        const teamDoc = await getDoc(doc(db, 'fantasyTeams', teamName));
+        if (teamDoc.exists()) {
+          const teamData = teamDoc.data();
+          const waivers = teamData.waivers || 0;
+          const irList = teamData.irList || [];
+          setUserWaivers(waivers);
+          setUserIRList(irList);
+        }
+      } catch (error) {
+        console.error('Error fetching user team info:', error);
+      }
+    };
+    
+    fetchUserTeamInfo();
+  }, [currentUser, isAdmin]);
+
+  // Filter free agents when search query changes
+  useEffect(() => {
+    if (!isDropAddModalOpen && !isIRPlacementModalOpen) return;
+    
+    const freeAgents = players.filter(player => !ownerMap[player.id]);
+    let filtered = [];
+    
+    if (freeAgentSearchQuery.trim() !== '') {
+      const query = freeAgentSearchQuery.trim().toLowerCase();
+      filtered = freeAgents.filter(player => 
+        player.name.toLowerCase().includes(query) ||
+        player.team.toLowerCase().includes(query) ||
+        player.position.toLowerCase().includes(query)
+      );
+      
+      // Sort by total points
+      filtered.sort((a, b) => {
+        const aPoints = a.scoring[selectedYear] ? 
+          Object.values(a.scoring[selectedYear]).reduce((sum, week) => sum + (week.points || 0), 0) : 0;
+        const bPoints = b.scoring[selectedYear] ? 
+          Object.values(b.scoring[selectedYear]).reduce((sum, week) => sum + (week.points || 0), 0) : 0;
+        return bPoints - aPoints;
+      });
+    }
+    
+    setFilteredFreeAgents(filtered);
+  }, [freeAgentSearchQuery, players, ownerMap, isDropAddModalOpen, isIRPlacementModalOpen, selectedYear]);
+
+  // Handle drop player action
+  const handleDropPlayer = (player) => {
+    if (!userTeam || userWaivers <= 0) {
+      Alert.alert('Error', 'You have no waivers remaining or team not found.');
+      return;
+    }
+    
+    // Check if team has IR players and is trying to use their last waiver
+    if (userIRList.length > 0 && userWaivers <= 1) {
+      Alert.alert('Error', 'You must keep at least 1 waiver when you have a player on IR.');
+      return;
+    }
+    
+    if (ownerMap[player.id] !== userTeam) {
+      Alert.alert('Error', 'You can only drop players from your own team.');
+      return;
+    }
+    
+    setPlayerToDrop(player);
+    setSelectedFreeAgent(null);
+    setFreeAgentSearchQuery('');
+    setIsDropAddModalOpen(true);
+  };
+
+
+
+  // Handle complete drop/add transaction
+  const handleCompleteDropAdd = async () => {
+    if (!playerToDrop || !selectedFreeAgent || !userTeam) {
+      Alert.alert('Error', 'Please select both a player to drop and a free agent to add.');
+      return;
+    }
+    
+    if (userWaivers <= 0) {
+      Alert.alert('Error', 'You have no waivers remaining.');
+      return;
+    }
+    
+    setIsProcessingDropAdd(true);
+    
+    try {
+      // Verify ownership hasn't changed
+      const teamDoc = await getDoc(doc(db, 'fantasyTeams', userTeam));
+      if (!teamDoc.exists()) {
+        throw new Error('Team not found');
+      }
+      
+      const teamData = teamDoc.data();
+      const currentRoster = teamData.roster || [];
+      const currentWaivers = teamData.waivers || 0;
+      
+      // Check if player is still on the team
+      if (!currentRoster.includes(playerToDrop.id)) {
+        Alert.alert('Error', 'Player is no longer on your team. Please refresh and try again.');
+        setIsProcessingDropAdd(false);
+        
+        // Clear cache and refresh data when ownership conflict occurs
+        try {
+          await AsyncStorage.clear();
+          console.log('Cache cleared after ownership conflict');
+        } catch (error) {
+          console.error('Error clearing cache:', error);
+        }
+        
+        if (onDataRefresh) {
+          onDataRefresh();
+        }
+        return;
+      }
+      
+      // Check if free agent is still available
+      const allTeamsSnapshot = await getDocs(collection(db, 'fantasyTeams'));
+      let freeAgentStillAvailable = true;
+      allTeamsSnapshot.forEach(doc => {
+        const roster = doc.data().roster || [];
+        if (roster.includes(selectedFreeAgent.id)) {
+          freeAgentStillAvailable = false;
+        }
+      });
+      
+      if (!freeAgentStillAvailable) {
+        Alert.alert('Error', 'Selected free agent is no longer available. Please refresh and try again.');
+        setIsProcessingDropAdd(false);
+        
+        // Clear cache and refresh data when free agent conflict occurs
+        try {
+          await AsyncStorage.clear();
+          console.log('Cache cleared after free agent conflict');
+        } catch (error) {
+          console.error('Error clearing cache:', error);
+        }
+        
+        if (onDataRefresh) {
+          onDataRefresh();
+        }
+        return;
+      }
+      
+      // Check if we have enough waivers
+      if (currentWaivers <= 0) {
+        Alert.alert('Error', 'You have no waivers remaining.');
+        setIsProcessingDropAdd(false);
+        return;
+      }
+      
+      // Check if team has IR players and is trying to use their last waiver
+      if (currentIRList.length > 0 && currentWaivers <= 1) {
+        Alert.alert('Error', 'You must keep at least 1 waiver when you have a player on IR.');
+        setIsProcessingDropAdd(false);
+        return;
+      }
+      
+      // Perform the transaction
+      const newRoster = currentRoster.filter(id => id !== playerToDrop.id);
+      newRoster.push(selectedFreeAgent.id);
+      
+      await updateDoc(doc(db, 'fantasyTeams', userTeam), {
+        roster: newRoster,
+        waivers: currentWaivers - 1
+      });
+      
+      // Update local state
+      setUserWaivers(currentWaivers - 1);
+      
+      Alert.alert('Success', `Successfully dropped ${playerToDrop.name} and added ${selectedFreeAgent.name}. Waivers remaining: ${currentWaivers - 1}`);
+      
+      // Close modal and refresh data
+      setIsDropAddModalOpen(false);
+      setPlayerToDrop(null);
+      setSelectedFreeAgent(null);
+      setFreeAgentSearchQuery('');
+      setSelectedPlayer(null);
+      
+      // Clear cache and trigger a refresh of the parent component's data
+      try {
+        await AsyncStorage.clear();
+        console.log('Cache cleared after drop/add transaction');
+      } catch (error) {
+        console.error('Error clearing cache:', error);
+      }
+      
+      if (onDataRefresh) {
+        onDataRefresh();
+      }
+      
+    } catch (error) {
+      console.error('Error processing drop/add:', error);
+      Alert.alert('Error', 'Failed to process drop/add transaction. Please try again.');
+    } finally {
+      setIsProcessingDropAdd(false);
+    }
+  };
+
+  // Handle IR placement with pickup
+  const handlePlaceOnIR = (player) => {
+    if (!userTeam || !canPlaceOnIR) {
+      Alert.alert('Error', 'IR placement is only allowed between weeks 1-11.');
+      return;
+    }
+    
+    if (userIRList.length >= 1) {
+      Alert.alert('Error', 'You can only have one player on IR at a time.');
+      return;
+    }
+    
+    if (ownerMap[player.id] !== userTeam) {
+      Alert.alert('Error', 'You can only place your own players on IR.');
+      return;
+    }
+    
+    setPlayerToIR(player);
+    setSelectedFreeAgent(null);
+    setFreeAgentSearchQuery('');
+    setIsIRPlacementModalOpen(true);
+  };
+
+  // Handle IR removal
+  const handleRemoveFromIR = (player) => {
+    if (!userTeam || userWaivers <= 1) {
+      Alert.alert('Error', 'You must have at least 2 waivers to remove a player from IR (1 for the transaction, 1 reserved for future IR removal).');
+      return;
+    }
+    
+    if (!userIRList.includes(player.id)) {
+      Alert.alert('Error', 'This player is not on your IR list.');
+      return;
+    }
+    
+    setPlayerToRemoveFromIR(player);
+    setPlayerToDropForIR(null);
+    setIsIRRemovalModalOpen(true);
+  };
+
+  // Complete IR placement transaction
+  const handleCompleteIRPlacement = async () => {
+    if (!playerToIR || !selectedFreeAgent || !userTeam) {
+      Alert.alert('Error', 'Please select both a player to place on IR and a free agent to add.');
+      return;
+    }
+    
+    if (userWaivers <= 0) {
+      Alert.alert('Error', 'You have no waivers remaining.');
+      return;
+    }
+    
+    setIsProcessingIR(true);
+    
+    try {
+      // Verify ownership hasn't changed
+      const teamDoc = await getDoc(doc(db, 'fantasyTeams', userTeam));
+      if (!teamDoc.exists()) {
+        throw new Error('Team not found');
+      }
+      
+      const teamData = teamDoc.data();
+      const currentRoster = teamData.roster || [];
+      const currentIRList = teamData.irList || [];
+      const currentWaivers = teamData.waivers || 0;
+      
+      // Check if player is still on the team
+      if (!currentRoster.includes(playerToIR.id)) {
+        Alert.alert('Error', 'Player is no longer on your team. Please refresh and try again.');
+        setIsProcessingIR(false);
+        
+        // Clear cache and refresh data
+        try {
+          await AsyncStorage.clear();
+          console.log('Cache cleared after IR ownership conflict');
+        } catch (error) {
+          console.error('Error clearing cache:', error);
+        }
+        
+        if (onDataRefresh) {
+          onDataRefresh();
+        }
+        return;
+      }
+      
+      // Check if free agent is still available
+      const allTeamsSnapshot = await getDocs(collection(db, 'fantasyTeams'));
+      let freeAgentStillAvailable = true;
+      allTeamsSnapshot.forEach(doc => {
+        const roster = doc.data().roster || [];
+        if (roster.includes(selectedFreeAgent.id)) {
+          freeAgentStillAvailable = false;
+        }
+      });
+      
+      if (!freeAgentStillAvailable) {
+        Alert.alert('Error', 'Selected free agent is no longer available. Please refresh and try again.');
+        setIsProcessingIR(false);
+        
+        // Clear cache and refresh data
+        try {
+          await AsyncStorage.clear();
+          console.log('Cache cleared after free agent conflict');
+        } catch (error) {
+          console.error('Error clearing cache:', error);
+        }
+        
+        if (onDataRefresh) {
+          onDataRefresh();
+        }
+        return;
+      }
+      
+      // Check if we have enough waivers
+      if (currentWaivers <= 0) {
+        Alert.alert('Error', 'You have no waivers remaining.');
+        setIsProcessingIR(false);
+        return;
+      }
+      
+      // Perform the transaction
+      const newRoster = currentRoster.filter(id => id !== playerToIR.id);
+      newRoster.push(selectedFreeAgent.id);
+      const newIRList = [...currentIRList, playerToIR.id];
+      
+      await updateDoc(doc(db, 'fantasyTeams', userTeam), {
+        roster: newRoster,
+        irList: newIRList,
+        waivers: currentWaivers - 1
+      });
+      
+      // Update local state
+      setUserWaivers(currentWaivers - 1);
+      setUserIRList(newIRList);
+      
+      Alert.alert('Success', `Successfully placed ${playerToIR.name} on IR and added ${selectedFreeAgent.name}. Waivers remaining: ${currentWaivers - 1}`);
+      
+      // Close modal and refresh data
+      setIsIRPlacementModalOpen(false);
+      setPlayerToIR(null);
+      setSelectedFreeAgent(null);
+      setFreeAgentSearchQuery('');
+      setSelectedPlayer(null);
+      
+      // Clear cache and trigger a refresh
+      try {
+        await AsyncStorage.clear();
+        console.log('Cache cleared after IR placement');
+      } catch (error) {
+        console.error('Error clearing cache:', error);
+      }
+      
+      if (onDataRefresh) {
+        onDataRefresh();
+      }
+      
+    } catch (error) {
+      console.error('Error processing IR placement:', error);
+      Alert.alert('Error', 'Failed to process IR placement. Please try again.');
+    } finally {
+      setIsProcessingIR(false);
+    }
+  };
+
+  // Complete IR removal transaction
+  const handleCompleteIRRemoval = async () => {
+    if (!playerToRemoveFromIR || !playerToDropForIR || !userTeam) {
+      Alert.alert('Error', 'Please select a player to remove from IR and a player to drop.');
+      return;
+    }
+    
+    if (userWaivers <= 1) {
+      Alert.alert('Error', 'You must have at least 2 waivers to remove a player from IR.');
+      return;
+    }
+    
+    setIsProcessingIR(true);
+    
+    try {
+      // Verify ownership hasn't changed
+      const teamDoc = await getDoc(doc(db, 'fantasyTeams', userTeam));
+      if (!teamDoc.exists()) {
+        throw new Error('Team not found');
+      }
+      
+      const teamData = teamDoc.data();
+      const currentRoster = teamData.roster || [];
+      const currentIRList = teamData.irList || [];
+      const currentWaivers = teamData.waivers || 0;
+      
+      // Check if player is still on IR
+      if (!currentIRList.includes(playerToRemoveFromIR.id)) {
+        Alert.alert('Error', 'Player is no longer on IR. Please refresh and try again.');
+        setIsProcessingIR(false);
+        
+        // Clear cache and refresh data
+        try {
+          await AsyncStorage.clear();
+          console.log('Cache cleared after IR removal conflict');
+        } catch (error) {
+          console.error('Error clearing cache:', error);
+        }
+        
+        if (onDataRefresh) {
+          onDataRefresh();
+        }
+        return;
+      }
+      
+      // Check if player to drop is still on the team
+      if (!currentRoster.includes(playerToDropForIR.id)) {
+        Alert.alert('Error', 'Player to drop is no longer on your team. Please refresh and try again.');
+        setIsProcessingIR(false);
+        
+        // Clear cache and refresh data
+        try {
+          await AsyncStorage.clear();
+          console.log('Cache cleared after drop player conflict');
+        } catch (error) {
+          console.error('Error clearing cache:', error);
+        }
+        
+        if (onDataRefresh) {
+          onDataRefresh();
+        }
+        return;
+      }
+      
+      // Check if we have enough waivers
+      if (currentWaivers <= 1) {
+        Alert.alert('Error', 'You must have at least 2 waivers to remove a player from IR.');
+        setIsProcessingIR(false);
+        return;
+      }
+      
+      // Perform the transaction
+      const newRoster = currentRoster.filter(id => id !== playerToDropForIR.id);
+      newRoster.push(playerToRemoveFromIR.id);
+      const newIRList = currentIRList.filter(id => id !== playerToRemoveFromIR.id);
+      
+      await updateDoc(doc(db, 'fantasyTeams', userTeam), {
+        roster: newRoster,
+        irList: newIRList,
+        waivers: currentWaivers - 1
+      });
+      
+      // Update local state
+      setUserWaivers(currentWaivers - 1);
+      setUserIRList(newIRList);
+      
+      Alert.alert('Success', `Successfully removed ${playerToRemoveFromIR.name} from IR and dropped ${playerToDropForIR.name}. Waivers remaining: ${currentWaivers - 1}`);
+      
+      // Close modal and refresh data
+      setIsIRRemovalModalOpen(false);
+      setPlayerToRemoveFromIR(null);
+      setPlayerToDropForIR(null);
+      setSelectedPlayer(null);
+      
+      // Clear cache and trigger a refresh
+      try {
+        await AsyncStorage.clear();
+        console.log('Cache cleared after IR removal');
+      } catch (error) {
+        console.error('Error clearing cache:', error);
+      }
+      
+      if (onDataRefresh) {
+        onDataRefresh();
+      }
+      
+    } catch (error) {
+      console.error('Error processing IR removal:', error);
+      Alert.alert('Error', 'Failed to process IR removal. Please try again.');
+    } finally {
+      setIsProcessingIR(false);
+    }
+  };
+
+  const renderPlayer = ({ item, index }) => {
+    const isOnIR = userIRList && userIRList.includes(item.id);
+    // For IR players, we need to find their actual owner from the team data
+    let owner = ownerMap[item.id] || 'Free Agent';
+    if (isOnIR && !ownerMap[item.id]) {
+      // If player is on IR but not in ownerMap, they should still be owned by their team
+      // We'll need to find which team has them on IR
+      if (userTeam && userIRList.includes(item.id)) {
+        owner = userTeam;
+      }
+    }
+    
+    return (
+      <TouchableOpacity style={[styles.row, index % 2 === 0 ? styles.rowEven : styles.rowOdd]} onPress={() => setSelectedPlayer(item)}>
+        <Text style={styles.rank}>{index + 1}.</Text>
+        <View style={{ flex: 1, alignItems: 'flex-start' }}>
+          <Text style={[styles.name, isOnIR && styles.irPlayerName]}>{item.name || ''}</Text>
+          <Text style={styles.meta}>
+            <Text style={{ color: getPositionColor(item.position)}}>{item.position || ''}</Text>
+            <Text> · {item.team || ''} · {owner}</Text>
+            {isOnIR && <Text style={styles.irBadge}> · IR</Text>}
+          </Text>
+        </View>
+        <View style={styles.pointsCol}>
+          <Text style={styles.points}>{item.totalPoints || 0}</Text>
+          {selectedWeek === 'All' && (
+            <Text style={styles.avgPoints}>{item.averagePoints || 0}</Text>
+          )}
+        </View>
+      </TouchableOpacity>
+    );
+  };
 
   // Chart width
   const chartWidth = Dimensions.get('window').width;
@@ -413,12 +950,272 @@ export default function PlayerStatsPage({ players, ownerMap, currentUser }) {
             </TouchableOpacity>
             {selectedPlayer && (
               <>
-                <Text style={styles.modalTitle}>{selectedPlayer.name || ''}</Text>
+                <Text style={[styles.modalTitle, userIRList && userIRList.includes(selectedPlayer.id) && styles.irPlayerName]}>{selectedPlayer.name || ''}</Text>
                 <Text style={[styles.meta, styles.modalMeta]}>
                   <Text style={{ color: getPositionColor(selectedPlayer.position)}}>{selectedPlayer.position || ''}</Text>
                   <Text> · {selectedPlayer.team || ''} · {ownerMap[selectedPlayer.id] || 'Free Agent'}</Text>
+                  {userIRList && userIRList.includes(selectedPlayer.id) && <Text style={styles.irBadge}> · IR</Text>}
                 </Text>
+                
                 <View style={styles.statsDivider} />
+                
+                {/* Drop/Add Overlay - appears on top of existing modal */}
+                {isDropAddModalOpen && (
+                  <View style={styles.dropAddOverlay}>
+                    <View style={styles.dropAddModalContent}>
+                      <TouchableOpacity style={styles.closeIconFilters} onPress={() => setIsDropAddModalOpen(false)}>
+                        <Text style={styles.closeIconText}>×</Text>
+                      </TouchableOpacity>
+                      
+                      <Text style={styles.dropAddModalTitle}>Drop & Add Player</Text>
+                      <View style={styles.filtersDivider} />
+                      
+                      {/* Player to Drop Section */}
+                      <View style={styles.dropAddSection}>
+                        <Text style={styles.dropAddSectionTitle}>Dropping:</Text>
+                        {playerToDrop && (
+                          <View style={styles.selectedPlayerCard}>
+                            <Text style={styles.selectedPlayerName}>{playerToDrop.name}</Text>
+                            <Text style={styles.selectedPlayerMeta}>
+                              <Text style={{ color: getPositionColor(playerToDrop.position)}}>{playerToDrop.position}</Text>
+                              <Text> · {playerToDrop.team}</Text>
+                            </Text>
+                          </View>
+                        )}
+                      </View>
+                      
+                      <View style={styles.filtersDivider} />
+                      
+                      {/* Free Agent Search Section */}
+                      <View style={styles.dropAddSection}>
+                        <Text style={styles.dropAddSectionTitle}>Add Free Agent:</Text>
+                        <TextInput
+                          style={styles.freeAgentSearchInput}
+                          placeholder="Search free agents..."
+                          value={freeAgentSearchQuery}
+                          onChangeText={setFreeAgentSearchQuery}
+                          placeholderTextColor="#a1a1aa"
+                          keyboardAppearance="dark"
+                        />
+                        
+                        <ScrollView style={styles.freeAgentList} showsVerticalScrollIndicator={false}>
+                          {filteredFreeAgents.length === 0 ? (
+                            <Text style={{ color: '#a1a1aa', fontStyle: 'italic', textAlign: 'center', marginTop: 20 }}>
+                              Search for free agents to add
+                            </Text>
+                          ) : (
+                            filteredFreeAgents.slice(0, 20).map((player, index) => (
+                              <TouchableOpacity
+                                key={player.id}
+                                style={[
+                                  styles.freeAgentItem,
+                                  selectedFreeAgent?.id === player.id && styles.freeAgentItemSelected
+                                ]}
+                                onPress={() => setSelectedFreeAgent(player)}
+                              >
+                                <View style={styles.freeAgentItemContent}>
+                                  <Text style={styles.freeAgentName}>{player.name}</Text>
+                                  <Text style={styles.freeAgentMeta}>
+                                    <Text style={{ color: getPositionColor(player.position)}}>{player.position}</Text>
+                                    <Text> · {player.team}</Text>
+                                  </Text>
+                                </View>
+                              </TouchableOpacity>
+                            ))
+                          )}
+                        </ScrollView>
+                      </View>
+                      
+                      <View style={styles.filtersDivider} />
+                      
+                      {/* Complete Transaction Button */}
+                      <TouchableOpacity
+                        style={[
+                          styles.completeTransactionButton,
+                          (!selectedFreeAgent || isProcessingDropAdd) && styles.completeTransactionButtonDisabled
+                        ]}
+                        onPress={handleCompleteDropAdd}
+                        disabled={!selectedFreeAgent || isProcessingDropAdd}
+                      >
+                        {isProcessingDropAdd ? (
+                          <ActivityIndicator size="small" color="#fff" />
+                        ) : (
+                                                  <Text style={styles.completeTransactionButtonText}>
+                          Complete Transaction (Costs 1 Waiver)
+                        </Text>
+                        )}
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                )}
+
+                {/* IR Placement Overlay - appears on top of existing modal */}
+                {isIRPlacementModalOpen && (
+                  <View style={styles.dropAddOverlay}>
+                    <View style={styles.irModalContent}>
+                      <TouchableOpacity style={styles.closeIconFilters} onPress={() => setIsIRPlacementModalOpen(false)}>
+                        <Text style={styles.closeIconText}>×</Text>
+                      </TouchableOpacity>
+                      
+                      <Text style={styles.irModalTitle}>Place Player on IR & Add Free Agent</Text>
+                      <View style={styles.filtersDivider} />
+                      
+                      {/* Player to Place on IR Section */}
+                      <View style={styles.dropAddSection}>
+                        <Text style={styles.dropAddSectionTitle}>Placing on IR:</Text>
+                        {playerToIR && (
+                          <View style={styles.selectedPlayerCard}>
+                            <Text style={styles.selectedPlayerName}>{playerToIR.name}</Text>
+                            <Text style={styles.selectedPlayerMeta}>
+                              <Text style={{ color: getPositionColor(playerToIR.position)}}>{playerToIR.position}</Text>
+                              <Text> · {playerToIR.team}</Text>
+                            </Text>
+                          </View>
+                        )}
+                      </View>
+                      
+                      <View style={styles.filtersDivider} />
+                      
+                      {/* Free Agent Search Section */}
+                      <View style={styles.dropAddSection}>
+                        <Text style={styles.dropAddSectionTitle}>Add Free Agent:</Text>
+                        <TextInput
+                          style={styles.freeAgentSearchInput}
+                          placeholder="Search free agents..."
+                          value={freeAgentSearchQuery}
+                          onChangeText={setFreeAgentSearchQuery}
+                          placeholderTextColor="#a1a1aa"
+                          keyboardAppearance="dark"
+                        />
+                        
+                        <ScrollView style={styles.freeAgentList} showsVerticalScrollIndicator={false}>
+                          {filteredFreeAgents.length === 0 ? (
+                            <Text style={{ color: '#a1a1aa', fontStyle: 'italic', textAlign: 'center', marginTop: 20 }}>
+                              Search for free agents to add
+                            </Text>
+                          ) : (
+                            filteredFreeAgents.slice(0, 20).map((player, index) => (
+                              <TouchableOpacity
+                                key={player.id}
+                                style={[
+                                  styles.freeAgentItem,
+                                  selectedFreeAgent?.id === player.id && styles.freeAgentItemSelected
+                                ]}
+                                onPress={() => setSelectedFreeAgent(player)}
+                              >
+                                <View style={styles.freeAgentItemContent}>
+                                  <Text style={styles.freeAgentName}>{player.name}</Text>
+                                  <Text style={styles.freeAgentMeta}>
+                                    <Text style={{ color: getPositionColor(player.position)}}>{player.position}</Text>
+                                    <Text> · {player.team}</Text>
+                                  </Text>
+                                </View>
+                              </TouchableOpacity>
+                            ))
+                          )}
+                        </ScrollView>
+                      </View>
+                      
+                      <View style={styles.filtersDivider} />
+                      
+                      {/* Complete Transaction Button */}
+                      <TouchableOpacity
+                        style={[
+                          styles.completeTransactionButton,
+                          (!selectedFreeAgent || isProcessingIR) && styles.completeTransactionButtonDisabled
+                        ]}
+                        onPress={handleCompleteIRPlacement}
+                        disabled={!selectedFreeAgent || isProcessingIR}
+                      >
+                        {isProcessingIR ? (
+                          <ActivityIndicator size="small" color="#fff" />
+                        ) : (
+                          <Text style={styles.completeTransactionButtonText}>
+                            Place on IR & Add Player (Costs 1 Waiver)
+                          </Text>
+                        )}
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                )}
+
+                {/* IR Removal Overlay - appears on top of existing modal */}
+                {isIRRemovalModalOpen && (
+                  <View style={styles.dropAddOverlay}>
+                    <View style={styles.irModalContent}>
+                      <TouchableOpacity style={styles.closeIconFilters} onPress={() => setIsIRRemovalModalOpen(false)}>
+                        <Text style={styles.closeIconText}>×</Text>
+                      </TouchableOpacity>
+                      
+                      <Text style={styles.irModalTitle}>Remove Player from IR</Text>
+                      <View style={styles.filtersDivider} />
+                      
+                      {/* Player to Remove from IR Section */}
+                      <View style={styles.dropAddSection}>
+                        <Text style={styles.dropAddSectionTitle}>Removing from IR:</Text>
+                        {playerToRemoveFromIR && (
+                          <View style={styles.selectedPlayerCard}>
+                            <Text style={styles.selectedPlayerName}>{playerToRemoveFromIR.name}</Text>
+                            <Text style={styles.selectedPlayerMeta}>
+                              <Text style={{ color: getPositionColor(playerToRemoveFromIR.position)}}>{playerToRemoveFromIR.position}</Text>
+                              <Text> · {playerToRemoveFromIR.team}</Text>
+                            </Text>
+                          </View>
+                        )}
+                      </View>
+                      
+                      <View style={styles.filtersDivider} />
+                      
+                      {/* Player to Drop Section */}
+                      <View style={styles.dropAddSection}>
+                        <Text style={styles.dropAddSectionTitle}>Drop Player:</Text>
+                        <ScrollView style={styles.dropPlayerList} showsVerticalScrollIndicator={false}>
+                          {(() => {
+                            const userRoster = players.filter(p => ownerMap[p.id] === userTeam && !userIRList.includes(p.id));
+                            return userRoster.map((player, index) => (
+                              <TouchableOpacity
+                                key={player.id}
+                                style={[
+                                  styles.dropPlayerItem,
+                                  playerToDropForIR?.id === player.id && styles.dropPlayerItemSelected
+                                ]}
+                                onPress={() => setPlayerToDropForIR(player)}
+                              >
+                                <View style={styles.dropPlayerItemContent}>
+                                  <Text style={styles.dropPlayerName}>{player.name}</Text>
+                                  <Text style={styles.dropPlayerMeta}>
+                                    <Text style={{ color: getPositionColor(player.position)}}>{player.position}</Text>
+                                    <Text> · {player.team}</Text>
+                                  </Text>
+                                </View>
+                              </TouchableOpacity>
+                            ));
+                          })()}
+                        </ScrollView>
+                      </View>
+                      
+                      <View style={styles.filtersDivider} />
+                      
+                      <TouchableOpacity
+                        style={[
+                          styles.completeTransactionButton,
+                          (!playerToDropForIR || isProcessingIR) && styles.completeTransactionButtonDisabled
+                        ]}
+                        onPress={handleCompleteIRRemoval}
+                        disabled={!playerToDropForIR || isProcessingIR}
+                      >
+                        {isProcessingIR ? (
+                          <ActivityIndicator size="small" color="#fff" />
+                        ) : (
+                          <Text style={styles.completeTransactionButtonText}>
+                            Remove from IR (Costs 1 Waiver)
+                          </Text>
+                        )}
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                )}
+                
                 <Text style={styles.sectionTitle}>
                   Stats ({selectedWeek === 'All' ? 'Total' : 'Week ' + selectedWeek})
                 </Text>
@@ -519,11 +1316,60 @@ export default function PlayerStatsPage({ players, ownerMap, currentUser }) {
                     );
                   })()}
                 </View>
+                
+                {/* Action buttons for non-admin users */}
+                {!isAdmin && userTeam && (ownerMap[selectedPlayer.id] === userTeam || (userIRList && userIRList.includes(selectedPlayer.id))) && (
+                  <View style={styles.actionButtonsContainer}>
+                    {/* Drop button - only show for roster players */}
+                    {ownerMap[selectedPlayer.id] === userTeam && (
+                      <TouchableOpacity 
+                        style={[styles.dropButton, (userWaivers <= 0 || (userIRList.length > 0 && userWaivers <= 1)) && styles.dropButtonDisabled]} 
+                        onPress={() => handleDropPlayer(selectedPlayer)}
+                        disabled={userWaivers <= 0 || (userIRList.length > 0 && userWaivers <= 1)}
+                      >
+                        <Text style={[styles.dropButtonText, (userWaivers <= 0 || (userIRList.length > 0 && userWaivers <= 1)) && styles.dropButtonTextDisabled]}>
+                          Drop Player
+                        </Text>
+                      </TouchableOpacity>
+                    )}
+                    
+                    {/* IR Placement button - only show for roster players */}
+                    {ownerMap[selectedPlayer.id] === userTeam && canPlaceOnIR && userIRList.length === 0 && (
+                      <TouchableOpacity 
+                        style={[styles.irButton, userWaivers <= 0 && styles.irButtonDisabled]} 
+                        onPress={() => handlePlaceOnIR(selectedPlayer)}
+                        disabled={userWaivers <= 0}
+                      >
+                        <Text style={[styles.irButtonText, userWaivers <= 0 && styles.irButtonTextDisabled]}>
+                          Place on IR
+                        </Text>
+                      </TouchableOpacity>
+                    )}
+                    
+                    {/* IR Removal button - only show for IR players */}
+                    {userIRList && userIRList.includes(selectedPlayer.id) && (
+                      <TouchableOpacity 
+                        style={[styles.irButton, userWaivers <= 1 && styles.irButtonDisabled]} 
+                        onPress={() => handleRemoveFromIR(selectedPlayer)}
+                        disabled={userWaivers <= 1}
+                      >
+                        <Text style={[styles.irButtonText, userWaivers <= 1 && styles.irButtonTextDisabled]}>
+                          Remove from IR
+                        </Text>
+                      </TouchableOpacity>
+                    )}
+                    
+                    <Text style={styles.waiversText}>
+                      {userWaivers} waiver{userWaivers !== 1 ? 's' : ''} remaining
+                    </Text>
+                  </View>
+                )}
               </>
             )}
           </ScrollView>
         </View>
       </Modal>
+
     </>
   );
 }
@@ -906,5 +1752,281 @@ const styles = StyleSheet.create({
     top: '50%',
     marginTop: -10,
     zIndex: 2,
+  },
+  // Drop/Add functionality styles
+  actionButtonsContainer: {
+    paddingHorizontal: 20,
+    marginTop: 16,
+    marginBottom: 20,
+    alignItems: 'center',
+    alignSelf: 'center',
+    width: '100%',
+  },
+  dropButtonContainer: {
+    paddingHorizontal: 20,
+    marginTop: 16,
+    marginBottom: 20,
+    alignItems: 'center',
+    alignSelf: 'center',
+    width: '100%',
+  },
+  dropButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#ff6666',
+    borderRadius: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    justifyContent: 'center',
+  },
+  dropButtonDisabled: {
+    backgroundColor: '#333',
+  },
+  dropButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 14,
+    marginLeft: 6,
+  },
+  dropButtonTextDisabled: {
+    color: '#666',
+  },
+  irButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#f59e0b',
+    borderRadius: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    justifyContent: 'center',
+    marginTop: 8,
+  },
+  irButtonDisabled: {
+    backgroundColor: '#333',
+  },
+  irButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 14,
+    marginLeft: 6,
+  },
+  irButtonTextDisabled: {
+    color: '#666',
+  },
+  irPlayerName: {
+    fontStyle: 'italic',
+    color: '#f59e0b',
+  },
+  irBadge: {
+    color: '#f59e0b',
+    fontWeight: 'bold',
+    fontStyle: 'italic',
+  },
+  waiversText: {
+    color: '#a1a1aa',
+    fontSize: 12,
+    marginTop: 4,
+    textAlign: 'center',
+  },
+  dropAddOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0,0,0,0.8)',
+    zIndex: 9999,
+    justifyContent: 'flex-end',
+  },
+  dropAddModalContent: {
+    backgroundColor: '#232336',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    paddingTop: 30,
+    paddingHorizontal: 20,
+    paddingBottom: 60,
+    minHeight: 600,
+    width: '100%',
+    alignItems: 'flex-start',
+    position: 'relative',
+    zIndex: 10000,
+  },
+  dropAddModalTitle: {
+    color: '#fff',
+    fontSize: 22,
+    fontWeight: 'bold',
+    marginBottom: 5,
+    textAlign: 'left',
+    alignSelf: 'flex-start',
+  },
+  dropAddSection: {
+    width: '100%',
+    marginBottom: 16,
+  },
+  dropAddSectionTitle: {
+    color: '#f59e0b',
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 8,
+  },
+  selectedPlayerCard: {
+    backgroundColor: '#18181b',
+    borderRadius: 8,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: '#ff6666',
+  },
+  selectedPlayerName: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 4,
+  },
+  selectedPlayerMeta: {
+    color: '#a1a1aa',
+    fontSize: 14,
+  },
+  freeAgentSearchInput: {
+    backgroundColor: '#18181b',
+    borderColor: '#6666ff',
+    borderWidth: 1,
+    borderRadius: 8,
+    color: '#fff',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    fontSize: 16,
+    marginBottom: 12,
+  },
+  freeAgentList: {
+    maxHeight: 300,
+    width: '100%',
+  },
+  freeAgentItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#18181b',
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 8,
+    borderWidth: 1,
+    borderColor: '#333',
+  },
+  freeAgentItemSelected: {
+    borderColor: '#6666ff',
+    backgroundColor: '#2a2a3a',
+  },
+  freeAgentItemContent: {
+    flex: 1,
+  },
+  freeAgentName: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 16,
+    marginBottom: 2,
+  },
+  freeAgentMeta: {
+    color: '#a1a1aa',
+    fontSize: 14,
+  },
+  freeAgentPoints: {
+    backgroundColor: '#6666ff',
+    borderRadius: 6,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    minWidth: 40,
+    alignItems: 'center',
+  },
+  freeAgentPointsText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 14,
+  },
+  completeTransactionButton: {
+    backgroundColor: '#6666ff',
+    borderRadius: 8,
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%',
+    marginTop: 16,
+  },
+  completeTransactionButtonDisabled: {
+    backgroundColor: '#333',
+  },
+  completeTransactionButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+  
+  // IR Modal styles
+  irModalContent: {
+    backgroundColor: '#232336',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    paddingTop: 30,
+    paddingHorizontal: 20,
+    paddingBottom: 60,
+    minHeight: 500,
+    width: '100%',
+    alignItems: 'flex-start',
+    position: 'relative',
+    zIndex: 10000,
+  },
+  irModalTitle: {
+    color: '#fff',
+    fontSize: 22,
+    fontWeight: 'bold',
+    marginBottom: 5,
+    textAlign: 'left',
+    alignSelf: 'flex-start',
+  },
+  irSection: {
+    width: '100%',
+    marginBottom: 16,
+  },
+  irSectionTitle: {
+    color: '#f59e0b',
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 8,
+  },
+  irInfoText: {
+    color: '#a1a1aa',
+    fontSize: 14,
+    lineHeight: 20,
+    marginBottom: 16,
+  },
+  dropPlayerList: {
+    maxHeight: 200,
+    width: '100%',
+  },
+  dropPlayerItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#18181b',
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 8,
+    borderWidth: 1,
+    borderColor: '#333',
+  },
+  dropPlayerItemSelected: {
+    borderColor: '#6666ff',
+    backgroundColor: '#2a2a3a',
+  },
+  dropPlayerItemContent: {
+    flex: 1,
+  },
+  dropPlayerName: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 16,
+    marginBottom: 2,
+  },
+  dropPlayerMeta: {
+    color: '#a1a1aa',
+    fontSize: 14,
   },
 }); 

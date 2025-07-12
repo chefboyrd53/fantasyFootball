@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, ScrollView
 import { ScrollView as RNScrollView } from 'react-native';
 import { db } from '../firebase';
 import { collection, doc, getDoc, getDocs, updateDoc } from 'firebase/firestore';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const LINEUP_SLOTS = [
   { id: 'QB', label: 'QB', count: 1 },
@@ -28,7 +29,15 @@ function getPositionColor(pos) {
   return POSITION_COLORS[pos] || '#fff';
 }
 
-export default function MatchupsPage({ currentUser, currentDate: appCurrentDate }) {
+// Valid defense team IDs
+const VALID_DEFENSE_IDS = [
+  'ARI', 'ATL', 'BAL', 'BUF', 'CAR', 'CHI', 'CIN', 'CLE', 'DAL', 'DEN', 
+  'DET', 'GB', 'HOU', 'IND', 'JAX', 'KC', 'LV', 'LAC', 'LA', 'MIA', 
+  'MIN', 'NE', 'NO', 'NYG', 'NYJ', 'PHI', 'PIT', 'SEA', 'SF', 'TB', 
+  'TEN', 'WAS'
+];
+
+export default function MatchupsPage({ currentUser, currentDate: appCurrentDate, onDataRefresh, refreshTrigger }) {
   const isAdmin = currentUser && currentUser.email === 'chefboyrd53@gmail.com';
   const [selectedYear, setSelectedYear] = useState('2024');
   const [selectedWeek, setSelectedWeek] = useState('week1');
@@ -47,6 +56,15 @@ export default function MatchupsPage({ currentUser, currentDate: appCurrentDate 
   const [showLineupModal, setShowLineupModal] = useState(false);
   const [fetchError, setFetchError] = useState(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [lastFetchedDate, setLastFetchedDate] = useState(null);
+  const [scoresPreloading, setScoresPreloading] = useState(false);
+  const [scoresPreloaded, setScoresPreloaded] = useState(false);
+
+  // Cache key for AsyncStorage
+  const getCacheKey = (year, week, user) => `matchups_cache_${user?.email || 'nouser'}_${year}_${week}`;
+  
+  // Cache key for scores
+  const getScoresCacheKey = (year, week, user) => `scores_cache_${user?.email || 'nouser'}_${year}_${week}`;
 
   // Update currentDate when appCurrentDate changes
   useEffect(() => {
@@ -65,19 +83,25 @@ export default function MatchupsPage({ currentUser, currentDate: appCurrentDate 
       setAvailableWeeks(weeks);
       setSelectedWeek(`week${currentDate.week}`);
       setSelectedYear(currentDate.year.toString());
+      // Reset scores preloaded flag when date changes
+      setScoresPreloaded(false);
     } else {
       // Fallback to default values if currentDate is not available
       setAvailableWeeks(['week1', 'week2', 'week3', 'week4', 'week5', 'week6', 'week7', 'week8', 'week9', 'week10', 'week11', 'week12', 'week13', 'week14', 'week15', 'week16', 'week17', 'week18']);
       setSelectedWeek('week1');
       setSelectedYear('2024');
+      setScoresPreloaded(false);
     }
   }, [currentDate]);
 
   // Function to fetch matchups
   const fetchMatchups = useCallback(async (isRefresh = false) => {
     if (!selectedYear || !selectedWeek) {
+      console.log('MatchupsPage: fetchMatchups skipped - no year or week');
       return;
     }
+    
+    console.log('MatchupsPage: fetchMatchups called, isRefresh:', isRefresh);
     
     if (isRefresh) {
       setRefreshing(true);
@@ -86,6 +110,95 @@ export default function MatchupsPage({ currentUser, currentDate: appCurrentDate 
     }
     
     try {
+      console.log('MatchupsPage: Fetching matchups from Firestore');
+      const gamesSnapshot = await getDocs(collection(db, 'matchups', selectedYear, 'weeks', selectedWeek, 'games'));
+      const gamesData = gamesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setMatchups(gamesData);
+      setFetchError(null);
+      
+      console.log('MatchupsPage: Found', gamesData.length, 'matchups');
+      
+      // Preload lineups
+      const newLineups = {};
+      for (const matchup of gamesData) {
+        newLineups[matchup.id] = {
+          home: matchup.homeLineup || {},
+          away: matchup.awayLineup || {},
+        };
+      }
+      setLineups(newLineups);
+
+      // Cache the data
+      const cacheKey = getCacheKey(selectedYear, selectedWeek, currentUser);
+      try {
+        await AsyncStorage.setItem(cacheKey, JSON.stringify({
+          matchups: gamesData,
+          lineups: newLineups,
+          timestamp: Date.now()
+        }));
+        console.log('MatchupsPage: Data cached successfully');
+      } catch (err) {
+        console.log('MatchupsPage: Error caching data:', err);
+        // Ignore cache errors
+      }
+      
+      setLastFetchedDate(Date.now());
+      console.log('MatchupsPage: fetchMatchups completed successfully');
+    } catch (error) {
+      console.error('MatchupsPage: Error fetching matchups:', error);
+      setMatchups([]);
+      setFetchError(error.message);
+    } finally {
+      if (isRefresh) {
+        setRefreshing(false);
+      } else {
+        setLoading(false);
+      }
+      console.log('MatchupsPage: Loading state updated');
+    }
+  }, [selectedYear, selectedWeek, currentUser]);
+
+  // Load cached data or fetch from Firestore when year/week changes
+  useEffect(() => {
+    if (!selectedYear || !selectedWeek) {
+      return;
+    }
+
+    const loadData = async () => {
+      // Try to load from AsyncStorage first
+      const cacheKey = getCacheKey(selectedYear, selectedWeek, currentUser);
+      try {
+        const cached = await AsyncStorage.getItem(cacheKey);
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          setMatchups(parsed.matchups);
+          setLineups(parsed.lineups);
+          setLastFetchedDate(parsed.timestamp);
+          setLoading(false);
+          return;
+        }
+      } catch (err) {
+        // Ignore cache errors, fallback to fetch
+      }
+      
+      // If not cached, fetch from Firestore
+      fetchMatchups();
+    };
+
+    loadData();
+  }, [selectedYear, selectedWeek, currentUser, fetchMatchups]);
+
+  // Pull to refresh handler
+  const onRefresh = useCallback(async () => {
+    console.log('MatchupsPage: Pull-to-refresh triggered');
+    
+    // Clear cache first
+    await clearCache();
+    
+    // Force a fresh fetch from Firestore
+    setRefreshing(true);
+    try {
+      console.log('MatchupsPage: Fetching fresh data from Firestore');
       const gamesSnapshot = await getDocs(collection(db, 'matchups', selectedYear, 'weeks', selectedWeek, 'games'));
       const gamesData = gamesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       setMatchups(gamesData);
@@ -100,28 +213,53 @@ export default function MatchupsPage({ currentUser, currentDate: appCurrentDate 
         };
       }
       setLineups(newLineups);
+
+      // Cache the fresh data
+      const cacheKey = getCacheKey(selectedYear, selectedWeek, currentUser);
+      try {
+        await AsyncStorage.setItem(cacheKey, JSON.stringify({
+          matchups: gamesData,
+          lineups: newLineups,
+          timestamp: Date.now()
+        }));
+        console.log('MatchupsPage: Fresh data cached');
+      } catch (err) {
+        console.log('MatchupsPage: Error caching fresh data:', err);
+      }
+      
+      setLastFetchedDate(Date.now());
+      console.log('MatchupsPage: Pull-to-refresh completed successfully');
     } catch (error) {
-      console.error('MatchupsPage: Error fetching matchups:', error);
-      setMatchups([]);
+      console.error('MatchupsPage: Error during pull-to-refresh:', error);
       setFetchError(error.message);
     } finally {
-      if (isRefresh) {
-        setRefreshing(false);
-      } else {
-        setLoading(false);
-      }
+      setRefreshing(false);
     }
-  }, [selectedYear, selectedWeek]);
+  }, [selectedYear, selectedWeek, currentUser, clearCache]);
 
-  // Fetch matchups when year/week changes
+  // Cache clearing function for when waivers are used
+  const clearCache = useCallback(async () => {
+    try {
+      const cacheKey = getCacheKey(selectedYear, selectedWeek, currentUser);
+      const scoresCacheKey = getScoresCacheKey(selectedYear, selectedWeek, currentUser);
+      await AsyncStorage.removeItem(cacheKey);
+      await AsyncStorage.removeItem(scoresCacheKey);
+      console.log('MatchupsPage: Cache cleared');
+      // Reset scores preloaded flag when cache is cleared
+      setScoresPreloaded(false);
+    } catch (error) {
+      console.error('Error clearing matchups cache:', error);
+    }
+  }, [selectedYear, selectedWeek, currentUser]);
+
+  // Listen for refresh triggers (e.g., when waivers are used)
   useEffect(() => {
-    fetchMatchups();
-  }, [fetchMatchups]);
-
-  // Pull to refresh handler
-  const onRefresh = useCallback(() => {
-    fetchMatchups(true);
-  }, [fetchMatchups]);
+    if (refreshTrigger > 0) {
+      // Clear cache and refetch when refresh is triggered
+      clearCache();
+      fetchMatchups();
+    }
+  }, [refreshTrigger, clearCache, fetchMatchups]);
 
   // Filter matchups based on current user and week
   useEffect(() => {
@@ -328,6 +466,152 @@ export default function MatchupsPage({ currentUser, currentDate: appCurrentDate 
       }, 0);
   }
 
+  // Function to fetch and cache player scores
+  const fetchAndCachePlayerScores = useCallback(async (playerIds, year, week) => {
+    if (!playerIds || playerIds.length === 0) {
+      return {};
+    }
+    
+    const weekNum = parseInt(week.replace('week', ''));
+    const scoresCacheKey = getScoresCacheKey(year, week, currentUser);
+    
+    try {
+      // Try to load cached scores first
+      const cachedScores = await AsyncStorage.getItem(scoresCacheKey);
+      let scoresCache = cachedScores ? JSON.parse(cachedScores) : {};
+      
+      // Find which players need their scores fetched
+      const playersToFetch = playerIds.filter(id => !scoresCache.hasOwnProperty(id));
+      
+      if (playersToFetch.length === 0) {
+        // All scores are already cached
+        return scoresCache;
+      }
+      
+      console.log('Fetching scores for players:', playersToFetch);
+      
+      // Fetch scores for players not in cache
+      for (const id of playersToFetch) {
+        try {
+          if (id.length <= 3) {
+            // Defense team - validate the ID first
+            if (!id || typeof id !== 'string' || id.trim() === '') {
+              console.warn('Invalid defense ID:', id);
+              scoresCache[id] = 0;
+              continue;
+            }
+            
+            const cleanId = id.trim().toUpperCase();
+            if (!VALID_DEFENSE_IDS.includes(cleanId)) {
+              console.warn('Invalid defense team ID:', id, 'Valid IDs:', VALID_DEFENSE_IDS);
+              scoresCache[id] = 0;
+              continue;
+            }
+            
+            console.log('Fetching defense score for ID:', cleanId);
+            const defenseDoc = await getDoc(doc(db, 'defense', cleanId));
+            if (defenseDoc.exists()) {
+              const scoring = defenseDoc.data();
+              scoresCache[id] = scoring?.[year]?.[weekNum]?.points || 0;
+            } else {
+              console.warn('Defense document not found for ID:', cleanId);
+              scoresCache[id] = 0;
+            }
+          } else {
+            // Player
+            console.log('Fetching player score for ID:', id);
+            const playerDoc = await getDoc(doc(db, 'players', id));
+            if (playerDoc.exists()) {
+              const player = playerDoc.data();
+              scoresCache[id] = player.scoring?.[year]?.[weekNum]?.points || 0;
+            } else {
+              console.warn('Player document not found for ID:', id);
+              scoresCache[id] = 0;
+            }
+          }
+        } catch (playerError) {
+          console.error('Error fetching score for player/defense ID:', id, playerError);
+          scoresCache[id] = 0;
+        }
+      }
+      
+      // Cache the updated scores
+      await AsyncStorage.setItem(scoresCacheKey, JSON.stringify(scoresCache));
+      
+      return scoresCache;
+    } catch (error) {
+      console.error('Error fetching/caching player scores:', error);
+      return {};
+    }
+  }, [currentUser]);
+
+  // Function to calculate total score from cached scores
+  const calculateTotalScoreFromCache = useCallback(async (starterIds, year, week) => {
+    if (!starterIds || starterIds.length === 0) return 0;
+    
+    const scoresCache = await fetchAndCachePlayerScores(starterIds, year, week);
+    return starterIds.reduce((total, id) => total + (scoresCache[id] || 0), 0);
+  }, [fetchAndCachePlayerScores]);
+
+  // Function to get cached score for a single player
+  const getCachedPlayerScore = useCallback(async (playerId, year, week) => {
+    const scoresCache = await fetchAndCachePlayerScores([playerId], year, week);
+    return scoresCache[playerId] || 0;
+  }, [fetchAndCachePlayerScores]);
+
+  // Preload scores for all matchups
+  const preloadScores = useCallback(async () => {
+    if (!matchups.length || scoresPreloaded) return;
+    
+    try {
+      // Check if scores are already cached
+      const scoresCacheKey = getScoresCacheKey(selectedYear, selectedWeek, currentUser);
+      const cachedScores = await AsyncStorage.getItem(scoresCacheKey);
+      const scoresCache = cachedScores ? JSON.parse(cachedScores) : {};
+      
+      // Get all player IDs from matchups
+      const allPlayerIds = new Set();
+      matchups.forEach(matchup => {
+        if (matchup.homeStarters) {
+          matchup.homeStarters.forEach(id => allPlayerIds.add(id));
+        }
+        if (matchup.awayStarters) {
+          matchup.awayStarters.forEach(id => allPlayerIds.add(id));
+        }
+      });
+      
+      // Check if all scores are already cached
+      const allIds = Array.from(allPlayerIds);
+      const missingScores = allIds.filter(id => !scoresCache.hasOwnProperty(id));
+      
+      if (missingScores.length === 0) {
+        // All scores are already cached, no need to show loading
+        console.log('All scores already cached, skipping preload');
+        setScoresPreloaded(true);
+        return;
+      }
+      
+      // Only show loading if we actually need to fetch scores
+      setScoresPreloading(true);
+      console.log('Preloading scores for missing players:', missingScores);
+      
+      // Preload scores for missing players only
+      await fetchAndCachePlayerScores(missingScores, selectedYear, selectedWeek);
+      setScoresPreloaded(true);
+    } catch (error) {
+      console.error('Error preloading scores:', error);
+    } finally {
+      setScoresPreloading(false);
+    }
+  }, [matchups, selectedYear, selectedWeek, fetchAndCachePlayerScores, currentUser, scoresPreloaded]);
+
+  // Preload scores when matchups change
+  useEffect(() => {
+    if (matchups.length > 0) {
+      preloadScores();
+    }
+  }, [matchups, selectedYear, selectedWeek, preloadScores]);
+
   // Render
   return (
     <View style={styles.container}>
@@ -364,10 +648,15 @@ export default function MatchupsPage({ currentUser, currentDate: appCurrentDate 
       {/* Matchups List */}
       {loading || !currentDate ? (
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#f59e0b" />
+          <ActivityIndicator size="large" color="#fff" />
           <Text style={styles.loadingText}>
             {!currentDate ? 'Loading current week...' : 'Loading matchups...'}
           </Text>
+        </View>
+      ) : scoresPreloading ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#fff" />
+          <Text style={styles.loadingText}>Loading scores...</Text>
         </View>
       ) : fetchError ? (
         <View style={styles.errorContainer}>
@@ -403,6 +692,8 @@ export default function MatchupsPage({ currentUser, currentDate: appCurrentDate 
                 selectedWeek={selectedWeek}
                 fetchTeamPlayers={fetchTeamPlayers}
                 calculateTeamScore={calculateTeamScore}
+                calculateTotalScoreFromCache={calculateTotalScoreFromCache}
+                getCachedPlayerScore={getCachedPlayerScore}
               />
             ))}
             {canManageLineup && (
@@ -615,37 +906,43 @@ function LineupModal({ visible, onClose, players, currentLineup, onSave, saving,
   );
 }
 
-function MatchupCard({ matchup, expanded, toggleExpand, selectedYear, selectedWeek, fetchTeamPlayers, calculateTeamScore }) {
+function MatchupCard({ matchup, expanded, toggleExpand, selectedYear, selectedWeek, fetchTeamPlayers, calculateTeamScore, calculateTotalScoreFromCache, getCachedPlayerScore }) {
   const [homePlayers, setHomePlayers] = useState([]);
   const [awayPlayers, setAwayPlayers] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Calculate scores directly from starter IDs without loading full player objects
+  // Calculate scores using cached data
   async function calculateScoreFromStarters(starterIds) {
-    if (!starterIds || starterIds.length === 0) return 0;
-    
-    const weekNum = parseInt(selectedWeek.replace('week', ''));
-    let totalScore = 0;
-    
-    for (const id of starterIds) {
-      if (id.length <= 3) {
-        // Defense team
-        const defenseDoc = await getDoc(doc(db, 'defense', id));
-        if (defenseDoc.exists()) {
-          const scoring = defenseDoc.data();
-          totalScore += scoring?.[selectedYear]?.[weekNum]?.points || 0;
-        }
-      } else {
-        // Player
-        const playerDoc = await getDoc(doc(db, 'players', id));
-        if (playerDoc.exists()) {
-          const player = playerDoc.data();
-          totalScore += player.scoring?.[selectedYear]?.[weekNum]?.points || 0;
+    if (!calculateTotalScoreFromCache) {
+      // Fallback to original method if cache function not available
+      if (!starterIds || starterIds.length === 0) return 0;
+      
+      const weekNum = parseInt(selectedWeek.replace('week', ''));
+      let totalScore = 0;
+      
+      for (const id of starterIds) {
+        if (id.length <= 3) {
+          // Defense team
+          const defenseDoc = await getDoc(doc(db, 'defense', id));
+          if (defenseDoc.exists()) {
+            const scoring = defenseDoc.data();
+            totalScore += scoring?.[selectedYear]?.[weekNum]?.points || 0;
+          }
+        } else {
+          // Player
+          const playerDoc = await getDoc(doc(db, 'players', id));
+          if (playerDoc.exists()) {
+            const player = playerDoc.data();
+            totalScore += player.scoring?.[selectedYear]?.[weekNum]?.points || 0;
+          }
         }
       }
+      
+      return totalScore;
     }
     
-    return totalScore;
+    // Use cached calculation
+    return await calculateTotalScoreFromCache(starterIds, selectedYear, selectedWeek);
   }
 
   // State for collapsed scores
@@ -669,31 +966,48 @@ function MatchupCard({ matchup, expanded, toggleExpand, selectedYear, selectedWe
   // Fetch only the starter players for this matchup
   async function fetchPlayersByIds(playerIds) {
     const playerObjs = await Promise.all(playerIds.map(async (id) => {
-      if (id.length <= 3) {
-        const defenseDoc = await getDoc(doc(db, 'defense', id));
-        if (defenseDoc.exists()) {
-          return {
-            id,
-            name: id,
-            position: 'DST',
-            team: null,
-            scoring: { ...defenseDoc.data() },
-          };
+      try {
+        if (id.length <= 3) {
+          // Defense team - validate the ID first
+          if (!id || typeof id !== 'string' || id.trim() === '') {
+            console.warn('Invalid defense ID in fetchPlayersByIds:', id);
+            return null;
+          }
+          
+          const cleanId = id.trim().toUpperCase();
+          if (!VALID_DEFENSE_IDS.includes(cleanId)) {
+            console.warn('Invalid defense team ID in fetchPlayersByIds:', id, 'Valid IDs:', VALID_DEFENSE_IDS);
+            return null;
+          }
+          
+          const defenseDoc = await getDoc(doc(db, 'defense', cleanId));
+          if (defenseDoc.exists()) {
+            return {
+              id,
+              name: id,
+              position: 'DST',
+              team: null,
+              scoring: { ...defenseDoc.data() },
+            };
+          }
+        } else {
+          const playerDoc = await getDoc(doc(db, 'players', id));
+          if (playerDoc.exists()) {
+            const p = playerDoc.data();
+            return {
+              id,
+              name: p.roster.name,
+              position: p.roster.position,
+              team: p.roster.team,
+              scoring: p.scoring || {},
+            };
+          }
         }
-      } else {
-        const playerDoc = await getDoc(doc(db, 'players', id));
-        if (playerDoc.exists()) {
-          const p = playerDoc.data();
-          return {
-            id,
-            name: p.roster.name,
-            position: p.roster.position,
-            team: p.roster.team,
-            scoring: p.scoring || {},
-          };
-        }
+        return null;
+      } catch (error) {
+        console.error('Error fetching player/defense data for ID:', id, error);
+        return null;
       }
-      return null;
     }));
     return playerObjs.filter(Boolean);
   }

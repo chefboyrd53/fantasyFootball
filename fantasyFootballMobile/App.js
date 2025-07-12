@@ -22,6 +22,7 @@ export default function App() {
   const [lastFetchedDate, setLastFetchedDate] = useState(null); // { year, week }
   // Navigation state:
   const [currentPage, setCurrentPage] = useState('playerStats');
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
   // In-memory cache for player/defense/fantasyTeams data
   const dataCache = useRef({});
 
@@ -84,7 +85,7 @@ export default function App() {
       // If not cached, fetch from Firestore
       fetchData(currentDate.year, currentDate.week);
     })();
-  }, [user, currentDate, currentPage]);
+  }, [user, currentDate, currentPage, refreshTrigger]);
 
 
 
@@ -179,6 +180,10 @@ export default function App() {
     }
   };
 
+  const handleDataRefresh = () => {
+    setRefreshTrigger(prev => prev + 1);
+  };
+
   const renderCurrentPage = () => {
     if (loading) {
       return null;
@@ -188,15 +193,15 @@ export default function App() {
     const safeOwnerMap = ownerMap || {};
     switch (currentPage) {
       case 'playerStats':
-        return <PlayerStatsPage players={safePlayers} ownerMap={safeOwnerMap} currentUser={user} />;
+        return <PlayerStatsPage players={safePlayers} ownerMap={safeOwnerMap} currentUser={user} onDataRefresh={handleDataRefresh} currentDate={currentDate} />;
       case 'rosters':
-        return <RostersPage players={safePlayers} ownerMap={safeOwnerMap} />;
+        return <RostersPage players={safePlayers} ownerMap={safeOwnerMap} currentUser={user} onDataRefresh={handleDataRefresh} refreshTrigger={refreshTrigger} />;
       case 'matchups':
-        return <MatchupsPage currentUser={user} currentDate={currentDate} />;
+        return <MatchupsPage currentUser={user} currentDate={currentDate} onDataRefresh={handleDataRefresh} refreshTrigger={refreshTrigger} />;
       case 'settings':
         return <SettingsPage onLogout={handleLogout} user={user} />;
       default:
-        return <PlayerStatsPage players={safePlayers} ownerMap={safeOwnerMap} currentUser={user} />;
+        return <PlayerStatsPage players={safePlayers} ownerMap={safeOwnerMap} currentUser={user} onDataRefresh={handleDataRefresh} currentDate={currentDate} />;
     }
   };
 
@@ -233,7 +238,7 @@ export default function App() {
       <View style={styles.bottomNavbar}>
         <TouchableOpacity style={styles.bottomNavItem} onPress={() => setCurrentPage('playerStats')}>
           <Ionicons name="stats-chart" size={24} color={currentPage === 'playerStats' ? '#f59e0b' : '#fff'} />
-          <Text style={[styles.bottomNavLabel, currentPage === 'playerStats' && styles.bottomNavLabelActive]}>Stats</Text>
+          <Text style={[styles.bottomNavLabel, currentPage === 'playerStats' && styles.bottomNavLabelActive]}>Players</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.bottomNavItem} onPress={() => setCurrentPage('rosters')}>
           <Ionicons name="people" size={24} color={currentPage === 'rosters' ? '#f59e0b' : '#fff'} />
